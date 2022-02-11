@@ -25,7 +25,7 @@
   </parent>
   <groupId>io.meeds.deeds-tenant</groupId>
   <artifactId>deeds-tenant-parent</artifactId>
-  <version>1.0.x-SNAPSHOT</version>
+  <version>1.0.x-meedsv2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Meeds - Deeds Tenant Addon - Parent POM</name>
   <modules>
@@ -41,8 +41,8 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <org.exoplatform.social.version>6.3.x-SNAPSHOT</org.exoplatform.social.version>
-    <addon.meeds.deeds-dapp.version>1.0.x-SNAPSHOT</addon.meeds.deeds-dapp.version>
+    <org.exoplatform.social.version>6.4.x-meedsv2-SNAPSHOT</org.exoplatform.social.version>
+    <addon.meeds.deeds-dapp.version>1.0.x-meedsv2-SNAPSHOT</addon.meeds.deeds-dapp.version>
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
