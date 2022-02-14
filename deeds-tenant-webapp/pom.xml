@@ -28,5 +28,19 @@
   <name>Meeds - Deeds Tenant Addon - Webapp</name>
   <build>
     <finalName>deeds-tenant</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <includeEmptyDirectories>false</includeEmptyDirectories>
+          <packagingExcludes>**/*.less,**/less/**,vue-app/**</packagingExcludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.eirslett</groupId>
+        <artifactId>frontend-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
 </project>

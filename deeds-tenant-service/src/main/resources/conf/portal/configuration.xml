@@ -18,7 +18,63 @@
 -->
 <configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
+
+  <component>
+    <type>io.meeds.tenant.metamask.web.MetamaskLoginExtension</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.metamask.service.MetamaskLoginService</type>
+    <init-params>
+      <value-param>
+        <name>networkId</name>
+        <description>Default used ethereum network ID</description>
+        <value>${exo.wallet.blockchain.networkId:1}</value>
+      </value-param>
+      <value-param>
+        <name>networkURL</name>
+        <description>Default used ethereum network URL</description>
+        <value>${exo.wallet.blockchain.network.http:https://mainnet.infura.io/v3/d355b1603771462291372496a2377a1c}</value>
+      </value-param>
+      <value-param>
+        <name>networkWSURL</name>
+        <description>Default used ethereum network Websocket URL</description>
+        <value>${exo.wallet.blockchain.network.websocket:wss://mainnet.infura.io/ws/v3/d355b1603771462291372496a2377a1c}</value>
+      </value-param>
+      <value-param>
+        <name>deedAddress</name>
+        <description>DEED NFT Token address</description>
+        <value>${exo.wallet.blockchain.deed.address:}</value>
+      </value-param>
+    </init-params>
+  </component>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.services.security.Authenticator</target-component>
+    <component-plugin>
+      <name>MetamaskAuthenticator</name>
+      <set-method>addAuthenticatorPlugin</set-method>
+      <type>io.meeds.tenant.metamask.authenticator.MetamaskAuthenticator</type>
+    </component-plugin>
+  </external-component-plugins>
+
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.web.filter.ExtensibleFilter</target-component>
+    <component-plugin>
+      <name>Account Setup Filter</name>
+      <set-method>addFilterDefinitions</set-method>
+      <type>io.meeds.tenant.metamask.web.filter.MetamaskLoginFilterDefinition</type>
+      <priority>3</priority>
+      <init-params>
+        <value-param>
+          <name>allow.registration</name>
+          <value>${meeds.metamask.allowUserRegistration:true}</value>
+        </value-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
 
 </configuration>
