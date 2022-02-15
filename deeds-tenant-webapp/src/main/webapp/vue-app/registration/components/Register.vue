@@ -68,6 +68,7 @@
                     <v-card-actions class="d-flex justify-space-around">
                       <v-btn
                         :aria-label="$t('portal.register')"
+                        type="submit"
                         tabindex="3"
                         class="col-4 secondary"
                         elevation="0">
