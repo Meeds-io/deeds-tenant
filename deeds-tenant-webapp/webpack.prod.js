@@ -9,6 +9,7 @@ const config = merge(webpackCommonConfig, {
   output: {
     path: path.resolve(__dirname, `./target/${app}/`),
     filename: 'js/[name].js',
+    libraryTarget: 'amd'
   }
 });
 

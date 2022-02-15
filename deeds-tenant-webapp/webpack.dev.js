@@ -11,6 +11,7 @@ let config = merge(webpackCommonConfig, {
   output: {
     path: path.resolve(`${serverPath}/webapps/${app}/`),
     filename: 'js/[name].js',
+    libraryTarget: 'amd'
   },
   devtool: 'inline-source-map'
 });
