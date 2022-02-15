@@ -18,7 +18,7 @@
                   role="alert">
                   <i class="errorIcon uiIconError"></i>{{ errorMessage }}
                 </div>
-                <div>
+                <v-card class="transparent" flat>
                   <form
                     name="registerForm"
                     action="/portal/login"
@@ -30,7 +30,7 @@
                         name="metamaskUserRegistration"
                         type="hidden"
                         value="true">
-                      <label for="username" class="text-capitalize white--text mb-2">
+                      <label for="username" class="text-capitalize white--text mb-2 font-weight-bold">
                         {{ $t('portal.register.username') }}
                       </label>
                       <input
@@ -41,7 +41,7 @@
                         type="text"
                         class="ps-4 pe-8 grey lighten-2"
                         disabled>
-                      <label for="username" class="text-capitalize white--text mb-2">
+                      <label for="username" class="text-capitalize white--text mb-2 font-weight-bold">
                         {{ $t('portal.register.displayName') }} *
                       </label>
                       <input
@@ -54,7 +54,7 @@
                         class="ps-4 pe-8"
                         required="required"
                         autofocus="autofocus">
-                      <label for="username" class="text-capitalize white--text mb-2">
+                      <label for="username" class="text-capitalize white--text mb-2 font-weight-bold">
                         {{ $t('portal.register.email') }}
                       </label>
                       <input
@@ -65,15 +65,30 @@
                         type="text"
                         class="ps-4 pe-8">
                     </div>
-                    <div id="UIPortalLoginFormAction" class="loginButton">
-                      <button
+                    <v-card-actions class="d-flex justify-space-around">
+                      <v-btn
                         :aria-label="$t('portal.register')"
-                        tabindex="3">
-                        {{ $t('portal.register') }}
-                      </button>
-                    </div>
+                        tabindex="3"
+                        class="col-4 secondary"
+                        elevation="0">
+                        <span class="text-capitalize">
+                          {{ $t('portal.register') }}
+                        </span>
+                      </v-btn>
+                      <v-btn
+                        :aria-label="$t('portal.cancel')"
+                        href="/portal/login"
+                        tabindex="4"
+                        class="col-4 white"
+                        link
+                        elevation="0">
+                        <span class="text-capitalize">
+                          {{ $t('portal.cancel') }}
+                        </span>
+                      </v-btn>
+                    </v-card-actions>
                   </form>
-                </div>
+                </v-card>
               </div>
             </div>
           </div>
