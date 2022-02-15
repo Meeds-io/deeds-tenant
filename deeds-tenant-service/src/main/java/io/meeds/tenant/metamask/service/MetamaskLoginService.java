@@ -17,10 +17,8 @@
 package io.meeds.tenant.metamask.service;
 
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Random;
 
 import javax.servlet.http.HttpSession;
 
@@ -33,6 +31,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
+import org.exoplatform.web.security.security.SecureRandomService;
 
 import lombok.Getter;
 
@@ -52,22 +51,6 @@ public class MetamaskLoginService {
 
   private static final String LOGIN_MESSAGE_ATTRIBUTE_NAME = "metamask_login_message";
 
-  private static final Random RANDOM;
-
-  static {
-    Random random = null;
-    try {
-      random = SecureRandom.getInstanceStrong();
-    } catch (NoSuchAlgorithmException e) {
-      try {
-        random = SecureRandom.getInstance("SHA1PRNG");
-      } catch (NoSuchAlgorithmException e1) {
-        random = new SecureRandom();
-      }
-    }
-    RANDOM = random;
-  }
-
   @Getter
   private long                networkId;
 
@@ -82,9 +65,13 @@ public class MetamaskLoginService {
 
   private OrganizationService organizationService;
 
+  private SecureRandomService secureRandomService;
+
   public MetamaskLoginService(OrganizationService organizationService,
+                              SecureRandomService secureRandomService,
                               InitParams params) {
     this.organizationService = organizationService;
+    this.secureRandomService = secureRandomService;
     if (params != null) {
       if (params.containsKey(NETWORK_ID_PARAM)) {
         this.networkId = Long.parseLong(params.getValueParam(NETWORK_ID_PARAM).getValue());
@@ -156,18 +143,14 @@ public class MetamaskLoginService {
     if (token != null && !clear) {
       return token;
     }
-    token = RANDOM.nextLong() + "-" + RANDOM.nextLong() + "-" + RANDOM.nextLong();
+    SecureRandom secureRandom = secureRandomService.getSecureRandom();
+    token = secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
     session.setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token);
     return token;
   }
 
   public String generateLoginMessage(HttpSession session) {
-    String token = getLoginMessage(session);
-    if (token == null) {
-      token = RANDOM.nextLong() + "-" + RANDOM.nextLong() + "-" + RANDOM.nextLong();
-      session.setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token);
-    }
-    return token;
+    return generateLoginMessage(session, false);
   }
 
   public String getLoginMessage(HttpSession session) {
