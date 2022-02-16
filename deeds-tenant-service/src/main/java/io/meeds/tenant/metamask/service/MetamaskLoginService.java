@@ -26,13 +26,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.web3j.crypto.*;
 import org.web3j.utils.Numeric;
 
+import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.services.organization.User;
+import org.exoplatform.services.organization.*;
 import org.exoplatform.web.security.security.SecureRandomService;
 
+import io.meeds.tenant.metamask.RegistrationException;
 import lombok.Getter;
 
 public class MetamaskLoginService {
@@ -153,20 +154,30 @@ public class MetamaskLoginService {
     return generateLoginMessage(session, false);
   }
 
+  /**
+   * Retrieves Login Message to Sign with Metamask Generated and stored in HTTP
+   * Session
+   * 
+   * @param session {@link HttpSession} of current user
+   * @return Login Message
+   */
   public String getLoginMessage(HttpSession session) {
     return session == null ? null : (String) session.getAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME);
   }
 
   /**
-   * Register new User in platform based on Username, display name and email
+   * Register new User in platform based on Username, display name and email.
    * 
-   * @param username
-   * @param fullName
-   * @param email
-   * @return
+   * @param username {@link String}
+   * @param fullName {@link String}
+   * @param email {@link String} with already validated email format
+   * @return created {@link User}
+   * @throws RegistrationException when a registration error happens. The error
+   *           code will be added into exception message
    */
-  public boolean registerUser(String username, String fullName, String email) {
-    User user = organizationService.getUserHandler().createUserInstance(username);
+  public User registerUser(String username, String fullName, String email) throws RegistrationException {
+    UserHandler userHandler = organizationService.getUserHandler();
+    User user = userHandler.createUserInstance(username);
     if (StringUtils.isBlank(fullName)) {
       user.setLastName("");
       user.setFirstName("");
@@ -178,13 +189,40 @@ public class MetamaskLoginService {
       user.setLastName(fullName);
       user.setFirstName("");
     }
+
     user.setEmail(email);
     try {
-      organizationService.getUserHandler().createUser(user, true);
-      return true;
+      User existingUser = userHandler.findUserByName(username);
+      if (existingUser != null) {
+        throw new RegistrationException("USERNAME_ALREADY_EXISTS");
+      }
+
+      if (StringUtils.isNotBlank(email)) {
+        ListAccess<User> users;
+        int usersLength = 0;
+        try {
+          // Check if mail address is already used
+          Query query = new Query();
+          query.setEmail(email);
+
+          users = userHandler.findUsersByQuery(query, UserStatus.ANY);
+          usersLength = users.getSize();
+        } catch (RuntimeException e) {
+          LOG.debug("Error retrieving users list with email {}. Thus, we will consider the email as already used", email, e);
+          usersLength = 1;
+        }
+        if (usersLength > 0) {
+          throw new RegistrationException("EMAIL_ALREADY_EXISTS");
+        }
+      }
+
+      userHandler.createUser(user, true);
+      return user;
+    } catch (RegistrationException e) {
+      throw e;
     } catch (Exception e) {
       LOG.warn("Error regitering user", e);
-      return false;
+      throw new RegistrationException("REGISTRATION_ERROR");
     }
   }
 

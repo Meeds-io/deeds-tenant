@@ -30,6 +30,10 @@
                         name="metamaskUserRegistration"
                         type="hidden"
                         value="true">
+                      <input
+                        :value="rememberme"
+                        name="rememberme"
+                        type="hidden">
                       <label for="username" class="text-capitalize white--text mb-2 font-weight-bold">
                         {{ $t('portal.register.username') }}
                       </label>
@@ -45,8 +49,9 @@
                         {{ $t('portal.register.displayName') }} *
                       </label>
                       <input
-                        id="displayName"
+                        id="fullName"
                         :placeholder="$t('portal.register.displayNamePlaceholder')"
+                        :value="fullName"
                         name="fullName"
                         tabindex="1"
                         type="text"
@@ -60,9 +65,10 @@
                       <input
                         id="email"
                         :placeholder="$t('portal.register.emailPlaceholder')"
+                        :value="email"
                         name="email"
                         tabindex="2"
-                        type="text"
+                        type="email"
                         class="ps-4 pe-8">
                     </div>
                     <v-card-actions class="d-flex justify-space-around">
@@ -114,16 +120,12 @@ export default {
   },
   data: () => ({
     rememberme: true,
+    fullName: null,
+    email: null,
   }),
   computed: {
-    companyName() {
-      return this.params && this.params.companyName;
-    },
     username() {
       return this.params && this.params.username;
-    },
-    forgotPasswordPath() {
-      return this.params && this.params.forgotPasswordPath;
     },
     brandingLogo() {
       return this.params && this.params.brandingLogo;
@@ -132,11 +134,23 @@ export default {
       return this.params && this.params.errorCode;
     },
     errorMessage() {
-      return this.errorCode && this.$t(`UILoginForm.label.${this.errorCode}`);
+      if (this.errorCode === 'USERNAME_MANDATORY') {
+        return this.$t('portal.register.usernameMandatory');
+      } else if (this.errorCode === 'USERNAME_ALREADY_EXISTS') {
+        return this.$t('portal.register.usernameAlreadyExists');
+      } else if (this.errorCode === 'EMAIL_ALREADY_EXISTS') {
+        return this.$t('portal.register.emailAlreadyExists');
+      } else if (this.errorCode === 'REGISTRATION_ERROR') {
+        return this.$t('portal.register.unknownError');
+      }
+      return this.errorCode;
     },
   },
   created() {
     document.title = this.$t('portal.register');
+    this.rememberme = this.params && this.params.rememberme;
+    this.fullName = this.params && this.params.fullName;
+    this.email = this.params && this.params.email;
   },
   mounted() {
     this.$root.$applicationLoaded();
