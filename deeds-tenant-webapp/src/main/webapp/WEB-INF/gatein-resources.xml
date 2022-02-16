@@ -65,6 +65,16 @@
     <depends>
       <module>commonVueComponents</module>
     </depends>
+    <depends>
+      <module>ethers</module>
+    </depends>
+  </module>
+
+  <module>
+    <name>ethers</name>
+    <script>
+      <path>/js/ethers.umd.min.js</path>
+    </script>
   </module>
 
 </gatein-resources>

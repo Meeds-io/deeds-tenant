@@ -48,19 +48,14 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  * A Login extension to submit Login parameters to UI for used network, contract
  * adresses ...
  */
-public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
+public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Filter {
 
-  /**
-   * 
-   */
   private static final String             EMAIL_REQUEST_PARAM               = "email";
 
-  /**
-   * 
-   */
   private static final String             FULL_NAME_REQUEST_PARAM           = "fullName";
 
-  public static final Log                 LOG                               = ExoLogger.getLogger(MetamaskLoginFilter.class);
+  public static final Log                 LOG                               =
+                                              ExoLogger.getLogger(MetamaskRegistrationFilter.class);
 
   public static final String              SEPARATOR                         = "@";
 
@@ -87,14 +82,14 @@ public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
 
   private boolean                         allowUserRegistration;
 
-  public MetamaskLoginFilter(PortalContainer container, // NOSONAR
-                             WebAppController webAppController,
-                             LocaleConfigService localeConfigService,
-                             BrandingService brandingService,
-                             JavascriptConfigService javascriptConfigService,
-                             SkinService skinService,
-                             MetamaskLoginService metamaskLoginService,
-                             InitParams params) {
+  public MetamaskRegistrationFilter(PortalContainer container, // NOSONAR
+                                    WebAppController webAppController,
+                                    LocaleConfigService localeConfigService,
+                                    BrandingService brandingService,
+                                    JavascriptConfigService javascriptConfigService,
+                                    SkinService skinService,
+                                    MetamaskLoginService metamaskLoginService,
+                                    InitParams params) {
     super(localeConfigService, brandingService, javascriptConfigService, skinService);
     this.webAppController = webAppController;
     this.metamaskLoginService = metamaskLoginService;
@@ -110,6 +105,7 @@ public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
     HttpServletRequest request = (HttpServletRequest) servletRequest;
     HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+    // If user is already authenticated, no registration form is required
     if (request.getRemoteUser() != null) {
       chain.doFilter(request, response);
       return;

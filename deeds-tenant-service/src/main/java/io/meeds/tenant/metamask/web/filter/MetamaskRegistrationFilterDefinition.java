@@ -35,11 +35,11 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  * A Login extension to submit Login parameters to UI for used network, contract
  * adresses ...
  */
-public class MetamaskLoginFilterDefinition extends FilterDefinitionPlugin {
+public class MetamaskRegistrationFilterDefinition extends FilterDefinitionPlugin {
 
   private Filter filter;
 
-  public MetamaskLoginFilterDefinition(PortalContainer container, // NOSONAR
+  public MetamaskRegistrationFilterDefinition(PortalContainer container, // NOSONAR
                                        WebAppController webAppController,
                                        LocaleConfigService localeConfigService,
                                        BrandingService brandingService,
@@ -48,7 +48,7 @@ public class MetamaskLoginFilterDefinition extends FilterDefinitionPlugin {
                                        MetamaskLoginService metamaskLoginService,
                                        InitParams params) {
     super(params);
-    this.filter = new MetamaskLoginFilter(container,
+    this.filter = new MetamaskRegistrationFilter(container,
                                           webAppController,
                                           localeConfigService,
                                           brandingService,

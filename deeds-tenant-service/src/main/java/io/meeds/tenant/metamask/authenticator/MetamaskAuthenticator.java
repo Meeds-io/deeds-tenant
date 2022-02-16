@@ -22,7 +22,7 @@ import org.exoplatform.services.organization.auth.AuthenticatorPlugin;
 import org.exoplatform.services.security.*;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.metamask.web.filter.MetamaskLoginFilter;
+import io.meeds.tenant.metamask.web.filter.MetamaskRegistrationFilter;
 
 /**
  * An authenticator plugin to authenticate Metamask users
@@ -44,7 +44,7 @@ public class MetamaskAuthenticator extends AuthenticatorPlugin {
       if (StringUtils.startsWith(walletAddress, "0x")) {
         PasswordCredential passwordCredential = (PasswordCredential) credentials[1];
         String password = passwordCredential.getPassword();
-        String[] passwordParts = StringUtils.split(password, MetamaskLoginFilter.SEPARATOR);
+        String[] passwordParts = StringUtils.split(password, MetamaskRegistrationFilter.SEPARATOR);
         if (passwordParts != null && passwordParts.length == 2) {
           String rawMessage = passwordParts[0];
           String signedMessage = passwordParts[1];

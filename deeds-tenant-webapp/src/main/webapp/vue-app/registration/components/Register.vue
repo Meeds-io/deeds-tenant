@@ -67,6 +67,11 @@
                         disabled>
                       <label for="username" class="text-capitalize white--text mb-2 font-weight-bold">
                         {{ $t('portal.register.displayName') }} *
+                        <v-progress-circular
+                          v-if="loading"
+                          color="secondary"
+                          indeterminate
+                          size="16" />
                       </label>
                       <input
                         id="fullName"
@@ -81,6 +86,11 @@
                         autofocus="autofocus">
                       <label for="username" class="text-capitalize white--text mb-2 font-weight-bold">
                         {{ $t('portal.register.email') }}
+                        <v-progress-circular
+                          v-if="loading"
+                          color="secondary"
+                          indeterminate
+                          size="16" />
                       </label>
                       <input
                         id="email"
@@ -142,6 +152,9 @@ export default {
     rememberme: true,
     fullName: null,
     email: null,
+    provider: null,
+    resolvedEnsName: null,
+    loading: false,
   }),
   computed: {
     username() {
@@ -171,9 +184,39 @@ export default {
     this.rememberme = this.params && this.params.rememberme;
     this.fullName = this.params && this.params.fullName;
     this.email = this.params && this.params.email;
+    this.provider = new window.ethers.providers.Web3Provider(window.ethereum);
+
+    if (this.username && !this.fullName && !this.email) {
+      // Resolve ENS only when it's wasn't already resolved.
+      // The user may have sent an invalid form,
+      // thus no new ENS resolution should be made
+      this.loading = true;
+      this.resolveEnsAttributes().finally(() => this.loading = false);
+    }
   },
   mounted() {
     this.$root.$applicationLoaded();
+  },
+  methods: {
+    resolveEnsAttributes() {
+      return this.provider.lookupAddress(this.username)
+        .then(ensName => {
+          if (ensName) {
+            this.resolvedEnsName = ensName;
+            return this.provider.getResolver(ensName);
+          }
+        })
+        .then(resolver => {
+          if (resolver) {
+            return Promise.all([
+              resolver.getText('display')
+                .then(displayName => this.fullName = displayName || this.resolvedEnsName),
+              resolver.getText('email')
+                .then(email => this.email = email)
+            ]);
+          }
+        });
+    },
   },
 };
 </script>
