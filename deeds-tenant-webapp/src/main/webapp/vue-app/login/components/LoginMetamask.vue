@@ -1,3 +1,23 @@
+<!--
+
+ This file is part of the Meeds project (https://meeds.io/).
+ 
+ Copyright (C) 2020 - 2022 Meeds Association contact@meeds.io
+ 
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program; if not, write to the Free Software Foundation,
+ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+-->
 <template>
   <div v-if="metamaskEnabled" class="border-box-sizing mt-4">
     <v-btn
@@ -13,7 +33,7 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2">{{ $t('portal.login.LoginWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.LoginWithMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
@@ -84,8 +104,8 @@ export default {
     this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
     if (this.isMetamaskInstalled) {
       this.retrieveAddress();
+      window.ethereum.on('accountsChanged', () => this.retrieveAddress());
     }
-    window.ethereum.on('accountsChanged', () => this.retrieveAddress());
   },
   methods: {
     signInWithMetamask(forwarded) {
