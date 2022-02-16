@@ -30,6 +30,7 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
+import org.exoplatform.portal.rest.UserFieldValidator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.resources.LocaleConfigService;
@@ -38,7 +39,9 @@ import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.JspBasedWebHandler;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
+import org.exoplatform.web.login.LoginUtils;
 
+import io.meeds.tenant.metamask.RegistrationException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
 /**
@@ -47,29 +50,42 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  */
 public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
 
-  public static final Log      LOG                               = ExoLogger.getLogger(MetamaskLoginFilter.class);
+  /**
+   * 
+   */
+  private static final String             EMAIL_REQUEST_PARAM               = "email";
 
-  public static final String   SEPARATOR                         = "@";
+  /**
+   * 
+   */
+  private static final String             FULL_NAME_REQUEST_PARAM           = "fullName";
 
-  public static final String   METAMASK_AUTHENTICATED            = "metamask.authenticated";
+  public static final Log                 LOG                               = ExoLogger.getLogger(MetamaskLoginFilter.class);
 
-  public static final String   METAMASK_REGISTER_USER            = "metamaskUserRegistration";
+  public static final String              SEPARATOR                         = "@";
 
-  private static final String  USERNAME_REQUEST_PARAM            = "username";
+  public static final String              METAMASK_AUTHENTICATED            = "metamask.authenticated";
 
-  private static final String  PASSWORD_REQUEST_PARAM            = "password";
+  public static final String              METAMASK_REGISTER_USER            = "metamaskUserRegistration";
 
-  public static final String   METAMASK_SIGNED_MESSAGE_PREFIX    = "SIGNED_MESSAGE@";
+  private static final String             USERNAME_REQUEST_PARAM            = "username";
 
-  private static final String  METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
+  private static final String             PASSWORD_REQUEST_PARAM            = "password";
 
-  private MetamaskLoginService metamaskLoginService;
+  public static final String              METAMASK_SIGNED_MESSAGE_PREFIX    = "SIGNED_MESSAGE@";
 
-  private WebAppController     webAppController;
+  private static final String             METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
 
-  private ServletContext       servletContext;
+  private static final UserFieldValidator EMAIL_VALIDATOR                   =
+                                                          new UserFieldValidator(EMAIL_REQUEST_PARAM, false, false);
 
-  private boolean              allowUserRegistration;
+  private MetamaskLoginService            metamaskLoginService;
+
+  private WebAppController                webAppController;
+
+  private ServletContext                  servletContext;
+
+  private boolean                         allowUserRegistration;
 
   public MetamaskLoginFilter(PortalContainer container, // NOSONAR
                              WebAppController webAppController,
@@ -94,40 +110,45 @@ public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
     HttpServletRequest request = (HttpServletRequest) servletRequest;
     HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+    if (request.getRemoteUser() != null) {
+      chain.doFilter(request, response);
+      return;
+    }
+
     String walletAddress = request.getParameter(USERNAME_REQUEST_PARAM);
     String password = request.getParameter(PASSWORD_REQUEST_PARAM);
 
     try {
       if (request.getParameter(METAMASK_REGISTER_USER) != null) {
-        boolean registered = registerUser(request);
-        if (registered) {
-          request = wrapCredentialsForLogin(request);
-        } else {
-          forwardUserRegistration(new ControllerContext(webAppController,
-                                                        webAppController.getRouter(),
-                                                        request,
-                                                        response,
-                                                        null),
-                                  "registrationError");
+        // Proceed to user registration
+        request = registerUserAndWrapRequestForLogin(request, response);
+        if (request == null) {// Error happened and response already
+                              // handled
           return;
         }
       } else if (StringUtils.isNotBlank(walletAddress) && StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)) {
+        // Forward to user registration form is user isn't found and
+        // registration of new users is allowed
         String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
-        if (StringUtils.isBlank(username)) {
-          if (allowUserRegistration) {
+        if (StringUtils.isBlank(username)) { // User not found
+          if (allowUserRegistration) { // User registration allowed
+            // Forward to user registration form after signedMessage validation
             String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
             String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");
 
             boolean messageValidated = metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage);
             if (messageValidated) {
+              // Preserve original username & password fields in session in
+              // order to login user after registration
               request.getSession().setAttribute(USERNAME_REQUEST_PARAM, walletAddress);
               request.getSession().setAttribute(PASSWORD_REQUEST_PARAM, getCompoundPassword(request));
-              forwardUserRegistration(new ControllerContext(webAppController,
-                                                            webAppController.getRouter(),
-                                                            request,
-                                                            response,
-                                                            null),
-                                      null);
+
+              forwardUserRegistrationForm(new ControllerContext(webAppController,
+                                                                webAppController.getRouter(),
+                                                                request,
+                                                                response,
+                                                                null),
+                                          null);
               return;
             }
           }
@@ -142,9 +163,75 @@ public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
     chain.doFilter(request, response);
   }
 
+  private void forwardUserRegistrationForm(ControllerContext controllerContext, String errorCode) throws Exception {
+    HttpServletRequest request = controllerContext.getRequest();
+    HttpServletResponse response = controllerContext.getResponse();
+
+    List<String> additionalCSSModules = Collections.singletonList("portal/login");
+    super.prepareDispatch(controllerContext,
+                          "SHARED/metamaskRegistration",
+                          null,
+                          additionalCSSModules,
+                          params -> {
+                            try {
+                              params.put(USERNAME_REQUEST_PARAM, request.getSession().getAttribute(USERNAME_REQUEST_PARAM));
+                              params.put(FULL_NAME_REQUEST_PARAM, request.getParameter(FULL_NAME_REQUEST_PARAM));
+                              params.put(EMAIL_REQUEST_PARAM, request.getParameter(EMAIL_REQUEST_PARAM));
+                              params.put(LoginUtils.COOKIE_NAME, request.getParameter(LoginUtils.COOKIE_NAME));
+                              if (StringUtils.isNotBlank(errorCode)) {
+                                params.put("errorCode", errorCode);
+                              }
+                            } catch (JSONException e) {
+                              LOG.warn("Error putting error code in parameters", e);
+                            }
+                          });
+    servletContext.getRequestDispatcher("/WEB-INF/jsp/metamaskRegister.jsp").include(request, response);
+  }
+
+  private HttpServletRequest registerUserAndWrapRequestForLogin(HttpServletRequest request,
+                                                                HttpServletResponse response) throws Exception {
+    String username = (String) request.getSession().getAttribute(USERNAME_REQUEST_PARAM);
+    String fullName = request.getParameter(FULL_NAME_REQUEST_PARAM);
+    String email = request.getParameter(EMAIL_REQUEST_PARAM);
+
+    try {
+      if (StringUtils.isBlank(username)) {
+        throw new RegistrationException("USERNAME_MANDATORY");
+      }
+      if (StringUtils.isNotBlank(email)) {
+        String errorCode = EMAIL_VALIDATOR.validate(request.getLocale(), email);
+        if (StringUtils.isNotBlank(errorCode)) {
+          throw new RegistrationException(errorCode);
+        }
+      }
+
+      metamaskLoginService.registerUser(username, fullName, email);
+
+      // Proceed to login with Metamask uing regular LoginModule
+      return wrapCredentialsForLogin(request);
+    } catch (RegistrationException e) {
+      String errorCode = e.getMessage();
+      forwardUserRegistrationForm(new ControllerContext(webAppController,
+                                                        webAppController.getRouter(),
+                                                        request,
+                                                        response,
+                                                        null),
+                                  errorCode);
+      return null;
+    } catch (Exception e) {
+      forwardUserRegistrationForm(new ControllerContext(webAppController,
+                                                        webAppController.getRouter(),
+                                                        request,
+                                                        response,
+                                                        null),
+                                  "REGISTRATION_ERROR");
+      return null;
+    }
+  }
+
   /**
-   * Relaces original request by a wrapped one to give the raw & signed messages
-   * in password field
+   * Replaces original request by a wrapped one to give the raw & signed
+   * messages in password field
    * 
    * @param request {@link HttpServletRequest}
    * @return {@link HttpServletRequestWrapper}
@@ -162,9 +249,17 @@ public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
     };
   }
 
+  /**
+   * Replaces original request by a wrapped one to give the password & username
+   * fields to LoginModule
+   * 
+   * @param request {@link HttpServletRequest}
+   * @return {@link HttpServletRequestWrapper}
+   */
   private HttpServletRequest wrapCredentialsForLogin(HttpServletRequest request) {
     String username = (String) request.getSession().getAttribute(USERNAME_REQUEST_PARAM);
     String password = (String) request.getSession().getAttribute(PASSWORD_REQUEST_PARAM);
+
     return new HttpServletRequestWrapper(request) {
       @Override
       public String getParameter(String name) {
@@ -184,42 +279,6 @@ public class MetamaskLoginFilter extends JspBasedWebHandler implements Filter {
     String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
     String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");
     return rawMessage + SEPARATOR + signedMessage;
-  }
-
-  /**
-   * Forward to User registration form
-   * 
-   * @param controllerContext
-   * @throws Exception
-   */
-  private void forwardUserRegistration(ControllerContext controllerContext, String errorCode) throws Exception {
-    HttpServletRequest request = controllerContext.getRequest();
-    HttpServletResponse response = controllerContext.getResponse();
-
-    List<String> additionalCSSModules = Collections.singletonList("portal/login");
-    super.prepareDispatch(controllerContext,
-                          "SHARED/metamaskRegistration",
-                          null,
-                          additionalCSSModules,
-                          params -> {
-                            try {
-                              params.put(USERNAME_REQUEST_PARAM, request.getSession().getAttribute(USERNAME_REQUEST_PARAM));
-                              if (StringUtils.isNotBlank(errorCode)) {
-                                params.put("errorCode", errorCode);
-                              }
-                            } catch (JSONException e) {
-                              LOG.warn("Error putting error code in parameters", e);
-                            }
-                          });
-    servletContext.getRequestDispatcher("/WEB-INF/jsp/metamaskRegister.jsp").include(request, response);
-  }
-
-  private boolean registerUser(HttpServletRequest request) {
-    String username = (String) request.getSession().getAttribute(USERNAME_REQUEST_PARAM);
-    String fullName = request.getParameter("fullName");
-    String email = request.getParameter("email");
-
-    return metamaskLoginService.registerUser(username, fullName, email);
   }
 
 }
