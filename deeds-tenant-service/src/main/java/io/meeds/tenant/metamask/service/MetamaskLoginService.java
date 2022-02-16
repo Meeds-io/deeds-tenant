@@ -108,6 +108,8 @@ public class MetamaskLoginService {
   }
 
   /**
+   * Validates signed message by a wallet using Metamask
+   * 
    * @param walletAddress wallet Address (wallet public key)
    * @param rawMessage raw signed message
    * @param signedMessage encrypted message
@@ -139,9 +141,20 @@ public class MetamaskLoginService {
     return false;
   }
 
-  public String generateLoginMessage(HttpSession session, boolean clear) {
+  /**
+   * Generates a new Login Message to sign by current user and store it in
+   * {@link HttpSession}. If renew = true, a new Token will be generated even if
+   * alread exists in {@link HttpSession}, else the token already generated will
+   * be returned
+   * 
+   * @param session {@link HttpSession}
+   * @param renew boolean
+   * @return already existing token in {@link HttpSession} or a newly generated
+   *         one
+   */
+  public String generateLoginMessage(HttpSession session, boolean renew) {
     String token = getLoginMessage(session);
-    if (token != null && !clear) {
+    if (token != null && !renew) {
       return token;
     }
     SecureRandom secureRandom = secureRandomService.getSecureRandom();
@@ -150,6 +163,15 @@ public class MetamaskLoginService {
     return token;
   }
 
+  /**
+   * Generates a new Login Message to sign by current user and store it in
+   * {@link HttpSession}. If a token already exists in session, it will be
+   * returned else a newly generated token will be returned
+   * 
+   * @param session {@link HttpSession}
+   * @return already existing token in {@link HttpSession} or a newly generated
+   *         one
+   */
   public String generateLoginMessage(HttpSession session) {
     return generateLoginMessage(session, false);
   }
