@@ -46,7 +46,7 @@ export function init(params) {
       data: {
         params: params,
       },
-      template: `<portal-register-metamask id="${appId}" :params="params" />`,
+      template: `<portal-register-metamask-form id="${appId}" :params="params" />`,
       vuetify: Vue.prototype.vuetifyOptions,
       i18n
     }, `#${appId}`, 'Login');

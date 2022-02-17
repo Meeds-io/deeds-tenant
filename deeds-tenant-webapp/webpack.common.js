@@ -6,7 +6,8 @@ let config = {
   // can use multiple entry
   entry: {
     metamaskLoginExtension: './src/main/webapp/vue-app/login/main.js',
-    metamaskRegistration: './src/main/webapp/vue-app/registration/main.js',
+    metamaskRegisterExtension: './src/main/webapp/vue-app/register-extension/main.js',
+    metamaskRegisterForm: './src/main/webapp/vue-app/register-form/main.js',
   },
   module: {
     rules: [

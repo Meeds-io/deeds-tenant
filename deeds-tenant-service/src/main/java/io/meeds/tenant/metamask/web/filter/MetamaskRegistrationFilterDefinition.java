@@ -17,8 +17,7 @@
  */
 package io.meeds.tenant.metamask.web.filter;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
@@ -40,27 +39,26 @@ public class MetamaskRegistrationFilterDefinition extends FilterDefinitionPlugin
   private Filter filter;
 
   public MetamaskRegistrationFilterDefinition(PortalContainer container, // NOSONAR
-                                       WebAppController webAppController,
-                                       LocaleConfigService localeConfigService,
-                                       BrandingService brandingService,
-                                       JavascriptConfigService javascriptConfigService,
-                                       SkinService skinService,
-                                       MetamaskLoginService metamaskLoginService,
-                                       InitParams params) {
+                                              WebAppController webAppController,
+                                              LocaleConfigService localeConfigService,
+                                              BrandingService brandingService,
+                                              JavascriptConfigService javascriptConfigService,
+                                              SkinService skinService,
+                                              MetamaskLoginService metamaskLoginService,
+                                              InitParams params) {
     super(params);
     this.filter = new MetamaskRegistrationFilter(container,
-                                          webAppController,
-                                          localeConfigService,
-                                          brandingService,
-                                          javascriptConfigService,
-                                          skinService,
-                                          metamaskLoginService,
-                                          params);
+                                                 webAppController,
+                                                 localeConfigService,
+                                                 brandingService,
+                                                 javascriptConfigService,
+                                                 skinService,
+                                                 metamaskLoginService);
   }
 
   @Override
   public List<FilterDefinition> getFilterDefinitions() {
-    return Collections.singletonList(new FilterDefinition(filter, Collections.singletonList("/login")));
+    return Collections.singletonList(new FilterDefinition(filter, Arrays.asList("/login", "/register")));
   }
 
 }
