@@ -20,23 +20,28 @@ import java.util.*;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.login.UIParamsExtension;
+import org.exoplatform.web.register.RegisterHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
 /**
- * A Login extension to submit Login parameters to UI
+ * An extension to submit parameters to Register UI
  */
-public class MetamaskLoginExtension implements UIParamsExtension {
+public class MetamaskRegisterExtension implements UIParamsExtension {
 
-  private static final List<String> EXTENSION_NAMES =
-                                                    Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
+  private static final List<String> EXTENSION_NAMES               = Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
+                                                                                  LoginHandler.LOGIN_EXTENSION_NAME);
+
+  private static final String       METAMASK_REGISTRATION_ENABLED = "metamaskRegistrationEnabled";
 
   private MetamaskLoginService      metamaskLoginService;
 
-  public MetamaskLoginExtension(MetamaskLoginService metamaskLoginService) {
+  public MetamaskRegisterExtension(MetamaskLoginService metamaskLoginService) {
     this.metamaskLoginService = metamaskLoginService;
   }
 
@@ -48,10 +53,15 @@ public class MetamaskLoginExtension implements UIParamsExtension {
   @Override
   public Map<String, Object> extendParameters(ControllerContext controllerContext, String extensionName) {
     Map<String, Object> params = new HashMap<>();
-    params.put("metamaskEnabled", true);
+    if (metamaskLoginService.isAllowUserRegistration()) {
+      params.put(RegisterHandler.REGISTER_ENABLED, true);
+      if (StringUtils.equals(RegisterHandler.REGISTER_EXTENSION_NAME, extensionName)) {
+        params.put(METAMASK_REGISTRATION_ENABLED, true);
+      }
 
-    HttpSession httpSession = controllerContext.getRequest().getSession(true);
-    params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
+      HttpSession httpSession = controllerContext.getRequest().getSession(true);
+      params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
+    }
     return params;
   }
 

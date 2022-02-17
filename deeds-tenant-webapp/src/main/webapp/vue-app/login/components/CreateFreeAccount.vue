@@ -33,7 +33,7 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.LoginWithMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
@@ -46,7 +46,7 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2">{{ $t('portal.login.LoginWithMetamask') }}</span>
     </v-btn>
     <form
       ref="metamaskLoginForm"

@@ -38,54 +38,28 @@ import lombok.Getter;
 
 public class MetamaskLoginService {
 
-  protected static final Log  LOG                          = ExoLogger.getLogger(MetamaskLoginService.class);
+  protected static final Log  LOG                               = ExoLogger.getLogger(MetamaskLoginService.class);
 
-  private static final String PERSONAL_MESSAGE_PREFIX      = "\u0019Ethereum Signed Message:\n";
+  private static final String PERSONAL_MESSAGE_PREFIX           = "\u0019Ethereum Signed Message:\n";
 
-  private static final String NETWORK_ID_PARAM             = "networkId";
+  private static final String LOGIN_MESSAGE_ATTRIBUTE_NAME      = "metamask_login_message";
 
-  private static final String NETWORK_URL_PARAM            = "networkURL";
-
-  private static final String NETWORK_WS_URL_PARAM         = "networkWSURL";
-
-  private static final String DEED_ADDRESS_PARAM           = "deedAddress";
-
-  private static final String LOGIN_MESSAGE_ATTRIBUTE_NAME = "metamask_login_message";
-
-  @Getter
-  private long                networkId;
-
-  @Getter
-  private String              networkUrl;
-
-  @Getter
-  private String              networkWsUrl;
-
-  @Getter
-  private String              deedAddress;
+  private static final String METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
 
   private OrganizationService organizationService;
 
   private SecureRandomService secureRandomService;
+
+  @Getter
+  private boolean             allowUserRegistration;
 
   public MetamaskLoginService(OrganizationService organizationService,
                               SecureRandomService secureRandomService,
                               InitParams params) {
     this.organizationService = organizationService;
     this.secureRandomService = secureRandomService;
-    if (params != null) {
-      if (params.containsKey(NETWORK_ID_PARAM)) {
-        this.networkId = Long.parseLong(params.getValueParam(NETWORK_ID_PARAM).getValue());
-      }
-      if (params.containsKey(NETWORK_URL_PARAM)) {
-        this.networkUrl = params.getValueParam(NETWORK_URL_PARAM).getValue();
-      }
-      if (params.containsKey(NETWORK_WS_URL_PARAM)) {
-        this.networkWsUrl = params.getValueParam(NETWORK_WS_URL_PARAM).getValue();
-      }
-      if (params.containsKey(DEED_ADDRESS_PARAM)) {
-        this.deedAddress = params.getValueParam(DEED_ADDRESS_PARAM).getValue();
-      }
+    if (params != null && params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
+      this.allowUserRegistration = Boolean.parseBoolean(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM).getValue());
     }
   }
 
@@ -200,43 +174,10 @@ public class MetamaskLoginService {
   public User registerUser(String username, String fullName, String email) throws RegistrationException {
     UserHandler userHandler = organizationService.getUserHandler();
     User user = userHandler.createUserInstance(username);
-    if (StringUtils.isBlank(fullName)) {
-      user.setLastName("");
-      user.setFirstName("");
-    } else if (StringUtils.contains(fullName, " ")) {
-      String[] fullNameParts = fullName.split(" ");
-      user.setFirstName(fullNameParts[0]);
-      user.setLastName(StringUtils.join(fullNameParts, " ", 1, fullNameParts.length));
-    } else {
-      user.setLastName(fullName);
-      user.setFirstName("");
-    }
-
-    user.setEmail(email);
     try {
-      User existingUser = userHandler.findUserByName(username);
-      if (existingUser != null) {
-        throw new RegistrationException("USERNAME_ALREADY_EXISTS");
-      }
-
-      if (StringUtils.isNotBlank(email)) {
-        ListAccess<User> users;
-        int usersLength = 0;
-        try {
-          // Check if mail address is already used
-          Query query = new Query();
-          query.setEmail(email);
-
-          users = userHandler.findUsersByQuery(query, UserStatus.ANY);
-          usersLength = users.getSize();
-        } catch (RuntimeException e) {
-          LOG.debug("Error retrieving users list with email {}. Thus, we will consider the email as already used", email, e);
-          usersLength = 1;
-        }
-        if (usersLength > 0) {
-          throw new RegistrationException("EMAIL_ALREADY_EXISTS");
-        }
-      }
+      validateUsername(username);
+      validateAndSetFullName(user, fullName);
+      validateAndSetEmail(user, email);
 
       userHandler.createUser(user, true);
       return user;
@@ -245,6 +186,48 @@ public class MetamaskLoginService {
     } catch (Exception e) {
       LOG.warn("Error regitering user", e);
       throw new RegistrationException("REGISTRATION_ERROR");
+    }
+  }
+
+  private void validateAndSetFullName(User user, String fullName) throws RegistrationException {
+    if (StringUtils.isBlank(fullName)) {
+      throw new RegistrationException("FULLNAME_MANDATORY");
+    } else if (StringUtils.contains(fullName, " ")) {
+      String[] fullNameParts = fullName.split(" ");
+      user.setFirstName(fullNameParts[0]);
+      user.setLastName(StringUtils.join(fullNameParts, " ", 1, fullNameParts.length));
+    } else {
+      user.setLastName(fullName);
+      user.setFirstName("");
+    }
+  }
+
+  private void validateUsername(String username) throws Exception {
+    User existingUser = organizationService.getUserHandler().findUserByName(username);
+    if (existingUser != null) {
+      throw new RegistrationException("USERNAME_ALREADY_EXISTS");
+    }
+  }
+
+  private void validateAndSetEmail(User user, String email) throws Exception {
+    if (StringUtils.isNotBlank(email)) {
+      ListAccess<User> users;
+      int usersLength = 0;
+      try {
+        // Check if mail address is already used
+        Query query = new Query();
+        query.setEmail(email);
+
+        users = organizationService.getUserHandler().findUsersByQuery(query, UserStatus.ANY);
+        usersLength = users.getSize();
+      } catch (RuntimeException e) {
+        LOG.debug("Error retrieving users list with email {}. Thus, we will consider the email as already used", email, e);
+        usersLength = 1;
+      }
+      if (usersLength > 0) {
+        throw new RegistrationException("EMAIL_ALREADY_EXISTS");
+      }
+      user.setEmail(email);
     }
   }
 

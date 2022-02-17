@@ -170,11 +170,13 @@ export default {
       if (this.errorCode === 'USERNAME_MANDATORY') {
         return this.$t('portal.register.usernameMandatory');
       } else if (this.errorCode === 'USERNAME_ALREADY_EXISTS') {
-        return this.$t('portal.register.usernameAlreadyExists');
+        return this.$t('UILoginForm.label.usernameAlreadyExists');
       } else if (this.errorCode === 'EMAIL_ALREADY_EXISTS') {
-        return this.$t('portal.register.emailAlreadyExists');
+        return this.$t('UILoginForm.label.emailAlreadyExists');
       } else if (this.errorCode === 'REGISTRATION_ERROR') {
-        return this.$t('portal.register.unknownError');
+        return this.$t('UILoginForm.label.unknownError');
+      } else if (this.errorCode === 'FULLNAME_MANDATORY') {
+        return this.$t('portal.register.fullNameMandatory');
       }
       return this.errorCode;
     },

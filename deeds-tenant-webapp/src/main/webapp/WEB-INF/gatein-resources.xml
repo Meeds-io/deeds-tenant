@@ -46,9 +46,31 @@
   </module>
 
   <module>
-    <name>metamaskRegistration</name>
+    <name>metamaskRegisterExtension</name>
     <script>
-      <path>/js/metamaskRegistration.js</path>
+      <path>/js/metamaskRegisterExtension.js</path>
+    </script>
+    <depends>
+      <module>vue</module>
+    </depends>
+    <depends>
+      <module>vuetify</module>
+    </depends>
+    <depends>
+      <module>eXoVueI18n</module>
+    </depends>
+    <depends>
+      <module>extensionRegistry</module>
+    </depends>
+    <depends>
+      <module>commonVueComponents</module>
+    </depends>
+  </module>
+
+  <module>
+    <name>metamaskRegisterForm</name>
+    <script>
+      <path>/js/metamaskRegisterForm.js</path>
     </script>
     <depends>
       <module>vue</module>

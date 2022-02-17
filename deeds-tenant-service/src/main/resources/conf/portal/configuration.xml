@@ -26,27 +26,15 @@
   </component>
 
   <component>
+    <type>io.meeds.tenant.metamask.web.MetamaskRegisterExtension</type>
+  </component>
+
+  <component>
     <type>io.meeds.tenant.metamask.service.MetamaskLoginService</type>
     <init-params>
       <value-param>
-        <name>networkId</name>
-        <description>Default used ethereum network ID</description>
-        <value>${exo.wallet.blockchain.networkId:1}</value>
-      </value-param>
-      <value-param>
-        <name>networkURL</name>
-        <description>Default used ethereum network URL</description>
-        <value>${exo.wallet.blockchain.network.http:https://mainnet.infura.io/v3/d355b1603771462291372496a2377a1c}</value>
-      </value-param>
-      <value-param>
-        <name>networkWSURL</name>
-        <description>Default used ethereum network Websocket URL</description>
-        <value>${exo.wallet.blockchain.network.websocket:wss://mainnet.infura.io/ws/v3/d355b1603771462291372496a2377a1c}</value>
-      </value-param>
-      <value-param>
-        <name>deedAddress</name>
-        <description>DEED NFT Token address</description>
-        <value>${exo.wallet.blockchain.deed.address:}</value>
+        <name>allow.registration</name>
+        <value>${meeds.metamask.allowUserRegistration:false}</value>
       </value-param>
     </init-params>
   </component>
@@ -60,20 +48,12 @@
     </component-plugin>
   </external-component-plugins>
 
-
   <external-component-plugins>
     <target-component>org.exoplatform.web.filter.ExtensibleFilter</target-component>
     <component-plugin>
-      <name>Account Setup Filter</name>
+      <name>MetamaskRegistrationFilterDefinition</name>
       <set-method>addFilterDefinitions</set-method>
       <type>io.meeds.tenant.metamask.web.filter.MetamaskRegistrationFilterDefinition</type>
-      <priority>3</priority>
-      <init-params>
-        <value-param>
-          <name>allow.registration</name>
-          <value>${meeds.metamask.allowUserRegistration:true}</value>
-        </value-param>
-      </init-params>
     </component-plugin>
   </external-component-plugins>
 

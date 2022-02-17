@@ -27,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.portal.rest.UserFieldValidator;
@@ -50,28 +49,26 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  */
 public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Filter {
 
-  private static final String             EMAIL_REQUEST_PARAM               = "email";
+  private static final String             EMAIL_REQUEST_PARAM            = "email";
 
-  private static final String             FULL_NAME_REQUEST_PARAM           = "fullName";
+  private static final String             FULL_NAME_REQUEST_PARAM        = "fullName";
 
-  public static final Log                 LOG                               =
+  public static final Log                 LOG                            =
                                               ExoLogger.getLogger(MetamaskRegistrationFilter.class);
 
-  public static final String              SEPARATOR                         = "@";
+  public static final String              SEPARATOR                      = "@";
 
-  public static final String              METAMASK_AUTHENTICATED            = "metamask.authenticated";
+  public static final String              METAMASK_AUTHENTICATED         = "metamask.authenticated";
 
-  public static final String              METAMASK_REGISTER_USER            = "metamaskUserRegistration";
+  public static final String              METAMASK_REGISTER_USER         = "metamaskUserRegistration";
 
-  private static final String             USERNAME_REQUEST_PARAM            = "username";
+  private static final String             USERNAME_REQUEST_PARAM         = "username";
 
-  private static final String             PASSWORD_REQUEST_PARAM            = "password";
+  private static final String             PASSWORD_REQUEST_PARAM         = "password";
 
-  public static final String              METAMASK_SIGNED_MESSAGE_PREFIX    = "SIGNED_MESSAGE@";
+  public static final String              METAMASK_SIGNED_MESSAGE_PREFIX = "SIGNED_MESSAGE@";
 
-  private static final String             METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
-
-  private static final UserFieldValidator EMAIL_VALIDATOR                   =
+  private static final UserFieldValidator EMAIL_VALIDATOR                =
                                                           new UserFieldValidator(EMAIL_REQUEST_PARAM, false, false);
 
   private MetamaskLoginService            metamaskLoginService;
@@ -80,23 +77,17 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
 
   private ServletContext                  servletContext;
 
-  private boolean                         allowUserRegistration;
-
   public MetamaskRegistrationFilter(PortalContainer container, // NOSONAR
                                     WebAppController webAppController,
                                     LocaleConfigService localeConfigService,
                                     BrandingService brandingService,
                                     JavascriptConfigService javascriptConfigService,
                                     SkinService skinService,
-                                    MetamaskLoginService metamaskLoginService,
-                                    InitParams params) {
+                                    MetamaskLoginService metamaskLoginService) {
     super(localeConfigService, brandingService, javascriptConfigService, skinService);
     this.webAppController = webAppController;
     this.metamaskLoginService = metamaskLoginService;
     this.servletContext = container.getPortalContext();
-    if (params != null && params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
-      this.allowUserRegistration = Boolean.parseBoolean(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM).getValue());
-    }
   }
 
   @Override
@@ -127,7 +118,9 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
         // registration of new users is allowed
         String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
         if (StringUtils.isBlank(username)) { // User not found
-          if (allowUserRegistration) { // User registration allowed
+          if (metamaskLoginService.isAllowUserRegistration()) { // User
+                                                                // registration
+                                                                // allowed
             // Forward to user registration form after signedMessage validation
             String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
             String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");
@@ -165,7 +158,7 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
 
     List<String> additionalCSSModules = Collections.singletonList("portal/login");
     super.prepareDispatch(controllerContext,
-                          "SHARED/metamaskRegistration",
+                          "SHARED/metamaskRegisterForm",
                           null,
                           additionalCSSModules,
                           params -> {
@@ -181,7 +174,7 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
                               LOG.warn("Error putting error code in parameters", e);
                             }
                           });
-    servletContext.getRequestDispatcher("/WEB-INF/jsp/metamaskRegister.jsp").include(request, response);
+    servletContext.getRequestDispatcher("/WEB-INF/jsp/metamaskRegisterForm.jsp").include(request, response);
   }
 
   private HttpServletRequest registerUserAndWrapRequestForLogin(HttpServletRequest request,

@@ -19,7 +19,7 @@
 
 -->
 <template>
-  <div v-if="metamaskEnabled" class="border-box-sizing mt-4">
+  <div v-if="metamaskRegistrationEnabled" class="border-box-sizing mt-4">
     <v-btn
       v-if="!isMetamaskInstalled"
       href="https://metamask.io/"
@@ -33,7 +33,7 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.SignupWithMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
@@ -46,11 +46,11 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2">{{ $t('portal.login.SignupWithMetamask') }}</span>
     </v-btn>
     <form
       ref="metamaskLoginForm"
-      action="/portal/login"
+      action="/portal/register"
       method="post">
       <input
         v-if="initialUri"
@@ -90,8 +90,8 @@ export default {
     password: null,
   }),
   computed: {
-    metamaskEnabled() {
-      return this.params && this.params.metamaskEnabled;
+    metamaskRegistrationEnabled() {
+      return this.params && this.params.metamaskRegistrationEnabled;
     },
     rawMessage() {
       return this.params && this.params.rawMessage;
