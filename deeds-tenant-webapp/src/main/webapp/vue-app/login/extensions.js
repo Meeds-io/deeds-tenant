@@ -19,5 +19,6 @@
 extensionRegistry.registerComponent('LoginHeader', 'login-header', {
   id: 'metamask',
   vueComponent: Vue.options.components['portal-login-metamask'],
+  isEnabled: params => params && params.params && params.params.metamaskEnabled,
   rank: 10,
 });
