@@ -19,5 +19,6 @@
 extensionRegistry.registerComponent('Register', 'register-extension', {
   id: 'metamask',
   vueComponent: Vue.options.components['portal-register-metamask'],
+  isEnabled: params => params && params.params && params.params.metamaskRegistrationEnabled,
   rank: 10,
 });

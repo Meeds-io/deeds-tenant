@@ -54,13 +54,13 @@ public class MetamaskRegisterExtension implements UIParamsExtension {
   public Map<String, Object> extendParameters(ControllerContext controllerContext, String extensionName) {
     Map<String, Object> params = new HashMap<>();
     if (metamaskLoginService.isAllowUserRegistration()) {
-      params.put(RegisterHandler.REGISTER_ENABLED, true);
-      if (StringUtils.equals(RegisterHandler.REGISTER_EXTENSION_NAME, extensionName)) {
+      if (StringUtils.equals(LoginHandler.LOGIN_EXTENSION_NAME, extensionName)) {
+        params.put(RegisterHandler.REGISTER_ENABLED, true);
+      } else if (StringUtils.equals(RegisterHandler.REGISTER_EXTENSION_NAME, extensionName)) {
         params.put(METAMASK_REGISTRATION_ENABLED, true);
+        HttpSession httpSession = controllerContext.getRequest().getSession(true);
+        params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
       }
-
-      HttpSession httpSession = controllerContext.getRequest().getSession(true);
-      params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
     }
     return params;
   }
