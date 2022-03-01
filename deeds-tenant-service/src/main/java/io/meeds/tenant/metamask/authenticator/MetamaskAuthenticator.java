@@ -8,11 +8,11 @@
  * version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package io.meeds.tenant.metamask.authenticator;
 
@@ -38,22 +38,18 @@ public class MetamaskAuthenticator extends AuthenticatorPlugin {
   @Override
   public String validateUser(Credential[] credentials) { // NOSONAR
     if (credentials != null && credentials.length == 2 && credentials[0] instanceof UsernameCredential) {
-      UsernameCredential usernameCredential = (UsernameCredential) credentials[0];
-      String walletAddress = usernameCredential.getUsername();
+      PasswordCredential passwordCredential = (PasswordCredential) credentials[1];
+      String password = passwordCredential.getPassword();
+      String[] passwordParts = StringUtils.split(password, MetamaskRegistrationFilter.SEPARATOR);
+      if (passwordParts != null && passwordParts.length == 3) {
+        String walletAddress = passwordParts[0];
+        String rawMessage = passwordParts[1];
+        String signedMessage = passwordParts[2];
 
-      if (StringUtils.startsWith(walletAddress, "0x")) {
-        PasswordCredential passwordCredential = (PasswordCredential) credentials[1];
-        String password = passwordCredential.getPassword();
-        String[] passwordParts = StringUtils.split(password, MetamaskRegistrationFilter.SEPARATOR);
-        if (passwordParts != null && passwordParts.length == 2) {
-          String rawMessage = passwordParts[0];
-          String signedMessage = passwordParts[1];
-
-          boolean validated = metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage);
-          if (validated) {
-            String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
-            return StringUtils.isBlank(username) ? walletAddress : username;
-          }
+        boolean validated = metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage);
+        if (validated) {
+          String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
+          return StringUtils.isBlank(username) ? walletAddress : username;
         }
       }
     }

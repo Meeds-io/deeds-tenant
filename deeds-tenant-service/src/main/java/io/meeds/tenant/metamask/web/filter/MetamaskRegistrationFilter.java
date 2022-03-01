@@ -142,7 +142,7 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
           }
         } else {
           // Proceed to login with Metamask uing regular LoginModule
-          request = wrapPasswordForLogin(request);
+          request = wrapPasswordForLogin(request, username);
         }
       }
     } catch (Exception e) {
@@ -185,8 +185,9 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
     try {
       if (StringUtils.isBlank(username)) {
         throw new RegistrationException("USERNAME_MANDATORY");
-      }
-      if (StringUtils.isNotBlank(email)) {
+      } else if (!metamaskLoginService.isAllowUserRegistration(username)) {
+        throw new RegistrationException("REGISTRATION_NOT_ALLOWED");
+      } else if (StringUtils.isNotBlank(email)) {
         String errorCode = EMAIL_VALIDATOR.validate(request.getLocale(), email);
         if (StringUtils.isNotBlank(errorCode)) {
           throw new RegistrationException(errorCode);
@@ -222,15 +223,19 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
    * messages in password field
    * 
    * @param request {@link HttpServletRequest}
+   * @param username
    * @return {@link HttpServletRequestWrapper}
    */
-  private HttpServletRequest wrapPasswordForLogin(HttpServletRequest request) {
+  private HttpServletRequest wrapPasswordForLogin(HttpServletRequest request, String username) {
     String compoundPassword = getCompoundPassword(request);
     return new HttpServletRequestWrapper(request) {
       @Override
       public String getParameter(String name) {
         if (StringUtils.equals(name, PASSWORD_REQUEST_PARAM)) {
           return compoundPassword;
+        }
+        if (StringUtils.equals(name, USERNAME_REQUEST_PARAM)) {
+          return username;
         }
         return super.getParameter(name);
       }
@@ -263,10 +268,11 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
   }
 
   private String getCompoundPassword(HttpServletRequest request) {
+    String walletAddress = request.getParameter(USERNAME_REQUEST_PARAM);
     String password = request.getParameter(PASSWORD_REQUEST_PARAM);
     String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
     String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");
-    return rawMessage + SEPARATOR + signedMessage;
+    return walletAddress + SEPARATOR + rawMessage + SEPARATOR + signedMessage;
   }
 
 }

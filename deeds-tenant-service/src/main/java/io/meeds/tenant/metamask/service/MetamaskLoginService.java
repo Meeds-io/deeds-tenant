@@ -18,17 +18,18 @@ package io.meeds.tenant.metamask.service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.picocontainer.Startable;
 import org.web3j.crypto.*;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.*;
@@ -36,17 +37,23 @@ import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.RegistrationException;
 
-public class MetamaskLoginService {
+public class MetamaskLoginService implements Startable {
 
-  protected static final Log   LOG                               = ExoLogger.getLogger(MetamaskLoginService.class);
+  protected static final Log   LOG                                    = ExoLogger.getLogger(MetamaskLoginService.class);
 
-  private static final String  PERSONAL_MESSAGE_PREFIX           = "\u0019Ethereum Signed Message:\n";
+  private static final String  PERSONAL_MESSAGE_PREFIX                = "\u0019Ethereum Signed Message:\n";
 
-  private static final String  LOGIN_MESSAGE_ATTRIBUTE_NAME      = "metamask_login_message";
+  private static final String  LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
 
-  private static final String  METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
+  private static final String  METAMASK_ALLOW_REGISTRATION_PARAM      = "allow.registration";
+
+  private static final String  SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM = "secureRootAccessWithMetamask";
+
+  private static final String  ALLOWED_ROOT_ACCESS_WALLETS_PARAM      = "allowedRootAccessWallets";
 
   private OrganizationService  organizationService;
+
+  private UserACL              userACL;
 
   private SecureRandomService  secureRandomService;
 
@@ -54,16 +61,53 @@ public class MetamaskLoginService {
 
   private boolean              allowUserRegistration;
 
+  private boolean              secureRootAccessWithMetamask;
+
+  private List<String>         allowedWallets                         = new ArrayList<>();
+
   public MetamaskLoginService(OrganizationService organizationService,
+                              UserACL userACL,
                               SecureRandomService secureRandomService,
                               TenantManagerService tenantManagerService,
                               InitParams params) {
     this.organizationService = organizationService;
     this.secureRandomService = secureRandomService;
     this.tenantManagerService = tenantManagerService;
-    if (params != null && params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
-      this.allowUserRegistration = Boolean.parseBoolean(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM).getValue());
+    this.userACL = userACL;
+    if (params != null) {
+      if (params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
+        this.allowUserRegistration = Boolean.parseBoolean(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM).getValue());
+      }
+      if (params.containsKey(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)) {
+        this.secureRootAccessWithMetamask = Boolean.parseBoolean(params.getValueParam(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)
+                                                                       .getValue());
+      }
+      if (params.containsKey(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)) {
+        String[] wallets = StringUtils.split(params.getValueParam(ALLOWED_ROOT_ACCESS_WALLETS_PARAM).getValue(), ",");
+        Arrays.stream(wallets).forEach(address -> allowedWallets.add(address.trim().toLowerCase()));
+      }
     }
+  }
+
+  @Override
+  public void start() {
+    if (this.secureRootAccessWithMetamask) {
+      try {
+        User rootUser = organizationService.getUserHandler().findUserByName(userACL.getSuperUser());
+        LOG.info("Regenerate root password to allow accessing it via Metamask only");
+
+        String token = generateRandomToken();
+        rootUser.setPassword(token);
+        organizationService.getUserHandler().saveUser(rootUser, false);
+      } catch (Exception e) {
+        LOG.warn("Can't secure root access", e);
+      }
+    }
+  }
+
+  @Override
+  public void stop() {
+    // Nothing to stop
   }
 
   /**
@@ -115,6 +159,9 @@ public class MetamaskLoginService {
    * @return username
    */
   public String getUserWithWalletAddress(String walletAddress) {
+    if (secureRootAccessWithMetamask && allowedWallets.contains(walletAddress.toLowerCase())) {
+      return userACL.getSuperUser();
+    }
     try {
       User user = organizationService.getUserHandler().findUserByName(walletAddress.toLowerCase());
       if (user != null) {
@@ -176,8 +223,7 @@ public class MetamaskLoginService {
     if (token != null && !renew) {
       return token;
     }
-    SecureRandom secureRandom = secureRandomService.getSecureRandom();
-    token = secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
+    token = generateRandomToken();
     session.setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token);
     return token;
   }
@@ -319,6 +365,13 @@ public class MetamaskLoginService {
       }
       user.setEmail(email);
     }
+  }
+
+  private String generateRandomToken() {
+    String token;
+    SecureRandom secureRandom = secureRandomService.getSecureRandom();
+    token = secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
+    return token;
   }
 
 }
