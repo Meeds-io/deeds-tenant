@@ -19,15 +19,20 @@ package io.meeds.tenant.metamask.service;
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
+import org.picocontainer.Startable;
 
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import io.meeds.tenant.metamask.storage.TenantManagerStorage;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-public class TenantManagerService {
+public class TenantManagerService implements Startable {
+
+  protected static final Log   LOG                       = ExoLogger.getLogger(TenantManagerService.class);
 
   private TenantManagerStorage tenantManagerStorage;
 
@@ -40,6 +45,28 @@ public class TenantManagerService {
     this.tenantManagerStorage = tenantManagerStorage;
     this.tenantManagerDefaultRoles = getParamValues(params, "managerDefaultRoles");
     this.nftId = getParamValue(params, "nftId");
+  }
+
+  @Override
+  public void start() {
+    if (StringUtils.isNotBlank(this.nftId)) {
+      try {
+        this.tenantManagerStorage.setTenantStatus(this.nftId, "PROVISIONED", "UP");
+      } catch (Exception e) {
+        LOG.warn("Error while storing Tenant status as started", e);
+      }
+    }
+  }
+
+  @Override
+  public void stop() {
+    if (StringUtils.isNotBlank(this.nftId)) {
+      try {
+        this.tenantManagerStorage.setTenantStatus(this.nftId, "PROVISIONED", "DOWN");
+      } catch (Exception e) {
+        LOG.warn("Error while storing Tenant status as stopped", e);
+      }
+    }
   }
 
   public boolean isTenantManager(String userName) {

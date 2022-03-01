@@ -52,6 +52,8 @@ public class TenantManagerStorage extends ElasticClient {
 
   private static final String      FALLBACK_ES_INDEX_CLIENT_PROPERTY_PASSWORD = "exo.es.index.server.password";
 
+  private static final String      STATUS_CODE_PARAM                          = "status";
+
   private String                   esIndexName;
 
   private String                   esUsername;
@@ -124,6 +126,27 @@ public class TenantManagerStorage extends ElasticClient {
     return deedPropertiesCache.get(cacheKey);
   }
 
+  /**
+   * Changes the Tenant Status in ES
+   * 
+   * @param nftId Deed NFT identifier
+   * @param tenantProvisioningStatus Status of tenant provisioning
+   * @param tenantStatus Tenant Status: UP or DOWN
+   */
+  @SuppressWarnings("unchecked")
+  public void setTenantStatus(String nftId, String tenantProvisioningStatus, String tenantStatus) {
+    JSONObject patchProperties = new JSONObject();
+    if (StringUtils.isNotBlank(tenantProvisioningStatus)) {
+      patchProperties.put("provisioningStatus", tenantProvisioningStatus);
+    }
+    if (StringUtils.isNotBlank(tenantStatus)) {
+      patchProperties.put("tenantStatus", tenantStatus);
+    }
+    JSONObject doc = new JSONObject();
+    doc.put("doc", patchProperties);
+    updateDeedProperties(nftId, doc.toJSONString());
+  }
+
   @SuppressWarnings("unchecked")
   private Map<String, String> getDeedProperties(String nftId) {
     long startTime = System.currentTimeMillis();
@@ -151,7 +174,7 @@ public class TenantManagerStorage extends ElasticClient {
         throw new IllegalStateException("Error occured while requesting ES HTTP code: '" + statusCode
             + "', Error parsing response to JSON format, content = '" + response + "'", e);
       }
-      Long status = json.get("status") == null ? null : (Long) json.get("status");
+      Long status = json.get(STATUS_CODE_PARAM) == null ? null : (Long) json.get(STATUS_CODE_PARAM);
       Integer httpStatusCode = status == null ? null : status.intValue();
       if (ElasticIndexingAuditTrail.isError(httpStatusCode)) {
         throw new IllegalStateException("Error occured while requesting ES HTTP error code: '" + statusCode
@@ -165,6 +188,41 @@ public class TenantManagerStorage extends ElasticClient {
         return properties;
       } else {
         return Collections.emptyMap();
+      }
+    }
+  }
+
+  private void updateDeedProperties(String nftId, String esQuery) {
+    long startTime = System.currentTimeMillis();
+    StringBuilder url = new StringBuilder(urlClient)
+                                                    .append("/" + this.esIndexName)
+                                                    .append("/_update")
+                                                    .append("/")
+                                                    .append(nftId);
+    ElasticResponse elasticResponse = sendHttpPostRequest(url.toString(), esQuery);
+    String response = elasticResponse.getMessage();
+    int statusCode = elasticResponse.getStatusCode();
+    if (StringUtils.isBlank(response)) {
+      auditTrail.logRejectedSearchOperation(ElasticIndexingAuditTrail.SEARCH_INDEX,
+                                            esIndexName,
+                                            statusCode,
+                                            response,
+                                            (System.currentTimeMillis() - startTime));
+    } else {
+      JSONParser parser = new JSONParser();
+      JSONObject json = null;
+      try {
+        json = (JSONObject) parser.parse(response);
+      } catch (ParseException e) {
+        throw new IllegalStateException("Error occured while requesting ES HTTP code: '" + statusCode
+            + "', Error parsing response to JSON format, content = '" + response + "'", e);
+      }
+      Long status = json.get(STATUS_CODE_PARAM) == null ? null : (Long) json.get(STATUS_CODE_PARAM);
+      Integer httpStatusCode = status == null ? null : status.intValue();
+      if (ElasticIndexingAuditTrail.isError(httpStatusCode)) {
+        throw new IllegalStateException("Error occured while requesting ES HTTP error code: '" + statusCode
+            + "', HTTP response: '"
+            + response + "'");
       }
     }
   }
