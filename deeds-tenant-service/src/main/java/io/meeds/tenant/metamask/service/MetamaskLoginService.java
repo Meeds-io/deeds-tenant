@@ -8,17 +8,18 @@
  * version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package io.meeds.tenant.metamask.service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -34,32 +35,76 @@ import org.exoplatform.services.organization.*;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.RegistrationException;
-import lombok.Getter;
 
 public class MetamaskLoginService {
 
-  protected static final Log  LOG                               = ExoLogger.getLogger(MetamaskLoginService.class);
+  protected static final Log   LOG                               = ExoLogger.getLogger(MetamaskLoginService.class);
 
-  private static final String PERSONAL_MESSAGE_PREFIX           = "\u0019Ethereum Signed Message:\n";
+  private static final String  PERSONAL_MESSAGE_PREFIX           = "\u0019Ethereum Signed Message:\n";
 
-  private static final String LOGIN_MESSAGE_ATTRIBUTE_NAME      = "metamask_login_message";
+  private static final String  LOGIN_MESSAGE_ATTRIBUTE_NAME      = "metamask_login_message";
 
-  private static final String METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
+  private static final String  METAMASK_ALLOW_REGISTRATION_PARAM = "allow.registration";
 
-  private OrganizationService organizationService;
+  private OrganizationService  organizationService;
 
-  private SecureRandomService secureRandomService;
+  private SecureRandomService  secureRandomService;
 
-  @Getter
-  private boolean             allowUserRegistration;
+  private TenantManagerService tenantManagerService;
+
+  private boolean              allowUserRegistration;
 
   public MetamaskLoginService(OrganizationService organizationService,
                               SecureRandomService secureRandomService,
+                              TenantManagerService tenantManagerService,
                               InitParams params) {
     this.organizationService = organizationService;
     this.secureRandomService = secureRandomService;
+    this.tenantManagerService = tenantManagerService;
     if (params != null && params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
       this.allowUserRegistration = Boolean.parseBoolean(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM).getValue());
+    }
+  }
+
+  /**
+   * @return allowUserRegistration parameter value, else, it will checks whether
+   *           the Tenant Manager has been registered to the tenant or not. If
+   *           not regitered, allow to display the register form, else return
+   *           false.
+   */
+  public boolean isAllowUserRegistration() {
+    if (allowUserRegistration) {
+      return true;
+    } else {
+      String tenantManagerAddress = tenantManagerService.getManagerAddress();
+      if (StringUtils.isNotBlank(tenantManagerAddress)) {
+        try {
+          User tenantManager = organizationService.getUserHandler().findUserByName(tenantManagerAddress.toLowerCase());
+          if (tenantManager == null) {
+            // Allow manager to register the first time the tenant is
+            // provisioned
+            return true;
+          }
+        } catch (Exception e) {
+          LOG.warn("Error retrieving user with name {}", tenantManagerAddress, e);
+        }
+      }
+      return allowUserRegistration;
+    }
+  }
+
+  /**
+   * @param walletAddress wallet address that attempts to register
+   * @return allowUserRegistration parameter value, else, it will checks whether
+   *           the Tenant Manager has been registered to the tenant or not. If
+   *           not regitered, allow to display the register form, else return
+   *           false.
+   */
+  public boolean isAllowUserRegistration(String walletAddress) {
+    if (allowUserRegistration) {
+      return true;
+    } else {
+      return tenantManagerService.isTenantManager(walletAddress);
     }
   }
 
@@ -124,7 +169,7 @@ public class MetamaskLoginService {
    * @param session {@link HttpSession}
    * @param renew boolean
    * @return already existing token in {@link HttpSession} or a newly generated
-   *         one
+   *           one
    */
   public String generateLoginMessage(HttpSession session, boolean renew) {
     String token = getLoginMessage(session);
@@ -144,7 +189,7 @@ public class MetamaskLoginService {
    * 
    * @param session {@link HttpSession}
    * @return already existing token in {@link HttpSession} or a newly generated
-   *         one
+   *           one
    */
   public String generateLoginMessage(HttpSession session) {
     return generateLoginMessage(session, false);
@@ -180,12 +225,57 @@ public class MetamaskLoginService {
       validateAndSetEmail(user, email);
 
       userHandler.createUser(user, true);
+      if (tenantManagerService.isTenantManager(user.getUserName())) {
+        setTenantManagerRoles(user);
+      }
       return user;
     } catch (RegistrationException e) {
       throw e;
     } catch (Exception e) {
       LOG.warn("Error regitering user", e);
       throw new RegistrationException("REGISTRATION_ERROR");
+    }
+  }
+
+  private void setTenantManagerRoles(User user) {
+    List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
+    LOG.info("Tenant manager registered, setting its default memberships as manager.");
+    for (String role : tenantManagerRoles) {
+      if (StringUtils.isNotBlank(role)) {
+        LOG.info("Add Tenant manager membership {}.", role);
+        if (StringUtils.contains(role, ":")) {
+          String[] roleParts = StringUtils.split(role, ":");
+          String membershipTypeId = roleParts[0];
+          String groupId = roleParts[1];
+
+          addUserToGroup(user, groupId, membershipTypeId);
+        } else {
+          addUserToGroup(user, role, "*");
+        }
+      }
+    }
+  }
+
+  private void addUserToGroup(User user, String groupId, String membershipTypeId) {
+    GroupHandler groupHandler = organizationService.getGroupHandler();
+    MembershipHandler membershipHandler = organizationService.getMembershipHandler();
+    MembershipTypeHandler membershipTypeHandler = organizationService.getMembershipTypeHandler();
+    try {
+      Group group = groupHandler.findGroupById(groupId);
+      MembershipType membershipType = membershipTypeHandler.findMembershipType(membershipTypeId);
+      if (group != null && membershipType != null) {
+        membershipHandler.linkMembership(user, group, membershipType, true);
+      } else if (group == null) {
+        LOG.warn("Group with id {} wasn't found. Tenant manager membership {} will not be set.",
+                 groupId,
+                 membershipTypeId + ":" + groupId);
+      } else {
+        LOG.warn("Membership Type with id {} wasn't found. Tenant manager membership {} will not be set.",
+                 membershipTypeId,
+                 membershipTypeId + ":" + groupId);
+      }
+    } catch (Exception e) {
+      LOG.warn("Error while adding user {} to role {}:{}", user.getUserName(), membershipTypeId, groupId, e);
     }
   }
 

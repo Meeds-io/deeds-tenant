@@ -8,11 +8,11 @@
  * version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package io.meeds.tenant.metamask.web.filter;
 
@@ -118,9 +118,8 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
         // registration of new users is allowed
         String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
         if (StringUtils.isBlank(username)) { // User not found
-          if (metamaskLoginService.isAllowUserRegistration()) { // User
-                                                                // registration
-                                                                // allowed
+          // Check whether user registration is allowed or not
+          if (metamaskLoginService.isAllowUserRegistration(walletAddress)) {
             // Forward to user registration form after signedMessage validation
             String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
             String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");
