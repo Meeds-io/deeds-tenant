@@ -34,7 +34,7 @@
     <init-params>
       <value-param>
         <name>allow.registration</name>
-        <value>${meeds.metamask.allowUserRegistration:false}</value>
+        <value>${meeds.register.metamask.allowUserRegistration:false}</value>
       </value-param>
     </init-params>
   </component>
