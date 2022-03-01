@@ -45,6 +45,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-search</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.web3j</groupId>
       <artifactId>crypto</artifactId>
       <scope>provided</scope>
