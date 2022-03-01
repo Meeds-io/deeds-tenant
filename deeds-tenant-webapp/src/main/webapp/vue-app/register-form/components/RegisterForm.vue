@@ -169,6 +169,8 @@ export default {
     errorMessage() {
       if (this.errorCode === 'USERNAME_MANDATORY') {
         return this.$t('portal.register.usernameMandatory');
+      } else if (this.errorCode === 'REGISTRATION_NOT_ALLOWED') {
+        return this.$t('portal.register.userNotAllowedToRegister');
       } else if (this.errorCode === 'USERNAME_ALREADY_EXISTS') {
         return this.$t('UILoginForm.label.usernameAlreadyExists');
       } else if (this.errorCode === 'EMAIL_ALREADY_EXISTS') {

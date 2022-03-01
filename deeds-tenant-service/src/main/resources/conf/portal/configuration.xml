@@ -75,6 +75,14 @@
         <name>allow.registration</name>
         <value>${meeds.register.metamask.allowUserRegistration:false}</value>
       </value-param>
+      <value-param>
+        <name>secureRootAccessWithMetamask</name>
+        <value>${meeds.login.metamask.secureRootAccessWithMetamask:true}</value>
+      </value-param>
+      <value-param>
+        <name>allowedRootAccessWallets</name>
+        <value>${meeds.login.metamask.allowedRootAccessWallets:}</value>
+      </value-param>
     </init-params>
   </component>
 
