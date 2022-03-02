@@ -50,7 +50,7 @@
     </v-btn>
     <form
       ref="metamaskLoginForm"
-      action="/portal/login"
+      action="/portal/register"
       method="post">
       <input
         v-if="initialUri"
