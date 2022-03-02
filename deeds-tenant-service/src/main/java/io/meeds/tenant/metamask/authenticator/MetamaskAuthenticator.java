@@ -37,10 +37,13 @@ public class MetamaskAuthenticator extends AuthenticatorPlugin {
 
   @Override
   public String validateUser(Credential[] credentials) { // NOSONAR
-    if (credentials != null && credentials.length == 2 && credentials[0] instanceof UsernameCredential) {
+    if (credentials != null
+        && credentials.length == 2
+        && credentials[0] instanceof UsernameCredential
+        && credentials[1] instanceof PasswordCredential) {
       PasswordCredential passwordCredential = (PasswordCredential) credentials[1];
-      String password = passwordCredential.getPassword();
-      String[] passwordParts = StringUtils.split(password, MetamaskRegistrationFilter.SEPARATOR);
+      String compoundPassword = passwordCredential.getPassword();
+      String[] passwordParts = StringUtils.split(compoundPassword, MetamaskRegistrationFilter.SEPARATOR);
       if (passwordParts != null && passwordParts.length == 3) {
         String walletAddress = passwordParts[0];
         String rawMessage = passwordParts[1];

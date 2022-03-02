@@ -29,6 +29,7 @@ import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.*;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
+import lombok.Getter;
 
 /**
  * A Login extension to submit Login parameters to UI for used network, contract
@@ -36,6 +37,7 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  */
 public class MetamaskRegistrationFilterDefinition extends FilterDefinitionPlugin {
 
+  @Getter
   private Filter filter;
 
   public MetamaskRegistrationFilterDefinition(PortalContainer container, // NOSONAR

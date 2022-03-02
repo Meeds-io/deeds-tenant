@@ -177,6 +177,8 @@ export default {
         return this.$t('UILoginForm.label.emailAlreadyExists');
       } else if (this.errorCode === 'REGISTRATION_ERROR') {
         return this.$t('UILoginForm.label.unknownError');
+      } else if (this.errorCode === 'INVALID_CREDENTIALS') {
+        return this.$t('UILoginForm.label.SigninFail');
       } else if (this.errorCode === 'FULLNAME_MANDATORY') {
         return this.$t('portal.register.fullNameMandatory');
       }
