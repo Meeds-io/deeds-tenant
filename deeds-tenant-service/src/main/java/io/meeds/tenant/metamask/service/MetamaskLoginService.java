@@ -24,7 +24,9 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.Startable;
-import org.web3j.crypto.*;
+import org.web3j.crypto.Keys;
+import org.web3j.crypto.Sign;
+import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.commons.utils.ListAccess;
@@ -39,17 +41,15 @@ import io.meeds.tenant.metamask.RegistrationException;
 
 public class MetamaskLoginService implements Startable {
 
+  public static final String   LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
+
+  public static final String   METAMASK_ALLOW_REGISTRATION_PARAM      = "allow.registration";
+
+  public static final String   SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM = "secureRootAccessWithMetamask";
+
+  public static final String   ALLOWED_ROOT_ACCESS_WALLETS_PARAM      = "allowedRootAccessWallets";
+
   protected static final Log   LOG                                    = ExoLogger.getLogger(MetamaskLoginService.class);
-
-  private static final String  PERSONAL_MESSAGE_PREFIX                = "\u0019Ethereum Signed Message:\n";
-
-  private static final String  LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
-
-  private static final String  METAMASK_ALLOW_REGISTRATION_PARAM      = "allow.registration";
-
-  private static final String  SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM = "secureRootAccessWithMetamask";
-
-  private static final String  ALLOWED_ROOT_ACCESS_WALLETS_PARAM      = "allowedRootAccessWallets";
 
   private OrganizationService  organizationService;
 
@@ -94,11 +94,13 @@ public class MetamaskLoginService implements Startable {
     if (this.secureRootAccessWithMetamask) {
       try {
         User rootUser = organizationService.getUserHandler().findUserByName(userACL.getSuperUser());
-        LOG.info("Regenerate root password to allow accessing it via Metamask only");
-
-        String token = generateRandomToken();
-        rootUser.setPassword(token);
-        organizationService.getUserHandler().saveUser(rootUser, false);
+        if (rootUser == null) {
+          LOG.warn("Root user wasn't found, can't regenerate password.");
+        } else {
+          LOG.info("Regenerate root password to allow accessing it via Metamask only");
+          rootUser.setPassword(generateRandomToken());
+          organizationService.getUserHandler().saveUser(rootUser, false);
+        }
       } catch (Exception e) {
         LOG.warn("Can't secure root access", e);
       }
@@ -185,24 +187,27 @@ public class MetamaskLoginService implements Startable {
     if (StringUtils.isBlank(walletAddress) || StringUtils.isBlank(rawMessage) || StringUtils.isBlank(signedMessage)) {
       return false;
     }
-    String prefix = PERSONAL_MESSAGE_PREFIX + rawMessage.length();
-    byte[] rawMessageHash = Hash.sha3((prefix + rawMessage).getBytes());
-    byte[] signatureBytes = Numeric.hexStringToByteArray(signedMessage);
-    byte[] r = Arrays.copyOfRange(signatureBytes, 0, 32);
-    byte[] s = Arrays.copyOfRange(signatureBytes, 32, 64);
-    // Iterate for each possible key to recover
-    for (int i = 0; i < 4; i++) {
-      BigInteger publicKey = Sign.recoverFromSignature(i,
-                                                       new ECDSASignature(new BigInteger(1, r),
-                                                                          new BigInteger(1, s)),
-                                                       rawMessageHash);
 
-      if (publicKey != null) {
-        String recoveredAddress = "0x" + Keys.getAddress(publicKey);
-        if (recoveredAddress.equalsIgnoreCase(walletAddress)) {
-          return true;
-        }
+    try {
+      byte[] signatureBytes = Numeric.hexStringToByteArray(signedMessage);
+      if (signatureBytes.length < 64) {
+        return false;
       }
+      byte[] r = Arrays.copyOfRange(signatureBytes, 0, 32);
+      byte[] s = Arrays.copyOfRange(signatureBytes, 32, 64);
+      byte v = signatureBytes[64];
+      if (v < 27) {
+        v += 27;
+      }
+
+      BigInteger publicKey = Sign.signedPrefixedMessageToKey(rawMessage.getBytes(), new SignatureData(v, r, s));
+      String recoveredAddress = "0x" + Keys.getAddress(publicKey);
+      if (recoveredAddress.equalsIgnoreCase(walletAddress)) {
+        return true;
+      }
+    } catch (Exception e) {
+      LOG.warn("Error verifying signedPrefixed Message for wallet {}. Consider user as not authenticated.", walletAddress, e);
+      return false;
     }
     return false;
   }
@@ -224,7 +229,9 @@ public class MetamaskLoginService implements Startable {
       return token;
     }
     token = generateRandomToken();
-    session.setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token);
+    if (session != null) {
+      session.setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token);
+    }
     return token;
   }
 
@@ -264,8 +271,9 @@ public class MetamaskLoginService implements Startable {
    */
   public User registerUser(String username, String fullName, String email) throws RegistrationException {
     UserHandler userHandler = organizationService.getUserHandler();
-    User user = userHandler.createUserInstance(username);
     try {
+      username = StringUtils.lowerCase(username);
+      User user = userHandler.createUserInstance(username);
       validateUsername(username);
       validateAndSetFullName(user, fullName);
       validateAndSetEmail(user, email);
@@ -330,8 +338,8 @@ public class MetamaskLoginService implements Startable {
       throw new RegistrationException("FULLNAME_MANDATORY");
     } else if (StringUtils.contains(fullName, " ")) {
       String[] fullNameParts = fullName.split(" ");
-      user.setFirstName(fullNameParts[0]);
-      user.setLastName(StringUtils.join(fullNameParts, " ", 1, fullNameParts.length));
+      user.setFirstName(StringUtils.join(fullNameParts, " ", 0, fullNameParts.length - 1));
+      user.setLastName(fullNameParts[fullNameParts.length - 1]);
     } else {
       user.setLastName(fullName);
       user.setFirstName("");
@@ -355,7 +363,7 @@ public class MetamaskLoginService implements Startable {
         query.setEmail(email);
 
         users = organizationService.getUserHandler().findUsersByQuery(query, UserStatus.ANY);
-        usersLength = users.getSize();
+        usersLength = users == null ? 0 : users.getSize();
       } catch (RuntimeException e) {
         LOG.debug("Error retrieving users list with email {}. Thus, we will consider the email as already used", email, e);
         usersLength = 1;
@@ -368,10 +376,8 @@ public class MetamaskLoginService implements Startable {
   }
 
   private String generateRandomToken() {
-    String token;
     SecureRandom secureRandom = secureRandomService.getSecureRandom();
-    token = secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
-    return token;
+    return secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
   }
 
 }

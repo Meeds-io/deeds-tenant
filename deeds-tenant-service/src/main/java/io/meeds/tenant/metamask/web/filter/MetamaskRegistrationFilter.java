@@ -33,6 +33,7 @@ import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.portal.rest.UserFieldValidator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.User;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.WebAppController;
@@ -218,10 +219,10 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
       if (!validateCompoundPassword(walletAddress, password)) {
         throw new RegistrationException("REGISTRATION_NOT_ALLOWED");
       }
-      metamaskLoginService.registerUser(walletAddress, fullName, email);
+      User user = metamaskLoginService.registerUser(walletAddress, fullName, email);
 
       // Proceed to login with Metamask uing regular LoginModule
-      return wrapRequestForLogin(request, walletAddress, password);
+      return wrapRequestForLogin(request, user.getUserName(), password);
     } catch (RegistrationException e) {
       String errorCode = e.getMessage();
       forwardUserRegistrationForm(new ControllerContext(webAppController,

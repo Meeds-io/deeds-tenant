@@ -20,10 +20,10 @@ import static io.meeds.tenant.metamask.web.filter.MetamaskRegistrationFilter.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.io.IOException;
-import java.net.URL;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -32,20 +32,18 @@ import javax.servlet.http.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.exoplatform.container.*;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
+import org.exoplatform.services.organization.idm.UserImpl;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.services.resources.ResourceBundleService;
 import org.exoplatform.web.WebAppController;
@@ -53,18 +51,10 @@ import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
 import org.exoplatform.web.filter.FilterDefinition;
 
+import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore(
-  {
-      "com.sun.*",
-      "org.w3c.*",
-      "javax.xml.*",
-      "javax.management.*",
-      "org.xml.*",
-  }
-)
+@RunWith(MockitoJUnitRunner.class)
 public class MetamaskRegistrationFilterTest {
 
   @Mock
@@ -109,19 +99,21 @@ public class MetamaskRegistrationFilterTest {
 
   private JSONObject                 forwardParameters;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUpClass() throws Exception {
     // Try to not start a portal container statically
     // And register a fake StandaloneContainer as top container
-    try {
-      URL url = this.getClass().getClassLoader().getResource("exo-configuration.xml");
-      StandaloneContainer.setConfigurationPath(url.getPath());
-      StandaloneContainer fakeStandaloneContainer = StandaloneContainer.getInstance();
-      ExoContainerContext.setCurrentContainer(fakeStandaloneContainer);
-    } catch (Exception e) {
-      // Nothing to do
+    Field topContainerField = ExoContainerContext.class.getDeclaredField("topContainer");
+    topContainerField.setAccessible(true);
+    if (topContainerField.get(null) == null) {
+      Method topContainerSetterMethod = ExoContainerContext.class.getDeclaredMethod("setTopContainer", ExoContainer.class);
+      topContainerSetterMethod.setAccessible(true);
+      topContainerSetterMethod.invoke(null, mock(StandaloneContainer.class));
     }
+  }
 
+  @Before
+  public void setUp() throws Exception {
     Mockito.reset(metamaskLoginService,
                   request,
                   response,
@@ -188,7 +180,7 @@ public class MetamaskRegistrationFilterTest {
   @Test
   public void testContinueFilterChainEvenWhenErrorOccurs() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-    when(request.getParameter(any())).thenThrow(new IllegalStateException("Fake Exception For Test!"));
+    when(request.getParameter(any())).thenThrow(new FakeTestException());
     filter.doFilter(request, response, chain);
     verifyNoInteractions(context);
     verify(chain, times(1)).doFilter(request, response);
@@ -307,7 +299,6 @@ public class MetamaskRegistrationFilterTest {
   }
 
   @Test
-  @PrepareForTest({ ExoContainerContext.class })
   public void testFailToRegisterWhenInvalidEmail() throws Exception {
     when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
@@ -325,7 +316,7 @@ public class MetamaskRegistrationFilterTest {
     ResourceBundle resourceBundle = mock(ResourceBundle.class);
 
     when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
+    lenient().when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
 
     filter.doFilter(request, response, chain);
     verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("EmailAddressValidator.msg.Invalid-input"));
@@ -333,7 +324,6 @@ public class MetamaskRegistrationFilterTest {
   }
 
   @Test
-  @PrepareForTest({ ExoContainerContext.class })
   public void testFailToRegisterWhenInvalidPassword() throws Exception {
     when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
@@ -346,21 +336,12 @@ public class MetamaskRegistrationFilterTest {
     when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
     when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
 
-    ExoContainerContext.setCurrentContainer(container);
-
-    ResourceBundleService resourceBundleService = mock(ResourceBundleService.class);
-    ResourceBundle resourceBundle = mock(ResourceBundle.class);
-
-    when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
-
     filter.doFilter(request, response, chain);
     verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("REGISTRATION_NOT_ALLOWED"));
     verifyNoInteractions(chain);
   }
 
   @Test
-  @PrepareForTest({ ExoContainerContext.class })
   public void testFailToRegisterWhenInvalidPasswordWithGoodStructure() throws Exception {
     when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
@@ -375,21 +356,12 @@ public class MetamaskRegistrationFilterTest {
     when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
     when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
 
-    ExoContainerContext.setCurrentContainer(container);
-
-    ResourceBundleService resourceBundleService = mock(ResourceBundleService.class);
-    ResourceBundle resourceBundle = mock(ResourceBundle.class);
-
-    when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
-
     filter.doFilter(request, response, chain);
     verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("REGISTRATION_NOT_ALLOWED"));
     verifyNoInteractions(chain);
   }
 
   @Test
-  @PrepareForTest({ ExoContainerContext.class })
   public void testFailToRegisterWhenInvalidPasswordWithGoodStructure2() throws Exception {
     when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
@@ -404,14 +376,6 @@ public class MetamaskRegistrationFilterTest {
     when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
     when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
 
-    ExoContainerContext.setCurrentContainer(container);
-
-    ResourceBundleService resourceBundleService = mock(ResourceBundleService.class);
-    ResourceBundle resourceBundle = mock(ResourceBundle.class);
-
-    when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
-
     lenient().when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
 
     filter.doFilter(request, response, chain);
@@ -420,7 +384,6 @@ public class MetamaskRegistrationFilterTest {
   }
 
   @Test
-  @PrepareForTest({ ExoContainerContext.class })
   public void testFailToRegisterWhenInvalidPasswordWithGoodStructure3() throws Exception {
     when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
@@ -437,12 +400,6 @@ public class MetamaskRegistrationFilterTest {
 
     ExoContainerContext.setCurrentContainer(container);
 
-    ResourceBundleService resourceBundleService = mock(ResourceBundleService.class);
-    ResourceBundle resourceBundle = mock(ResourceBundle.class);
-
-    when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
-
     lenient().when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
 
     filter.doFilter(request, response, chain);
@@ -451,7 +408,6 @@ public class MetamaskRegistrationFilterTest {
   }
 
   @Test
-  @PrepareForTest({ ExoContainerContext.class })
   public void testFailToRegister() throws Exception {
     when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
@@ -468,22 +424,15 @@ public class MetamaskRegistrationFilterTest {
     when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
     when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
 
-    ExoContainerContext.setCurrentContainer(container);
-
-    ResourceBundleService resourceBundleService = mock(ResourceBundleService.class);
-    ResourceBundle resourceBundle = mock(ResourceBundle.class);
-
-    when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
-
     when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
+    when(metamaskLoginService.registerUser(walletAddress, fullName, email)).thenReturn(new UserImpl(walletAddress.toLowerCase()));
 
     filter.doFilter(request, response, chain);
     verify(metamaskLoginService, times(1)).registerUser(walletAddress, fullName, email);
     verify(filter, times(0)).forwardUserRegistrationForm(any(), any());
     verify(chain, times(1)).doFilter(argThat(new ArgumentMatcher<ServletRequest>() {
       public boolean matches(ServletRequest argument) {
-        return StringUtils.equals(walletAddress, argument.getParameter(USERNAME_REQUEST_PARAM))
+        return StringUtils.equals(walletAddress.toLowerCase(), argument.getParameter(USERNAME_REQUEST_PARAM))
             && StringUtils.equals(compoundPassword, argument.getParameter(PASSWORD_REQUEST_PARAM))
             && StringUtils.equals(email, argument.getParameter(EMAIL_REQUEST_PARAM))
             && StringUtils.equals("/portal/login", ((HttpServletRequest) argument).getRequestURI());

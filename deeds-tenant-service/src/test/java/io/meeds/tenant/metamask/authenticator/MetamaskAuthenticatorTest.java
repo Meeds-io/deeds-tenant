@@ -25,23 +25,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import org.exoplatform.services.security.*;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore(
-  {
-      "com.sun.*",
-      "org.w3c.*",
-      "javax.xml.*",
-      "javax.management.*",
-      "org.xml.*",
-  }
-)
+@RunWith(MockitoJUnitRunner.class)
 public class MetamaskAuthenticatorTest {
 
   @Mock
