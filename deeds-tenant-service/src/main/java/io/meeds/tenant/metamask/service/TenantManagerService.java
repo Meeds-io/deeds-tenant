@@ -32,26 +32,36 @@ import io.meeds.tenant.metamask.storage.TenantManagerStorage;
  */
 public class TenantManagerService implements Startable {
 
-  protected static final Log   LOG                       = ExoLogger.getLogger(TenantManagerService.class);
+  public static final String   PROVISIONED_STATUS          = "PROVISIONED";
+
+  public static final String   TENANT_STATUS_DOWN          = "DOWN";
+
+  public static final String   TENANT_STATUS_UP            = "UP";
+
+  public static final String   MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
+
+  public static final String   NFT_ID_PARAM                = "nftId";
+
+  protected static final Log   LOG                         = ExoLogger.getLogger(TenantManagerService.class);
 
   private TenantManagerStorage tenantManagerStorage;
 
   private String               nftId;
 
-  private List<String>         tenantManagerDefaultRoles = new ArrayList<>();
+  private List<String>         tenantManagerDefaultRoles   = new ArrayList<>();
 
   public TenantManagerService(TenantManagerStorage tenantManagerStorage,
                               InitParams params) {
     this.tenantManagerStorage = tenantManagerStorage;
-    this.tenantManagerDefaultRoles = getParamValues(params, "managerDefaultRoles");
-    this.nftId = getParamValue(params, "nftId");
+    this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
+    this.nftId = getParamValue(params, NFT_ID_PARAM);
   }
 
   @Override
   public void start() {
     if (StringUtils.isNotBlank(this.nftId)) {
       try {
-        this.tenantManagerStorage.setTenantStatus(this.nftId, "PROVISIONED", "UP");
+        this.tenantManagerStorage.setTenantStatus(this.nftId, PROVISIONED_STATUS, TENANT_STATUS_UP);
       } catch (Exception e) {
         LOG.warn("Error while storing Tenant status as started", e);
       }
@@ -62,7 +72,7 @@ public class TenantManagerService implements Startable {
   public void stop() {
     if (StringUtils.isNotBlank(this.nftId)) {
       try {
-        this.tenantManagerStorage.setTenantStatus(this.nftId, "PROVISIONED", "DOWN");
+        this.tenantManagerStorage.setTenantStatus(this.nftId, PROVISIONED_STATUS, TENANT_STATUS_DOWN);
       } catch (Exception e) {
         LOG.warn("Error while storing Tenant status as stopped", e);
       }
@@ -70,7 +80,8 @@ public class TenantManagerService implements Startable {
   }
 
   public boolean isTenantManager(String userName) {
-    return StringUtils.isNotBlank(userName) && StringUtils.equalsIgnoreCase(userName, getManagerAddress());
+    String managerAddress = getManagerAddress();
+    return StringUtils.isNotBlank(managerAddress) && StringUtils.equalsIgnoreCase(userName, managerAddress);
   }
 
   public List<String> getTenantManagerDefaultRoles() {
