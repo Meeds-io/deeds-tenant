@@ -130,15 +130,11 @@ public class TenantManagerStorage extends ElasticClient {
    * Changes the Tenant Status in ES
    * 
    * @param nftId Deed NFT identifier
-   * @param tenantProvisioningStatus Status of tenant provisioning
    * @param tenantStatus Tenant Status: UP or DOWN
    */
   @SuppressWarnings("unchecked")
-  public void setTenantStatus(String nftId, String tenantProvisioningStatus, String tenantStatus) {
+  public void setTenantStatus(String nftId, String tenantStatus) {
     JSONObject patchProperties = new JSONObject();
-    if (StringUtils.isNotBlank(tenantProvisioningStatus)) {
-      patchProperties.put("provisioningStatus", tenantProvisioningStatus);
-    }
     if (StringUtils.isNotBlank(tenantStatus)) {
       patchProperties.put("tenantStatus", tenantStatus);
     }

@@ -32,8 +32,6 @@ import io.meeds.tenant.metamask.storage.TenantManagerStorage;
  */
 public class TenantManagerService implements Startable {
 
-  public static final String   PROVISIONED_STATUS          = "PROVISIONED";
-
   public static final String   TENANT_STATUS_DOWN          = "DOWN";
 
   public static final String   TENANT_STATUS_UP            = "UP";
@@ -61,7 +59,7 @@ public class TenantManagerService implements Startable {
   public void start() {
     if (StringUtils.isNotBlank(this.nftId)) {
       try {
-        this.tenantManagerStorage.setTenantStatus(this.nftId, PROVISIONED_STATUS, TENANT_STATUS_UP);
+        this.tenantManagerStorage.setTenantStatus(this.nftId, TENANT_STATUS_UP);
       } catch (Exception e) {
         LOG.warn("Error while storing Tenant status as started", e);
       }
@@ -72,7 +70,7 @@ public class TenantManagerService implements Startable {
   public void stop() {
     if (StringUtils.isNotBlank(this.nftId)) {
       try {
-        this.tenantManagerStorage.setTenantStatus(this.nftId, PROVISIONED_STATUS, TENANT_STATUS_DOWN);
+        this.tenantManagerStorage.setTenantStatus(this.nftId, TENANT_STATUS_DOWN);
       } catch (Exception e) {
         LOG.warn("Error while storing Tenant status as stopped", e);
       }
