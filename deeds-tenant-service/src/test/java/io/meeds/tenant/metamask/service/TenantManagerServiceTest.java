@@ -65,7 +65,7 @@ public class TenantManagerServiceTest {
     when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
     tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
     tenantManagerService.start();
-    verify(tenantManagerStorage, times(1)).setTenantStatus(nftId, PROVISIONED_STATUS, TENANT_STATUS_UP);
+    verify(tenantManagerStorage, times(1)).setTenantStatus(nftId, TENANT_STATUS_UP);
   }
 
   @Test
@@ -87,7 +87,7 @@ public class TenantManagerServiceTest {
     when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
     tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
     tenantManagerService.stop();
-    verify(tenantManagerStorage, times(1)).setTenantStatus(nftId, PROVISIONED_STATUS, TENANT_STATUS_DOWN);
+    verify(tenantManagerStorage, times(1)).setTenantStatus(nftId, TENANT_STATUS_DOWN);
   }
 
   @Test
