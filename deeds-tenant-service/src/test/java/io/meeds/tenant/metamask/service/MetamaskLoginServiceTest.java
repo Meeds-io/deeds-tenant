@@ -39,6 +39,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 
+import org.exoplatform.account.setup.web.AccountSetupService;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -404,6 +405,7 @@ public class MetamaskLoginServiceTest {
                                                     userAcl,
                                                     secureRandomService,
                                                     tenantManagerService,
+                                                    mock(AccountSetupService.class),
                                                     params);
   }
 

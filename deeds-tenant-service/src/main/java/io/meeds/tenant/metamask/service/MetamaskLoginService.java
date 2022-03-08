@@ -29,6 +29,7 @@ import org.web3j.crypto.Sign;
 import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
+import org.exoplatform.account.setup.web.AccountSetupService;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.config.UserACL;
@@ -59,6 +60,8 @@ public class MetamaskLoginService implements Startable {
 
   private TenantManagerService tenantManagerService;
 
+  private AccountSetupService  accountSetupService;
+
   private boolean              allowUserRegistration;
 
   private boolean              secureRootAccessWithMetamask;
@@ -69,10 +72,12 @@ public class MetamaskLoginService implements Startable {
                               UserACL userACL,
                               SecureRandomService secureRandomService,
                               TenantManagerService tenantManagerService,
+                              AccountSetupService accountSetupService,
                               InitParams params) {
     this.organizationService = organizationService;
     this.secureRandomService = secureRandomService;
     this.tenantManagerService = tenantManagerService;
+    this.accountSetupService = accountSetupService;
     this.userACL = userACL;
     if (params != null) {
       if (params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
@@ -101,6 +106,7 @@ public class MetamaskLoginService implements Startable {
           rootUser.setPassword(generateRandomToken());
           organizationService.getUserHandler().saveUser(rootUser, false);
         }
+        accountSetupService.setSkipSetup(true);
       } catch (Exception e) {
         LOG.warn("Can't secure root access", e);
       }
