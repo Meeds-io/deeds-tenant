@@ -114,7 +114,8 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
       // If user is already authenticated, no registration form is required
       if (request.getRemoteUser() == null
           && StringUtils.isNotBlank(walletAddress)
-          && metamaskLoginService.isAllowUserRegistration(walletAddress)) {
+          && (metamaskLoginService.isSuperUser(walletAddress)
+              || metamaskLoginService.isAllowUserRegistration(walletAddress))) {
 
         if (StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)) {
           // Step 1: Forward to user registration form. The user isn't found and
