@@ -50,20 +50,12 @@
     <type>io.meeds.tenant.metamask.storage.TenantManagerStorage</type>
     <init-params>
       <value-param>
-        <name>es.url</name>
-        <value>${meeds.tenantManagement.es.url:}</value>
+        <name>networkUrl</name>
+        <value>${meeds.blockchain.networkUrl:}</value>
       </value-param>
       <value-param>
-        <name>es.username</name>
-        <value>${meeds.tenantManagement.es.username:}</value>
-      </value-param>
-      <value-param>
-        <name>es.password</name>
-        <value>${meeds.tenantManagement.es.password:}</value>
-      </value-param>
-      <value-param>
-        <name>es.index</name>
-        <value>${meeds.tenantManagement.es.index:deed_tenant_manager}</value>
+        <name>tenantProvisioningAddress</name>
+        <value>${meeds.blockchain.tenantProvisioningAddress:}</value>
       </value-param>
     </init-params>
   </component>
@@ -101,39 +93,6 @@
       <name>MetamaskRegistrationFilterDefinition</name>
       <set-method>addFilterDefinitions</set-method>
       <type>io.meeds.tenant.metamask.web.filter.MetamaskRegistrationFilterDefinition</type>
-    </component-plugin>
-  </external-component-plugins>
-
-  <external-component-plugins>
-    <target-component>org.exoplatform.services.cache.CacheService</target-component>
-    <component-plugin>
-      <name>addExoCacheConfig</name>
-      <set-method>addExoCacheConfig</set-method>
-      <type>org.exoplatform.services.cache.ExoCacheConfigPlugin</type>
-      <description>Configures the cache for deed NFT properties</description>
-      <init-params>
-        <object-param>
-          <name>deed.properties</name>
-          <description>Deed NFT properties</description>
-          <object type="org.exoplatform.services.cache.impl.infinispan.generic.GenericExoCacheConfig">
-            <field name="name">
-              <string>deed.properties</string>
-            </field>
-            <field name="maxSize">
-              <int>${exo.cache.deed.properties.MaxNodes:50}</int>
-            </field>
-            <field name="liveTime">
-              <long>${exo.cache.deed.properties.TimeToLive:-1}</long>
-            </field>
-            <field name="strategy" profiles="cluster">
-              <string>${exo.cache.deed.properties.strategy:LIRS}</string>
-            </field>
-            <field name="cacheMode" profiles="cluster">
-              <string>${exo.cache.deed.properties.cacheMode:asyncInvalidation}</string>
-            </field>
-          </object>
-        </object-param>
-      </init-params>
     </component-plugin>
   </external-component-plugins>
 

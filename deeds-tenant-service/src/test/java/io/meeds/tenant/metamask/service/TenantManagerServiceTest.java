@@ -16,7 +16,8 @@
  */
 package io.meeds.tenant.metamask.service;
 
-import static io.meeds.tenant.metamask.service.TenantManagerService.*;
+import static io.meeds.tenant.metamask.service.TenantManagerService.MANAGER_DEFAULT_ROLES_PARAM;
+import static io.meeds.tenant.metamask.service.TenantManagerService.NFT_ID_PARAM;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -47,50 +48,6 @@ public class TenantManagerServiceTest {
   }
 
   @Test
-  public void testServerStartup() {
-    String nftId = "nftId";
-
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, null);
-    tenantManagerService.start();
-    verifyNoInteractions(tenantManagerStorage);
-
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    tenantManagerService.start();
-    verifyNoInteractions(tenantManagerStorage);
-
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    tenantManagerService.start();
-    verify(tenantManagerStorage, times(1)).setTenantStatus(nftId, TENANT_STATUS_UP);
-  }
-
-  @Test
-  public void testServerShutdown() {
-    String nftId = "nftId";
-
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, null);
-    tenantManagerService.stop();
-    verifyNoInteractions(tenantManagerStorage);
-
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    tenantManagerService.stop();
-    verifyNoInteractions(tenantManagerStorage);
-
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    tenantManagerService.stop();
-    verify(tenantManagerStorage, times(1)).setTenantStatus(nftId, TENANT_STATUS_DOWN);
-  }
-
-  @Test
   public void testIsTenantManager() {
     String nftId = "nftId";
     String walletAddress = "walletAddress";
@@ -110,9 +67,9 @@ public class TenantManagerServiceTest {
     when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
     tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
-    verify(tenantManagerStorage, times(1)).getManagerAddress(nftId);
+    verify(tenantManagerStorage, times(1)).isManagerAddress(nftId, walletAddress);
 
-    when(tenantManagerStorage.getManagerAddress(nftId)).thenReturn(walletAddress.toUpperCase());
+    when(tenantManagerStorage.isManagerAddress(nftId, walletAddress)).thenReturn(true);
     tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
     assertTrue(tenantManagerService.isTenantManager(walletAddress));
   }
@@ -144,60 +101,6 @@ public class TenantManagerServiceTest {
 
     List<String> tenantManagerDefaultRolesConstant = tenantManagerDefaultRoles;
     assertThrows(UnsupportedOperationException.class, () -> tenantManagerDefaultRolesConstant.add("test"));
-  }
-
-  @Test
-  public void testGetCityIndex() {
-    String nftId = "nftId";
-
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, null);
-    assertNull(tenantManagerService.getCityIndex());
-    verifyNoInteractions(tenantManagerStorage);
-
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    assertNull(tenantManagerService.getCityIndex());
-    verifyNoInteractions(tenantManagerStorage);
-
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    assertNull(tenantManagerService.getCityIndex());
-    verify(tenantManagerStorage, times(1)).getCityIndex(nftId);
-
-    String cityIndex = "0";
-    when(tenantManagerStorage.getCityIndex(nftId)).thenReturn(cityIndex);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    assertEquals(cityIndex, tenantManagerService.getCityIndex());
-  }
-
-  @Test
-  public void testGetCardType() {
-    String nftId = "nftId";
-
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, null);
-    assertNull(tenantManagerService.getCardType());
-    verifyNoInteractions(tenantManagerStorage);
-
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    assertNull(tenantManagerService.getCardType());
-    verifyNoInteractions(tenantManagerStorage);
-
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    assertNull(tenantManagerService.getCardType());
-    verify(tenantManagerStorage, times(1)).getCardType(nftId);
-
-    String cardType = "0";
-    when(tenantManagerStorage.getCardType(nftId)).thenReturn(cardType);
-    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
-    assertEquals(cardType, tenantManagerService.getCardType());
   }
 
 }

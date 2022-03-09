@@ -42,6 +42,7 @@
   <properties>
     <!-- 3rd party libraries versions -->
     <org.exoplatform.social.version>6.3.x-SNAPSHOT</org.exoplatform.social.version>
+    <addon.meeds.deeds-dapp.version>1.0.x-SNAPSHOT</addon.meeds.deeds-dapp.version>
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
@@ -54,6 +55,13 @@
         <groupId>org.exoplatform.social</groupId>
         <artifactId>social</artifactId>
         <version>${org.exoplatform.social.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.meeds.deeds-dapp</groupId>
+        <artifactId>deeds-dapp-parent</artifactId>
+        <version>${addon.meeds.deeds-dapp.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

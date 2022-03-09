@@ -19,7 +19,6 @@ package io.meeds.tenant.metamask.service;
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
-import org.picocontainer.Startable;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
@@ -30,11 +29,7 @@ import io.meeds.tenant.metamask.storage.TenantManagerStorage;
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-public class TenantManagerService implements Startable {
-
-  public static final String   TENANT_STATUS_DOWN          = "DOWN";
-
-  public static final String   TENANT_STATUS_UP            = "UP";
+public class TenantManagerService {
 
   public static final String   MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
 
@@ -55,59 +50,20 @@ public class TenantManagerService implements Startable {
     this.nftId = getParamValue(params, NFT_ID_PARAM);
   }
 
-  @Override
-  public void start() {
+  public boolean isTenantManager(String address) {
     if (StringUtils.isNotBlank(this.nftId)) {
-      try {
-        this.tenantManagerStorage.setTenantStatus(this.nftId, TENANT_STATUS_UP);
-      } catch (Exception e) {
-        LOG.warn("Error while storing Tenant status as started", e);
-      }
+      return this.tenantManagerStorage.isManagerAddress(this.nftId, address);
+    } else {
+      return false;
     }
-  }
-
-  @Override
-  public void stop() {
-    if (StringUtils.isNotBlank(this.nftId)) {
-      try {
-        this.tenantManagerStorage.setTenantStatus(this.nftId, TENANT_STATUS_DOWN);
-      } catch (Exception e) {
-        LOG.warn("Error while storing Tenant status as stopped", e);
-      }
-    }
-  }
-
-  public boolean isTenantManager(String userName) {
-    String managerAddress = getManagerAddress();
-    return StringUtils.isNotBlank(managerAddress) && StringUtils.equalsIgnoreCase(userName, managerAddress);
   }
 
   public List<String> getTenantManagerDefaultRoles() {
     return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
-  public String getManagerAddress() {
-    if (StringUtils.isNotBlank(this.nftId)) {
-      return this.tenantManagerStorage.getManagerAddress(this.nftId);
-    } else {
-      return null;
-    }
-  }
-
-  public String getCityIndex() {
-    if (StringUtils.isNotBlank(this.nftId)) {
-      return this.tenantManagerStorage.getCityIndex(this.nftId);
-    } else {
-      return null;
-    }
-  }
-
-  public String getCardType() {
-    if (StringUtils.isNotBlank(this.nftId)) {
-      return this.tenantManagerStorage.getCardType(this.nftId);
-    } else {
-      return null;
-    }
+  public String getNftId() {
+    return nftId;
   }
 
   private String getParamValue(InitParams params, String paramName) {
