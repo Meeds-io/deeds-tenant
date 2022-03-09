@@ -40,6 +40,8 @@ import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
+import org.exoplatform.commons.api.settings.SettingService;
+import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -78,6 +80,9 @@ public class MetamaskLoginServiceTest {
   SecureRandomService   secureRandomService;
 
   @Mock
+  SettingService        settingService;
+
+  @Mock
   TenantManagerService  tenantManagerService;
 
   @Mock
@@ -94,7 +99,8 @@ public class MetamaskLoginServiceTest {
           membershipTypeHandler,
           userAcl,
           secureRandomService,
-          tenantManagerService);
+          tenantManagerService,
+          settingService);
 
     when(organizationService.getUserHandler()).thenReturn(userHandler);
     when(organizationService.getGroupHandler()).thenReturn(groupHandler);
@@ -132,6 +138,7 @@ public class MetamaskLoginServiceTest {
     verify(userHandler, times(1)).saveUser(user, false);
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
   public void testIsAllowUserRegistration() throws Exception {
     newService();
@@ -149,15 +156,13 @@ public class MetamaskLoginServiceTest {
     newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration());
 
-    String managerAddress = "managerAddress";
-    when(tenantManagerService.getManagerAddress()).thenReturn(managerAddress);
+    String nftId = "nftId";
+    when(tenantManagerService.getNftId()).thenReturn(nftId);
     assertTrue(metamaskLoginService.isAllowUserRegistration());
 
-    User user = mock(User.class);
-    whenFindUserByName(managerAddress).thenReturn(user);
-    assertFalse(metamaskLoginService.isAllowUserRegistration());
-
-    whenFindUserByName(managerAddress).thenThrow(new FakeTestException());
+    when(settingService.get(TENANT_MANAGER_SIGNED_UP_CONTEXT,
+                            TENANT_MANAGER_SIGNED_UP_SCOPE,
+                            TENANT_MANAGER_SIGNED_UP_KEY)).thenReturn(new SettingValue(true));
     assertFalse(metamaskLoginService.isAllowUserRegistration());
   }
 
@@ -403,6 +408,7 @@ public class MetamaskLoginServiceTest {
   private void newService() {
     metamaskLoginService = new MetamaskLoginService(organizationService,
                                                     userAcl,
+                                                    settingService,
                                                     secureRandomService,
                                                     tenantManagerService,
                                                     mock(AccountSetupService.class),

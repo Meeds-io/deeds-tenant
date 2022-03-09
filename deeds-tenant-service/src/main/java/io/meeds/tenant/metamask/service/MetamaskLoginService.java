@@ -30,6 +30,10 @@ import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
+import org.exoplatform.commons.api.settings.SettingService;
+import org.exoplatform.commons.api.settings.SettingValue;
+import org.exoplatform.commons.api.settings.data.Context;
+import org.exoplatform.commons.api.settings.data.Scope;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.config.UserACL;
@@ -41,6 +45,12 @@ import org.exoplatform.web.security.security.SecureRandomService;
 import io.meeds.tenant.metamask.RegistrationException;
 
 public class MetamaskLoginService implements Startable {
+
+  public static final String   TENANT_MANAGER_SIGNED_UP_KEY           = "TENANT_MANAGER_SIGNED_UP";
+
+  public static final Scope    TENANT_MANAGER_SIGNED_UP_SCOPE         = Scope.APPLICATION.id(TENANT_MANAGER_SIGNED_UP_KEY);
+
+  public static final Context  TENANT_MANAGER_SIGNED_UP_CONTEXT       = Context.GLOBAL.id(TENANT_MANAGER_SIGNED_UP_KEY);
 
   public static final String   LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
 
@@ -58,6 +68,8 @@ public class MetamaskLoginService implements Startable {
 
   private SecureRandomService  secureRandomService;
 
+  private SettingService       settingService;
+
   private TenantManagerService tenantManagerService;
 
   private AccountSetupService  accountSetupService;
@@ -70,6 +82,7 @@ public class MetamaskLoginService implements Startable {
 
   public MetamaskLoginService(OrganizationService organizationService,
                               UserACL userACL,
+                              SettingService settingService,
                               SecureRandomService secureRandomService,
                               TenantManagerService tenantManagerService,
                               AccountSetupService accountSetupService,
@@ -78,6 +91,7 @@ public class MetamaskLoginService implements Startable {
     this.secureRandomService = secureRandomService;
     this.tenantManagerService = tenantManagerService;
     this.accountSetupService = accountSetupService;
+    this.settingService = settingService;
     this.userACL = userACL;
     if (params != null) {
       if (params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
@@ -97,19 +111,10 @@ public class MetamaskLoginService implements Startable {
   @Override
   public void start() {
     if (this.secureRootAccessWithMetamask) {
-      try {
-        User rootUser = organizationService.getUserHandler().findUserByName(userACL.getSuperUser());
-        if (rootUser == null) {
-          LOG.warn("Root user wasn't found, can't regenerate password.");
-        } else {
-          LOG.info("Regenerate root password to allow accessing it via Metamask only");
-          rootUser.setPassword(generateRandomToken());
-          organizationService.getUserHandler().saveUser(rootUser, false);
-        }
-        accountSetupService.setSkipSetup(true);
-      } catch (Exception e) {
-        LOG.warn("Can't secure root access", e);
-      }
+      // Avoid allowing to change root password
+      accountSetupService.setSkipSetup(true);
+      // Generate a new random password for root user
+      secureRootPassword();
     }
   }
 
@@ -127,22 +132,17 @@ public class MetamaskLoginService implements Startable {
   public boolean isAllowUserRegistration() {
     if (allowUserRegistration) {
       return true;
-    } else {
-      String tenantManagerAddress = tenantManagerService.getManagerAddress();
-      if (StringUtils.isNotBlank(tenantManagerAddress)) {
-        try {
-          User tenantManager = organizationService.getUserHandler().findUserByName(tenantManagerAddress.toLowerCase());
-          if (tenantManager == null) {
-            // Allow manager to register the first time the tenant is
-            // provisioned
-            return true;
-          }
-        } catch (Exception e) {
-          LOG.warn("Error retrieving user with name {}", tenantManagerAddress, e);
-        }
+    } else if (StringUtils.isNotBlank(tenantManagerService.getNftId())) {
+      SettingValue<?> settingValue = settingService.get(TENANT_MANAGER_SIGNED_UP_CONTEXT,
+                                                        TENANT_MANAGER_SIGNED_UP_SCOPE,
+                                                        TENANT_MANAGER_SIGNED_UP_KEY);
+      if (settingValue == null || settingValue.getValue() == null) {
+        // Allow manager to register the first time the tenant is
+        // provisioned
+        return true;
       }
-      return allowUserRegistration;
     }
+    return false;
   }
 
   /**
@@ -298,21 +298,28 @@ public class MetamaskLoginService implements Startable {
   }
 
   private void setTenantManagerRoles(User user) {
-    List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
-    LOG.info("Tenant manager registered, setting its default memberships as manager.");
-    for (String role : tenantManagerRoles) {
-      if (StringUtils.isNotBlank(role)) {
-        LOG.info("Add Tenant manager membership {}.", role);
-        if (StringUtils.contains(role, ":")) {
-          String[] roleParts = StringUtils.split(role, ":");
-          String membershipTypeId = roleParts[0];
-          String groupId = roleParts[1];
+    try {
+      List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
+      LOG.info("Tenant manager registered, setting its default memberships as manager.");
+      for (String role : tenantManagerRoles) {
+        if (StringUtils.isNotBlank(role)) {
+          LOG.info("Add Tenant manager membership {}.", role);
+          if (StringUtils.contains(role, ":")) {
+            String[] roleParts = StringUtils.split(role, ":");
+            String membershipTypeId = roleParts[0];
+            String groupId = roleParts[1];
 
-          addUserToGroup(user, groupId, membershipTypeId);
-        } else {
-          addUserToGroup(user, role, "*");
+            addUserToGroup(user, groupId, membershipTypeId);
+          } else {
+            addUserToGroup(user, role, "*");
+          }
         }
       }
+    } finally {
+      settingService.set(TENANT_MANAGER_SIGNED_UP_CONTEXT,
+                         TENANT_MANAGER_SIGNED_UP_SCOPE,
+                         TENANT_MANAGER_SIGNED_UP_KEY,
+                         SettingValue.create(true));
     }
   }
 
@@ -384,6 +391,21 @@ public class MetamaskLoginService implements Startable {
   private String generateRandomToken() {
     SecureRandom secureRandom = secureRandomService.getSecureRandom();
     return secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
+  }
+
+  private void secureRootPassword() {
+    try {
+      User rootUser = organizationService.getUserHandler().findUserByName(userACL.getSuperUser());
+      if (rootUser == null) {
+        LOG.warn("Root user wasn't found, can't regenerate password.");
+      } else {
+        LOG.info("Regenerate root password to allow accessing it via Metamask only");
+        rootUser.setPassword(generateRandomToken());
+        organizationService.getUserHandler().saveUser(rootUser, false);
+      }
+    } catch (Exception e) {
+      LOG.warn("Can't secure root access", e);
+    }
   }
 
 }
