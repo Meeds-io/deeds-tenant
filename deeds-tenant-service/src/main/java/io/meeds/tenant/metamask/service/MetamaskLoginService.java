@@ -30,10 +30,6 @@ import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.commons.api.settings.SettingService;
-import org.exoplatform.commons.api.settings.SettingValue;
-import org.exoplatform.commons.api.settings.data.Context;
-import org.exoplatform.commons.api.settings.data.Scope;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.config.UserACL;
@@ -45,12 +41,6 @@ import org.exoplatform.web.security.security.SecureRandomService;
 import io.meeds.tenant.metamask.RegistrationException;
 
 public class MetamaskLoginService implements Startable {
-
-  public static final String   TENANT_MANAGER_SIGNED_UP_KEY           = "TENANT_MANAGER_SIGNED_UP";
-
-  public static final Scope    TENANT_MANAGER_SIGNED_UP_SCOPE         = Scope.APPLICATION.id(TENANT_MANAGER_SIGNED_UP_KEY);
-
-  public static final Context  TENANT_MANAGER_SIGNED_UP_CONTEXT       = Context.GLOBAL.id(TENANT_MANAGER_SIGNED_UP_KEY);
 
   public static final String   LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
 
@@ -68,8 +58,6 @@ public class MetamaskLoginService implements Startable {
 
   private SecureRandomService  secureRandomService;
 
-  private SettingService       settingService;
-
   private TenantManagerService tenantManagerService;
 
   private AccountSetupService  accountSetupService;
@@ -78,11 +66,10 @@ public class MetamaskLoginService implements Startable {
 
   private boolean              secureRootAccessWithMetamask;
 
-  private List<String>         allowedWallets                         = new ArrayList<>();
+  private List<String>         allowedRootWallets                     = new ArrayList<>();
 
   public MetamaskLoginService(OrganizationService organizationService,
                               UserACL userACL,
-                              SettingService settingService,
                               SecureRandomService secureRandomService,
                               TenantManagerService tenantManagerService,
                               AccountSetupService accountSetupService,
@@ -91,7 +78,6 @@ public class MetamaskLoginService implements Startable {
     this.secureRandomService = secureRandomService;
     this.tenantManagerService = tenantManagerService;
     this.accountSetupService = accountSetupService;
-    this.settingService = settingService;
     this.userACL = userACL;
     if (params != null) {
       if (params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
@@ -103,7 +89,7 @@ public class MetamaskLoginService implements Startable {
       }
       if (params.containsKey(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)) {
         String[] wallets = StringUtils.split(params.getValueParam(ALLOWED_ROOT_ACCESS_WALLETS_PARAM).getValue(), ",");
-        Arrays.stream(wallets).forEach(address -> allowedWallets.add(address.trim().toLowerCase()));
+        Arrays.stream(wallets).forEach(address -> allowedRootWallets.add(address.trim().toLowerCase()));
       }
     }
   }
@@ -124,25 +110,10 @@ public class MetamaskLoginService implements Startable {
   }
 
   /**
-   * @return allowUserRegistration parameter value, else, it will checks whether
-   *           the Tenant Manager has been registered to the tenant or not. If
-   *           not regitered, allow to display the register form, else return
-   *           false.
+   * @return allowUserRegistration parameter value
    */
   public boolean isAllowUserRegistration() {
-    if (allowUserRegistration) {
-      return true;
-    } else if (StringUtils.isNotBlank(tenantManagerService.getNftId())) {
-      SettingValue<?> settingValue = settingService.get(TENANT_MANAGER_SIGNED_UP_CONTEXT,
-                                                        TENANT_MANAGER_SIGNED_UP_SCOPE,
-                                                        TENANT_MANAGER_SIGNED_UP_KEY);
-      if (settingValue == null || settingValue.getValue() == null) {
-        // Allow manager to register the first time the tenant is
-        // provisioned
-        return true;
-      }
-    }
-    return false;
+    return allowUserRegistration;
   }
 
   /**
@@ -161,13 +132,22 @@ public class MetamaskLoginService implements Startable {
   }
 
   /**
+   * @param walletAddress wallet address
+   * @return true if secure root access is allowed and designated wallet is
+   *           allowed to access using root account
+   */
+  public boolean isSuperUser(String walletAddress) {
+    return secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase());
+  }
+
+  /**
    * Retrieves User name with associated wallet Address
    * 
    * @param walletAddress Ethereum Wallet Address
    * @return username
    */
   public String getUserWithWalletAddress(String walletAddress) {
-    if (secureRootAccessWithMetamask && allowedWallets.contains(walletAddress.toLowerCase())) {
+    if (secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase())) {
       return userACL.getSuperUser();
     }
     try {
@@ -297,29 +277,23 @@ public class MetamaskLoginService implements Startable {
     }
   }
 
+  //
   private void setTenantManagerRoles(User user) {
-    try {
-      List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
-      LOG.info("Tenant manager registered, setting its default memberships as manager.");
-      for (String role : tenantManagerRoles) {
-        if (StringUtils.isNotBlank(role)) {
-          LOG.info("Add Tenant manager membership {}.", role);
-          if (StringUtils.contains(role, ":")) {
-            String[] roleParts = StringUtils.split(role, ":");
-            String membershipTypeId = roleParts[0];
-            String groupId = roleParts[1];
+    List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
+    LOG.info("Tenant manager registered, setting its default memberships as manager.");
+    for (String role : tenantManagerRoles) {
+      if (StringUtils.isNotBlank(role)) {
+        LOG.info("Add Tenant manager membership {}.", role);
+        if (StringUtils.contains(role, ":")) {
+          String[] roleParts = StringUtils.split(role, ":");
+          String membershipTypeId = roleParts[0];
+          String groupId = roleParts[1];
 
-            addUserToGroup(user, groupId, membershipTypeId);
-          } else {
-            addUserToGroup(user, role, "*");
-          }
+          addUserToGroup(user, groupId, membershipTypeId);
+        } else {
+          addUserToGroup(user, role, "*");
         }
       }
-    } finally {
-      settingService.set(TENANT_MANAGER_SIGNED_UP_CONTEXT,
-                         TENANT_MANAGER_SIGNED_UP_SCOPE,
-                         TENANT_MANAGER_SIGNED_UP_KEY,
-                         SettingValue.create(true));
     }
   }
 

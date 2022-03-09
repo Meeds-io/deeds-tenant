@@ -40,8 +40,6 @@ import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.commons.api.settings.SettingService;
-import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
@@ -80,9 +78,6 @@ public class MetamaskLoginServiceTest {
   SecureRandomService   secureRandomService;
 
   @Mock
-  SettingService        settingService;
-
-  @Mock
   TenantManagerService  tenantManagerService;
 
   @Mock
@@ -99,8 +94,7 @@ public class MetamaskLoginServiceTest {
           membershipTypeHandler,
           userAcl,
           secureRandomService,
-          tenantManagerService,
-          settingService);
+          tenantManagerService);
 
     when(organizationService.getUserHandler()).thenReturn(userHandler);
     when(organizationService.getGroupHandler()).thenReturn(groupHandler);
@@ -138,7 +132,6 @@ public class MetamaskLoginServiceTest {
     verify(userHandler, times(1)).saveUser(user, false);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
   public void testIsAllowUserRegistration() throws Exception {
     newService();
@@ -154,15 +147,6 @@ public class MetamaskLoginServiceTest {
 
     valueParam.setValue("false");
     newService();
-    assertFalse(metamaskLoginService.isAllowUserRegistration());
-
-    String nftId = "nftId";
-    when(tenantManagerService.getNftId()).thenReturn(nftId);
-    assertTrue(metamaskLoginService.isAllowUserRegistration());
-
-    when(settingService.get(TENANT_MANAGER_SIGNED_UP_CONTEXT,
-                            TENANT_MANAGER_SIGNED_UP_SCOPE,
-                            TENANT_MANAGER_SIGNED_UP_KEY)).thenReturn(new SettingValue(true));
     assertFalse(metamaskLoginService.isAllowUserRegistration());
   }
 
@@ -200,17 +184,20 @@ public class MetamaskLoginServiceTest {
     ValueParam secureRootAccessValueParam = new ValueParam();
     secureRootAccessValueParam.setValue("true");
     when(params.getValueParam(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)).thenReturn(secureRootAccessValueParam);
+    assertFalse(metamaskLoginService.isSuperUser(managerAddress));
 
     newService();
     assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
 
     when(params.containsKey(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)).thenReturn(true);
-    ValueParam allowetWalletsValueParam = new ValueParam();
-    allowetWalletsValueParam.setValue(managerAddress);
-    when(params.getValueParam(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)).thenReturn(allowetWalletsValueParam);
+    ValueParam allowedWalletsValueParam = new ValueParam();
+    allowedWalletsValueParam.setValue(managerAddress);
+    when(params.getValueParam(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)).thenReturn(allowedWalletsValueParam);
 
     newService();
     assertEquals(SUPER_USER, metamaskLoginService.getUserWithWalletAddress(managerAddress));
+    assertTrue(metamaskLoginService.isSuperUser(managerAddress));
+    assertFalse(metamaskLoginService.isSuperUser("managerAddress2"));
 
     secureRootAccessValueParam.setValue("false");
     newService();
@@ -408,7 +395,6 @@ public class MetamaskLoginServiceTest {
   private void newService() {
     metamaskLoginService = new MetamaskLoginService(organizationService,
                                                     userAcl,
-                                                    settingService,
                                                     secureRandomService,
                                                     tenantManagerService,
                                                     mock(AccountSetupService.class),
