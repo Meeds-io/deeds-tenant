@@ -92,7 +92,7 @@
     <component-plugin>
       <name>MetamaskRegistrationFilterDefinition</name>
       <set-method>addFilterDefinitions</set-method>
-      <type>io.meeds.tenant.metamask.web.filter.MetamaskRegistrationFilterDefinition</type>
+      <type>io.meeds.tenant.metamask.web.filter.MetamaskSignInFilterDefinition</type>
     </component-plugin>
   </external-component-plugins>
 

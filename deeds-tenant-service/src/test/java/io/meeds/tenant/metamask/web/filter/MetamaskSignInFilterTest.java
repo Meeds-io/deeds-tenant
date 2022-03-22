@@ -16,7 +16,7 @@
  */
 package io.meeds.tenant.metamask.web.filter;
 
-import static io.meeds.tenant.metamask.web.filter.MetamaskRegistrationFilter.*;
+import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -55,49 +55,49 @@ import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MetamaskRegistrationFilterTest {
+public class MetamaskSignInFilterTest {
 
   @Mock
-  private WebAppController           webAppController;
+  private WebAppController        webAppController;
 
   @Mock
-  private LocaleConfigService        localeConfigService;
+  private LocaleConfigService     localeConfigService;
 
   @Mock
-  private BrandingService            brandingService;
+  private BrandingService         brandingService;
 
   @Mock
-  private JavascriptConfigService    javascriptConfigService;
+  private JavascriptConfigService javascriptConfigService;
 
   @Mock
-  private SkinService                skinService;
+  private SkinService             skinService;
 
   @Mock
-  private MetamaskLoginService       metamaskLoginService;
+  private MetamaskLoginService    metamaskLoginService;
 
   @Mock
-  private HttpServletRequest         request;
+  private HttpServletRequest      request;
 
   @Mock
-  private HttpServletResponse        response;
+  private HttpServletResponse     response;
 
   @Mock
-  private FilterChain                chain;
+  private FilterChain             chain;
 
   @Mock
-  private ServletContext             context;
+  private ServletContext          context;
 
   @Mock
-  private HttpSession                session;
+  private HttpSession             session;
 
   @Mock
-  private RequestDispatcher          requestDispatcher;
+  private RequestDispatcher       requestDispatcher;
 
-  private PortalContainer            container;
+  private PortalContainer         container;
 
-  private MetamaskRegistrationFilter filter;
+  private MetamaskSignInFilter    filter;
 
-  private JSONObject                 forwardParameters;
+  private JSONObject              forwardParameters;
 
   @BeforeClass
   public static void setUpClass() throws Exception {
@@ -126,13 +126,13 @@ public class MetamaskRegistrationFilterTest {
     when(context.getRequestDispatcher(any())).thenReturn(requestDispatcher);
     when(request.getContextPath()).thenReturn("/portal");
     when(request.getSession()).thenReturn(session);
-    filter = spy(new MetamaskRegistrationFilter(container,
-                                                webAppController,
-                                                localeConfigService,
-                                                brandingService,
-                                                javascriptConfigService,
-                                                skinService,
-                                                metamaskLoginService));
+    filter = spy(new MetamaskSignInFilter(container,
+                                          webAppController,
+                                          localeConfigService,
+                                          brandingService,
+                                          javascriptConfigService,
+                                          skinService,
+                                          metamaskLoginService));
     when(filter.prepareDispatch(any(), any())).thenAnswer(new Answer<Boolean>() {
       @Override
       public Boolean answer(InvocationOnMock invocation) throws Throwable {
@@ -147,23 +147,23 @@ public class MetamaskRegistrationFilterTest {
   @Test
   public void testFilterDefinition() {
     InitParams params = mock(InitParams.class);
-    MetamaskRegistrationFilterDefinition filterDefinition = new MetamaskRegistrationFilterDefinition(container,
-                                                                                                     webAppController,
-                                                                                                     localeConfigService,
-                                                                                                     brandingService,
-                                                                                                     javascriptConfigService,
-                                                                                                     skinService,
-                                                                                                     metamaskLoginService,
-                                                                                                     params);
+    MetamaskSignInFilterDefinition filterDefinition = new MetamaskSignInFilterDefinition(container,
+                                                                                         webAppController,
+                                                                                         localeConfigService,
+                                                                                         brandingService,
+                                                                                         javascriptConfigService,
+                                                                                         skinService,
+                                                                                         metamaskLoginService,
+                                                                                         params);
     Filter filter = filterDefinition.getFilter();
     assertNotNull(filter);
-    assertEquals(MetamaskRegistrationFilter.class, filter.getClass());
+    assertEquals(MetamaskSignInFilter.class, filter.getClass());
 
     List<FilterDefinition> filterDefinitions = filterDefinition.getFilterDefinitions();
     assertNotNull(filterDefinitions);
     assertEquals(1, filterDefinitions.size());
     assertNotNull(filterDefinitions.get(0));
-    assertEquals(MetamaskRegistrationFilter.class, filterDefinitions.get(0).getFilter().getClass());
+    assertEquals(MetamaskSignInFilter.class, filterDefinitions.get(0).getFilter().getClass());
   }
 
   @Test
@@ -208,7 +208,6 @@ public class MetamaskRegistrationFilterTest {
 
   @Test
   public void testDenyRegisterFormWhenHasUnrecognizedCredentials() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn("fakeUser");
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + "fakePassword");
     filter.doFilter(request, response, chain);
@@ -223,7 +222,6 @@ public class MetamaskRegistrationFilterTest {
 
   @Test
   public void testDisplayRegisterFormWhenHasRecognizedCredentials() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     String walletAddress = "fakeUser";
     String rawMessageToSign = "rawMessage";
     String signedMessage = "signedMessage";
@@ -251,8 +249,6 @@ public class MetamaskRegistrationFilterTest {
 
   @Test
   public void testProceedToLoginWhenUserAlreadyRegistered() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
     String walletAddress = "fakeUser";
     String rawMessageToSign = "rawMessage";
     String signedMessage = "signedMessage";

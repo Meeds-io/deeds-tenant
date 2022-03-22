@@ -49,10 +49,10 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  * A Login extension to submit Login parameters to UI for used network, contract
  * adresses ...
  */
-public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Filter {
+public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
 
   public static final Log                 LOG                            =
-                                              ExoLogger.getLogger(MetamaskRegistrationFilter.class);
+                                              ExoLogger.getLogger(MetamaskSignInFilter.class);
 
   public static final String              METAMASK_REGISTER_FORM         = "/WEB-INF/jsp/metamaskRegisterForm.jsp";
 
@@ -83,7 +83,7 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
 
   private ServletContext                  servletContext;
 
-  public MetamaskRegistrationFilter(PortalContainer container, // NOSONAR
+  public MetamaskSignInFilter(PortalContainer container, // NOSONAR
                                     WebAppController webAppController,
                                     LocaleConfigService localeConfigService,
                                     BrandingService brandingService,
@@ -114,7 +114,8 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
       // If user is already authenticated, no registration form is required
       if (request.getRemoteUser() == null
           && StringUtils.isNotBlank(walletAddress)
-          && (metamaskLoginService.isSuperUser(walletAddress)
+          && (StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)
+              || metamaskLoginService.isSuperUser(walletAddress)
               || metamaskLoginService.isAllowUserRegistration(walletAddress))) {
 
         if (StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)) {
@@ -272,7 +273,7 @@ public class MetamaskRegistrationFilter extends JspBasedWebHandler implements Fi
   }
 
   private boolean validateCompoundPassword(String walletAddress, String compoundPassword) {
-    String[] passwordParts = StringUtils.split(compoundPassword, MetamaskRegistrationFilter.SEPARATOR);
+    String[] passwordParts = StringUtils.split(compoundPassword, MetamaskSignInFilter.SEPARATOR);
     if (passwordParts != null && passwordParts.length == 3) {
       if (!StringUtils.equalsIgnoreCase(walletAddress, passwordParts[0])) {
         return false;

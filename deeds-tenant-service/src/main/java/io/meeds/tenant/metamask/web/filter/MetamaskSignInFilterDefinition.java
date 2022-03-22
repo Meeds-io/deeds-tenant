@@ -9,11 +9,11 @@
  * version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 package io.meeds.tenant.metamask.web.filter;
 
@@ -35,27 +35,27 @@ import lombok.Getter;
  * A Login extension to submit Login parameters to UI for used network, contract
  * adresses ...
  */
-public class MetamaskRegistrationFilterDefinition extends FilterDefinitionPlugin {
+public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
 
   @Getter
   private Filter filter;
 
-  public MetamaskRegistrationFilterDefinition(PortalContainer container, // NOSONAR
-                                              WebAppController webAppController,
-                                              LocaleConfigService localeConfigService,
-                                              BrandingService brandingService,
-                                              JavascriptConfigService javascriptConfigService,
-                                              SkinService skinService,
-                                              MetamaskLoginService metamaskLoginService,
-                                              InitParams params) {
+  public MetamaskSignInFilterDefinition(PortalContainer container, // NOSONAR
+                                        WebAppController webAppController,
+                                        LocaleConfigService localeConfigService,
+                                        BrandingService brandingService,
+                                        JavascriptConfigService javascriptConfigService,
+                                        SkinService skinService,
+                                        MetamaskLoginService metamaskLoginService,
+                                        InitParams params) {
     super(params);
-    this.filter = new MetamaskRegistrationFilter(container,
-                                                 webAppController,
-                                                 localeConfigService,
-                                                 brandingService,
-                                                 javascriptConfigService,
-                                                 skinService,
-                                                 metamaskLoginService);
+    this.filter = new MetamaskSignInFilter(container,
+                                           webAppController,
+                                           localeConfigService,
+                                           brandingService,
+                                           javascriptConfigService,
+                                           skinService,
+                                           metamaskLoginService);
   }
 
   @Override
