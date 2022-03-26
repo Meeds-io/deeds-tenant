@@ -22,7 +22,7 @@
   <div v-if="metamaskEnabled" class="border-box-sizing mt-4">
     <v-btn
       v-if="!isMetamaskInstalled"
-      href="https://metamask.io/"
+      :href="metamaskInstallLinlk"
       target="_blank"
       rel="noreferrer"
       class="rounded-lg btn"
@@ -46,7 +46,7 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.SigninWithMetamask') }}</span>
     </v-btn>
     <form
       ref="metamaskLoginForm"
@@ -99,8 +99,19 @@ export default {
     initialUri() {
       return this.params && this.params.initialUri;
     },
+    isMobile() {
+      return this.$vuetify.breakpoint.smAndDown;
+    },
+    currentSiteLink() {
+      return `${window.location.host}`;
+    },
+    metamaskInstallLinlk() {
+      return this.isMobile
+        && `https://metamask.app.link/dapp/${this.currentSiteLink}`
+        || 'https://metamask.io/';
+    },
   },
-  created() {
+  mounted() {
     this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
     if (this.isMetamaskInstalled) {
       this.retrieveAddress();
