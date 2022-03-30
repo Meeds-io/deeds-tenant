@@ -112,13 +112,20 @@ export default {
     },
   },
   mounted() {
-    this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
-    if (this.isMetamaskInstalled) {
-      this.retrieveAddress();
-      window.ethereum.on('accountsChanged', () => this.retrieveAddress());
-    }
+    this.init();
+    window.addEventListener('ethereum#initialized', () => this.init(), {
+      once: true,
+    });
+    setTimeout(() => this.init(), 3000);
   },
   methods: {
+    init() {
+      this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
+      if (this.isMetamaskInstalled) {
+        this.retrieveAddress();
+        window.ethereum.on('accountsChanged', () => this.retrieveAddress());
+      }
+    },
     signInWithMetamask(forwarded) {
       if (!this.address) {
         if (forwarded) {
