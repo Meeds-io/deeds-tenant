@@ -51,6 +51,8 @@
     <form
       ref="metamaskLoginForm"
       action="/portal/register"
+      accept-charset="ISO-8859-1"
+      enctype="application/x-www-form-urlencoded; charset=ISO-8859-1"
       method="post">
       <input
         v-if="initialUri"

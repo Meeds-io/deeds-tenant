@@ -20,13 +20,17 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
@@ -41,6 +45,8 @@ import org.exoplatform.web.application.JspBasedWebHandler;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
 import org.exoplatform.web.login.LoginUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import io.meeds.tenant.metamask.RegistrationException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
@@ -84,12 +90,12 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
   private ServletContext                  servletContext;
 
   public MetamaskSignInFilter(PortalContainer container, // NOSONAR
-                                    WebAppController webAppController,
-                                    LocaleConfigService localeConfigService,
-                                    BrandingService brandingService,
-                                    JavascriptConfigService javascriptConfigService,
-                                    SkinService skinService,
-                                    MetamaskLoginService metamaskLoginService) {
+                              WebAppController webAppController,
+                              LocaleConfigService localeConfigService,
+                              BrandingService brandingService,
+                              JavascriptConfigService javascriptConfigService,
+                              SkinService skinService,
+                              MetamaskLoginService metamaskLoginService) {
     super(localeConfigService, brandingService, javascriptConfigService, skinService);
     this.webAppController = webAppController;
     this.metamaskLoginService = metamaskLoginService;

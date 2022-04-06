@@ -43,6 +43,8 @@
                     name="registerForm"
                     action="/portal/login"
                     method="post"
+                    accept-charset="ISO-8859-1"
+                    enctype="application/x-www-form-urlencoded; charset=ISO-8859-1"
                     class="ma-0"
                     autocomplete="off">
                     <div class="userCredentials">
