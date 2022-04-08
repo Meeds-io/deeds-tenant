@@ -1,4 +1,6 @@
 const path = require('path');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader')
 
 let config = {
   context: path.resolve(__dirname, '.'),
@@ -9,6 +11,10 @@ let config = {
     metamaskRegisterExtension: './src/main/webapp/vue-app/register-extension/main.js',
     metamaskRegisterForm: './src/main/webapp/vue-app/register-form/main.js',
   },
+  plugins: [
+	new ESLintPlugin(),
+    new VueLoaderPlugin()
+  ],
   module: {
     rules: [
       {
@@ -16,14 +22,12 @@ let config = {
         exclude: /node_modules/,
         use: [
           'babel-loader',
-          'eslint-loader',
         ]
       },
       {
         test: /\.vue$/,
         use: [
           'vue-loader',
-          'eslint-loader',
         ]
       }
     ]

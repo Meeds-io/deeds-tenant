@@ -93,7 +93,7 @@ export default {
   }),
   computed: {
     metamaskEnabled() {
-      return this.params && this.params.metamaskEnabled;
+      return this.params?.metamaskEnabled;
     },
     rawMessage() {
       return this.params && this.params.rawMessage;
