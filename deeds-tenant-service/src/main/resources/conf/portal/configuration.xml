@@ -96,4 +96,14 @@
     </component-plugin>
   </external-component-plugins>
 
+  <external-component-plugins>
+    <target-component>org.exoplatform.services.organization.OrganizationService</target-component>
+    <component-plugin>
+      <name>new.metamask.created.user.listener</name>
+      <set-method>addListenerPlugin</set-method>
+      <type>io.meeds.tenant.metamask.listener.NewMetamaskCreatedUserListener</type>
+      <description>this listener create new wallet for signup user with metamask</description>
+    </component-plugin>
+  </external-component-plugins>
+
 </configuration>
