@@ -41,7 +41,7 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <org.exoplatform.social.version>6.4.x-meedsv2-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.wallet.version>2.4.x-meedsv2-SNAPSHOT</org.exoplatform.wallet.version>
     <addon.meeds.deeds-dapp.version>1.0.x-meedsv2-SNAPSHOT</addon.meeds.deeds-dapp.version>
 
     <!-- Sonar properties -->
@@ -52,16 +52,16 @@
     <dependencies>
       <!-- Import versions from platform project -->
       <dependency>
-        <groupId>org.exoplatform.social</groupId>
-        <artifactId>social</artifactId>
-        <version>${org.exoplatform.social.version}</version>
+        <groupId>io.meeds.deeds-dapp</groupId>
+        <artifactId>deeds-dapp-parent</artifactId>
+        <version>${addon.meeds.deeds-dapp.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>io.meeds.deeds-dapp</groupId>
-        <artifactId>deeds-dapp-parent</artifactId>
-        <version>${addon.meeds.deeds-dapp.version}</version>
+        <groupId>org.exoplatform.addons.wallet</groupId>
+        <artifactId>wallet</artifactId>
+        <version>${org.exoplatform.wallet.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
