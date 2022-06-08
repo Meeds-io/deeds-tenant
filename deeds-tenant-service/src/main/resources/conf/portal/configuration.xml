@@ -102,7 +102,7 @@
       <name>new.metamask.created.user.listener</name>
       <set-method>addListenerPlugin</set-method>
       <type>io.meeds.tenant.metamask.listener.NewMetamaskCreatedUserListener</type>
-      <description>this listener create new wallet for signup user with metamask</description>
+      <description>a listener to associate used Metamask wallet to newly registered user</description>
     </component-plugin>
   </external-component-plugins>
 

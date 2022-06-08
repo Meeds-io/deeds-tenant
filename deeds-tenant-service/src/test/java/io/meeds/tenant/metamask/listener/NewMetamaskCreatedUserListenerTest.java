@@ -16,8 +16,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -31,7 +29,6 @@ public class NewMetamaskCreatedUserListenerTest {
   UserHandler          userHandler;
 
   @Mock
-
   PortalContainer      container;
 
   @Mock
@@ -45,7 +42,7 @@ public class NewMetamaskCreatedUserListenerTest {
   }
 
   @Test
-  public void testNewMetamaskCreatedUserListener() {
+  public void testNewMetamaskCreatedUserListener() throws Exception {
 
     String username = "0x29H59f54055966197fC2442Df38B6C980ff56585";
     UserHandler userHandler = organizationService.getUserHandler();
@@ -63,18 +60,12 @@ public class NewMetamaskCreatedUserListenerTest {
     user.setEmail("user@test.com");
     UserEventListener listener = mock(NewMetamaskCreatedUserListener.class);
     userHandler.addUserEventListener(listener);
-    try {
-      doAnswer(invocation -> {
-        listener.postSave(user, true);
+    doAnswer(invocation -> {
+      listener.postSave(user, true);
+      return null;
+    }).when(metamaskLoginService).registerUser(any(), any(), any());
 
-        return null;
-      }).when(metamaskLoginService).registerUser(any(), any(), any());
-
-      metamaskLoginService.registerUser(username, "test user", "user@test.com");
-      verify(listener, times(1)).postSave(user, true);
-
-    } catch (Exception e) {
-      //
-    }
+    metamaskLoginService.registerUser(username, "test user", "user@test.com");
+    verify(listener, times(1)).postSave(user, true);
   }
 }

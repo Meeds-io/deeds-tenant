@@ -30,9 +30,9 @@ import static io.meeds.tenant.metamask.utils.Utils.getIdentityByUsername;
 
 public class NewMetamaskCreatedUserListener extends UserEventListener {
 
-  protected static final Log LOG = ExoLogger.getLogger(NewMetamaskCreatedUserListener.class);
+  private static final Log LOG = ExoLogger.getLogger(NewMetamaskCreatedUserListener.class);
 
-  WalletAccountService       walletAccountService;
+  private WalletAccountService       walletAccountService;
 
   public NewMetamaskCreatedUserListener(WalletAccountService walletAccountService) {
     this.walletAccountService = walletAccountService;
@@ -40,19 +40,21 @@ public class NewMetamaskCreatedUserListener extends UserEventListener {
 
   @Override
   public void postSave(User user, boolean isNew) {
-
-    if (!isNew || user == null || !user.isEnabled() || !WalletUtils.isValidAddress(user.getUserName())) {
+    String username  = user.getUserName();
+    if (!isNew || user == null || !user.isEnabled() || !WalletUtils.isValidAddress(username)) {
       return;
     }
-    Wallet wallet = walletAccountService.getWalletByAddress(user.getUserName());
+    Wallet wallet = walletAccountService.getWalletByAddress(username);
     if (wallet != null) {
-      throw new IllegalStateException("wallet with same address already exists");
+      LOG.info("wallet with same address already exists");
+      return;
     }
     try {
-      Identity identity = getIdentityByUsername(user.getUserName());
-      walletAccountService.createWalletInstance(WalletProvider.METAMASK, user.getUserName(), Long.valueOf(identity.getId()));
+      Identity identity = getIdentityByUsername(username);
+      wallet = walletAccountService.createWalletInstance(WalletProvider.METAMASK, username, Long.valueOf(identity.getId()));
+      walletAccountService.saveWallet(wallet, true);
     } catch (Exception e) {
-      LOG.error("Error while creating wallet for user ", e);
+      LOG.error("Error while associating Metamask wallet for user {}", username, e);
     }
   }
 }

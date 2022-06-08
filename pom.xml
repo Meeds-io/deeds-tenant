@@ -69,9 +69,10 @@
 
       <dependency>
         <groupId>org.exoplatform.addons.wallet</groupId>
-        <artifactId>wallet-api</artifactId>
+        <artifactId>wallet</artifactId>
         <version>${org.exoplatform.wallet.version}</version>
-        <scope>compile</scope>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <!-- Current project artifacts -->
       <dependency>
