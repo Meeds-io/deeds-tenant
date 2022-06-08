@@ -16,6 +16,7 @@
  */
 package io.meeds.tenant.metamask.listener;
 
+import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.impl.UserImpl;
 import org.exoplatform.social.core.identity.model.Identity;
@@ -40,10 +41,13 @@ public class NewMetamaskCreatedUserListenerTest {
   @Mock
   WalletAccountService walletAccountService;
 
+  @Mock
+  ListenerService listenerService;
+
   @Test
-  public void testNewMetamaskCreatedUserListener() throws IllegalAccessException {
+  public void testNewMetamaskCreatedUserListener() throws Exception {
     String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
-    NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(identityManager, walletAccountService);
+    NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(identityManager, walletAccountService, listenerService);
 
     User user = new UserImpl("not an address");
     listener.postSave(user, true);
