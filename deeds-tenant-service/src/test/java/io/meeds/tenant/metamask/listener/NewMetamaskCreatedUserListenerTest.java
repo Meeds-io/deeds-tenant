@@ -16,13 +16,20 @@
  */
 package io.meeds.tenant.metamask.listener;
 
+import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.impl.UserImpl;
+import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.wallet.model.Wallet;
+import org.exoplatform.wallet.model.WalletProvider;
 import org.exoplatform.wallet.service.WalletAccountService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NewMetamaskCreatedUserListenerTest {
@@ -34,12 +41,34 @@ public class NewMetamaskCreatedUserListenerTest {
   WalletAccountService walletAccountService;
 
   @Test
-  public void testNewMetamaskCreatedUserListener() throws Exception {
-    String username = "0x29H59f54055966197fC2442Df38B6C980ff56585";
+  public void testNewMetamaskCreatedUserListener() throws IllegalAccessException {
+    String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
     NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(identityManager, walletAccountService);
 
-    listener.postSave(new UserImpl(username), false);
+    User user = new UserImpl("not an address");
+    listener.postSave(user, true);
+    verify(walletAccountService, times(0)).saveWallet(any(Wallet.class), anyBoolean());
 
-    // TODO
+    user = new UserImpl(username);
+    listener.postSave(user, false);
+    verify(walletAccountService, times(0)).saveWallet(any(Wallet.class), anyBoolean());
+
+    Wallet wallet = new Wallet();
+    wallet.setAddress(username);
+    Identity userIdentity = new Identity();
+    userIdentity.setId(String.valueOf(1l));
+
+    when(walletAccountService.getWalletByAddress(username)).thenReturn(wallet);
+    listener.postSave(user, true);
+    verify(walletAccountService, times(0)).saveWallet(any(Wallet.class), anyBoolean());
+
+    when(walletAccountService.getWalletByAddress(username)).thenReturn(null);
+    when(walletAccountService.createWalletInstance(WalletProvider.METAMASK,
+            username,
+            1l)).thenReturn(wallet);
+    when(identityManager.getOrCreateUserIdentity(username)).thenReturn(userIdentity);
+
+    listener.postSave(user, true);
+    verify(walletAccountService, times(1)).saveWallet(any(Wallet.class), anyBoolean());
   }
 }
