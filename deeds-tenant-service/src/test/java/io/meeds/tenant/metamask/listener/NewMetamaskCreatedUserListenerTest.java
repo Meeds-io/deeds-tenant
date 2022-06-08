@@ -1,71 +1,45 @@
+/**
+ * This file is part of the Meeds project (https://meeds.io/).
+ * Copyright (C) 2022 Meeds Association
+ * contact@meeds.io
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 package io.meeds.tenant.metamask.listener;
 
-import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.container.PortalContainer;
-import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.services.organization.User;
-import org.exoplatform.services.organization.UserEventListener;
-import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.services.organization.idm.UserImpl;
-import org.junit.Before;
+import org.exoplatform.services.organization.impl.UserImpl;
+import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.wallet.service.WalletAccountService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NewMetamaskCreatedUserListenerTest {
 
   @Mock
-  OrganizationService  organizationService;
+  IdentityManager      identityManager;
 
   @Mock
-  UserHandler          userHandler;
-
-  @Mock
-  PortalContainer      container;
-
-  @Mock
-  MetamaskLoginService metamaskLoginService;
-
-  @Before
-  public void setUp() {
-    container = PortalContainer.getInstance();
-    reset(organizationService, userHandler);
-    when(organizationService.getUserHandler()).thenReturn(userHandler);
-  }
+  WalletAccountService walletAccountService;
 
   @Test
   public void testNewMetamaskCreatedUserListener() throws Exception {
-
     String username = "0x29H59f54055966197fC2442Df38B6C980ff56585";
-    UserHandler userHandler = organizationService.getUserHandler();
-    String finalUsername = username;
-    when(userHandler.createUserInstance(any())).thenAnswer(new Answer<User>() {
-      @Override
-      public User answer(InvocationOnMock invocation) throws Throwable {
-        return new UserImpl(finalUsername);
-      }
-    });
+    NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(identityManager, walletAccountService);
 
-    username = StringUtils.lowerCase(username);
-    User user = userHandler.createUserInstance(username);
-    user.setFullName("test user");
-    user.setEmail("user@test.com");
-    UserEventListener listener = mock(NewMetamaskCreatedUserListener.class);
-    userHandler.addUserEventListener(listener);
-    doAnswer(invocation -> {
-      listener.postSave(user, true);
-      return null;
-    }).when(metamaskLoginService).registerUser(any(), any(), any());
+    listener.postSave(new UserImpl(username), false);
 
-    metamaskLoginService.registerUser(username, "test user", "user@test.com");
-    verify(listener, times(1)).postSave(user, true);
+    // TODO
   }
 }

@@ -21,40 +21,52 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserEventListener;
 import org.exoplatform.social.core.identity.model.Identity;
+import org.exoplatform.social.core.manager.IdentityManager;
 import org.exoplatform.wallet.model.Wallet;
 import org.exoplatform.wallet.model.WalletProvider;
 import org.exoplatform.wallet.service.WalletAccountService;
 import org.web3j.crypto.WalletUtils;
 
-import static io.meeds.tenant.metamask.utils.Utils.getIdentityByUsername;
-
 public class NewMetamaskCreatedUserListener extends UserEventListener {
 
-  private static final Log LOG = ExoLogger.getLogger(NewMetamaskCreatedUserListener.class);
+  private static final Log     LOG = ExoLogger.getLogger(NewMetamaskCreatedUserListener.class);
 
-  private WalletAccountService       walletAccountService;
+  private IdentityManager      identityManager;
 
-  public NewMetamaskCreatedUserListener(WalletAccountService walletAccountService) {
+  private WalletAccountService walletAccountService;
+
+  public NewMetamaskCreatedUserListener(IdentityManager identityManager, WalletAccountService walletAccountService) {
     this.walletAccountService = walletAccountService;
+    this.identityManager = identityManager;
   }
 
   @Override
   public void postSave(User user, boolean isNew) {
-    String username  = user.getUserName();
-    if (!isNew || user == null || !user.isEnabled() || !WalletUtils.isValidAddress(username)) {
+    String address = user.getUserName();
+    if (!isNew || !user.isEnabled() || !WalletUtils.isValidAddress(address)) {
       return;
     }
-    Wallet wallet = walletAccountService.getWalletByAddress(username);
+    Wallet wallet = walletAccountService.getWalletByAddress(address);
     if (wallet != null) {
-      LOG.info("wallet with same address already exists");
+      LOG.info("Wallet with address {} is already associated to identity id {}."
+          + "The used Metamask address will not be associated to current user account.",
+               address,
+               wallet.getTechnicalId());
       return;
     }
+    createUserWalletByAddress(address);
+  }
+
+  private void createUserWalletByAddress(String address) {
     try {
-      Identity identity = getIdentityByUsername(username);
-      wallet = walletAccountService.createWalletInstance(WalletProvider.METAMASK, username, Long.valueOf(identity.getId()));
-      walletAccountService.saveWallet(wallet, true);
+      Identity identity = identityManager.getOrCreateUserIdentity(address);
+      Wallet userWallet = walletAccountService.createWalletInstance(WalletProvider.METAMASK,
+                                                                    address,
+                                                                    Long.valueOf(identity.getId()));
+      walletAccountService.saveWallet(userWallet, true);
     } catch (Exception e) {
-      LOG.error("Error while associating Metamask wallet for user {}", username, e);
+      LOG.warn("Error while associating Metamask wallet for user {}", address, e);
     }
   }
+
 }
