@@ -24,6 +24,7 @@ import org.exoplatform.social.core.manager.IdentityManager;
 import org.exoplatform.wallet.model.Wallet;
 import org.exoplatform.wallet.model.WalletProvider;
 import org.exoplatform.wallet.service.WalletAccountService;
+import org.exoplatform.wallet.utils.WalletUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -70,9 +71,12 @@ public class NewMetamaskCreatedUserListenerTest {
     when(walletAccountService.createWalletInstance(WalletProvider.METAMASK,
             username,
             1l)).thenReturn(wallet);
+    when(walletAccountService.saveWallet(any(Wallet.class), anyBoolean())).thenAnswer(invocation -> invocation.getArgument(0, Wallet.class));
     when(identityManager.getOrCreateUserIdentity(username)).thenReturn(userIdentity);
+    doNothing().when(listenerService).broadcast(anyString(), any(), any());
 
     listener.postSave(user, true);
     verify(walletAccountService, times(1)).saveWallet(any(Wallet.class), anyBoolean());
+    verify(listenerService, times(1)).broadcast(eq(WalletUtils.NEW_ADDRESS_ASSOCIATED_EVENT), any(Wallet.class), eq(username));
   }
 }
