@@ -41,7 +41,7 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <org.exoplatform.wallet.version>2.4.x-SNAPSHOT</org.exoplatform.wallet.version>
+    <addon.exo.wallet.version>2.4.x-SNAPSHOT</addon.exo.wallet.version>
     <addon.meeds.deeds-dapp.version>1.0.x-SNAPSHOT</addon.meeds.deeds-dapp.version>
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
@@ -60,7 +60,7 @@
       <dependency>
         <groupId>org.exoplatform.addons.wallet</groupId>
         <artifactId>wallet</artifactId>
-        <version>${org.exoplatform.wallet.version}</version>
+        <version>${addon.exo.wallet.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
