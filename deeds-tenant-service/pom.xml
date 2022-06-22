@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.meeds.deeds-tenant</groupId>
     <artifactId>deeds-tenant-parent</artifactId>
-    <version>1.0.x-SNAPSHOT</version>
+    <version>1.0.0-20220621</version>
   </parent>
   <artifactId>deeds-tenant-service</artifactId>
   <name>Meeds - Deeds Tenant Addon - Services</name>
