@@ -21,7 +21,7 @@
   <parent>
     <artifactId>addons-parent-pom</artifactId>
     <groupId>org.exoplatform.addons</groupId>
-    <version>15-M03</version>
+    <version>16-M03</version>
   </parent>
   <groupId>io.meeds.deeds-tenant</groupId>
   <artifactId>deeds-tenant-parent</artifactId>
