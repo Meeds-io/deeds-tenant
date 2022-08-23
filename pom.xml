@@ -25,7 +25,7 @@
   </parent>
   <groupId>io.meeds.deeds-tenant</groupId>
   <artifactId>deeds-tenant-parent</artifactId>
-  <version>1.0.x-SNAPSHOT</version>
+  <version>1.0.x-meed-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Meeds - Deeds Tenant Addon - Parent POM</name>
   <modules>
@@ -41,8 +41,8 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <addon.exo.wallet.version>2.4.x-SNAPSHOT</addon.exo.wallet.version>
-    <addon.meeds.deeds-dapp.version>1.0.x-SNAPSHOT</addon.meeds.deeds-dapp.version>
+    <addon.exo.wallet.version>2.4.x-meed-SNAPSHOT</addon.exo.wallet.version>
+    <addon.meeds.deeds-dapp.version>1.0.x-meed-SNAPSHOT</addon.meeds.deeds-dapp.version>
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
     <exo.snapshots.repo.url>https://repository.exoplatform.org/content/repositories/meeds-snapshots</exo.snapshots.repo.url>
