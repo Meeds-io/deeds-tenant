@@ -28,7 +28,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.deeds.contract.TenantProvisioningStrategy;
+import io.meeds.deeds.contract.DeedTenantProvisioning;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
@@ -63,16 +63,15 @@ public class TenantManagerStorage {
     }
   }
 
-  public TenantProvisioningStrategy getTenantProvisioningContract() {
+  public DeedTenantProvisioning getTenantProvisioningContract() {
     BigInteger gasPrice = BigInteger.valueOf(20000000000l);
     BigInteger gasLimit = BigInteger.valueOf(300000l);
 
     Web3j web3jInstance = getWeb3j();
-    return TenantProvisioningStrategy.load(tenantProvisioningAddress,
-                                           web3jInstance,
-                                           new ReadonlyTransactionManager(web3jInstance,
-                                                                          Address.DEFAULT.toString()),
-                                           new StaticGasProvider(gasPrice, gasLimit));
+    return DeedTenantProvisioning.load(tenantProvisioningAddress,
+                                       web3jInstance,
+                                       new ReadonlyTransactionManager(web3jInstance, Address.DEFAULT.toString()),
+                                       new StaticGasProvider(gasPrice, gasLimit));
   }
 
   public Web3j getWeb3j() {
