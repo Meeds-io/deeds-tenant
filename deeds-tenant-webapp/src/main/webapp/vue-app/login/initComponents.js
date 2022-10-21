@@ -16,10 +16,23 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+import Login from './components/Login.vue';
 import LoginMetamask from './components/LoginMetamask.vue';
+import DeedLogin from './components/DeedLogin.vue';
+import DeedLoginMain from './components/DeedLoginMain.vue';
+import DeedLoginIntroduction from './components/DeedLoginIntroduction.vue';
+import DeedLoginBrandingImage from './components/DeedLoginBrandingImage.vue';
+
+const originalLoginComponent = Vue.options.components['portal-login'];
 
 const components = {
+  'portal-login': Login,
   'portal-login-metamask': LoginMetamask,
+  'portal-original-login': originalLoginComponent,
+  'portal-deed-login': DeedLogin,
+  'portal-deed-login-main': DeedLoginMain,
+  'portal-deed-login-introduction': DeedLoginIntroduction,
+  'portal-deed-login-branding-image': DeedLoginBrandingImage,
 };
 
 for (const key in components) {

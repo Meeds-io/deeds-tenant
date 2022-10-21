@@ -16,20 +16,25 @@
  */
 package io.meeds.tenant.metamask.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
+import org.picocontainer.Startable;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import io.meeds.tenant.metamask.storage.TenantManagerStorage;
+import io.meeds.tenant.model.DeedTenant;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-public class TenantManagerService {
+public class TenantManagerService implements Startable {
 
   public static final String   MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
 
@@ -38,6 +43,8 @@ public class TenantManagerService {
   protected static final Log   LOG                         = ExoLogger.getLogger(TenantManagerService.class);
 
   private TenantManagerStorage tenantManagerStorage;
+
+  private DeedTenant           deedTenant;
 
   private String               nftId;
 
@@ -48,6 +55,18 @@ public class TenantManagerService {
     this.tenantManagerStorage = tenantManagerStorage;
     this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
     this.nftId = getParamValue(params, NFT_ID_PARAM);
+  }
+
+  @Override
+  public void start() {
+    if (isEnabled()) {
+      CompletableFuture.runAsync(() -> deedTenant = this.tenantManagerStorage.getDeedTenant(nftId));
+    }
+  }
+
+  @Override
+  public void stop() {
+    // Nothing to stop for now
   }
 
   public boolean isTenantManager(String address) {
@@ -62,8 +81,16 @@ public class TenantManagerService {
     return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
-  public String getNftId() {
-    return nftId;
+  public boolean isDeedTenant() {
+    return isEnabled() && deedTenant != null;
+  }
+
+  public DeedTenant getDeedTenant() {
+    return deedTenant;
+  }
+
+  private boolean isEnabled() {
+    return StringUtils.isNotBlank(nftId) && tenantManagerStorage.isEnabled();
   }
 
   private String getParamValue(InitParams params, String paramName) {

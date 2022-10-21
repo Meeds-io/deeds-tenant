@@ -18,7 +18,9 @@ package io.meeds.tenant.metamask.service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -35,7 +37,16 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.organization.*;
+import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.GroupHandler;
+import org.exoplatform.services.organization.MembershipHandler;
+import org.exoplatform.services.organization.MembershipType;
+import org.exoplatform.services.organization.MembershipTypeHandler;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.Query;
+import org.exoplatform.services.organization.User;
+import org.exoplatform.services.organization.UserHandler;
+import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.RegistrationException;
@@ -277,7 +288,34 @@ public class MetamaskLoginService implements Startable {
     }
   }
 
-  //
+  /**
+   * @return true if current instance if the one of a Tenant Management
+   */
+  public boolean isDeedTenant() {
+    return tenantManagerService.isDeedTenant();
+  }
+
+  /**
+   * @return DEED NFT identifier
+   */
+  public long getDeedId() {
+    return tenantManagerService.getDeedTenant().getNftId();
+  }
+
+  /**
+   * @return DEED NFT city index
+   */
+  public short getCityIndex() {
+    return tenantManagerService.getDeedTenant().getCityIndex();
+  }
+
+  /**
+   * @return DEED NFT card type index
+   */
+  public short getCardTypeIndex() {
+    return tenantManagerService.getDeedTenant().getCardType();
+  }
+
   private void setTenantManagerRoles(User user) {
     List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
     LOG.info("Tenant manager registered, setting its default memberships as manager.");

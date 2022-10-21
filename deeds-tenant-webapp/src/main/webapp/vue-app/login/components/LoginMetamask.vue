@@ -19,16 +19,20 @@
 
 -->
 <template>
-  <div v-if="metamaskEnabled" class="border-box-sizing mt-4">
+  <div
+    v-if="metamaskEnabled"
+    class="border-box-sizing mt-4 d-flex">
     <v-btn
       v-if="!isMetamaskInstalled"
+      :block="!isDeedTenant"
+      :color="isDeedTenant && 'primary'"
+      :large="isDeedTenant"
+      :class="!isDeedTenant && 'rounded-lg'"
       href="https://metamask.io/"
       target="_blank"
       rel="noreferrer"
-      class="rounded-lg btn"
-      block
-      outlined
-      text>
+      class="mx-auto"
+      outlined>
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
@@ -37,10 +41,12 @@
     </v-btn>
     <v-btn
       v-else
-      class="rounded-lg btn"
-      block
+      :block="!isDeedTenant"
+      :color="isDeedTenant && 'primary'"
+      :large="isDeedTenant"
+      :class="!isDeedTenant && 'rounded-lg'"
+      class="mx-auto"
       outlined
-      text
       @click="signInWithMetamask()">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
@@ -98,6 +104,9 @@ export default {
     },
     initialUri() {
       return this.params && this.params.initialUri;
+    },
+    isDeedTenant() {
+      return this.params?.isDeedTenant;
     },
   },
   created() {

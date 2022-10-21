@@ -18,6 +18,7 @@ package io.meeds.tenant.metamask.storage;
 
 import java.math.BigInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
@@ -28,20 +29,28 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import io.meeds.deeds.contract.Deed;
 import io.meeds.deeds.contract.DeedTenantProvisioning;
+import io.meeds.tenant.model.DeedTenant;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
 public class TenantManagerStorage {
 
-  protected static final Log LOG = ExoLogger.getLogger(TenantManagerStorage.class);
+  protected static final Log       LOG = ExoLogger.getLogger(TenantManagerStorage.class);
 
-  private Web3j              web3j;
+  protected Web3j                  web3j;
 
-  private String             networkUrl;
+  protected DeedTenantProvisioning deedTenantProvisioning;
 
-  private String             tenantProvisioningAddress;
+  protected Deed                   deed;
+
+  private String                   networkUrl;
+
+  private String                   tenantProvisioningAddress;
+
+  private String                   deedAddress;
 
   public TenantManagerStorage(InitParams params) {
     if (params != null) {
@@ -55,29 +64,92 @@ public class TenantManagerStorage {
   }
 
   public boolean isManagerAddress(String nftId, String address) {
+    if (!isEnabled()) {
+      return false;
+    }
     try {
       return getTenantProvisioningContract().isProvisioningManager(address, new BigInteger(nftId)).send();
     } catch (Exception e) {
       LOG.warn("Error checking Tenant Provisioning Manager", e);
-      return false;
+    }
+    return false;
+  }
+
+  public DeedTenant getDeedTenant(String nftId) {
+    if (!isEnabled()) {
+      return null;
+    }
+    try {
+      DeedTenant deedTenant = new DeedTenant(Long.parseLong(nftId));
+      BigInteger cardTypeIndex = getDeedContract().cardType(new BigInteger(nftId)).send();
+      if (cardTypeIndex != null) {
+        deedTenant.setCardType(cardTypeIndex.shortValue());
+      }
+      BigInteger cityIndex = getDeedContract().cityIndex(new BigInteger(nftId)).send();
+      if (cityIndex != null) {
+        deedTenant.setCityIndex(cityIndex.shortValue());
+      }
+      Boolean isProvisioned = getTenantProvisioningContract().tenantStatus(new BigInteger(nftId)).send();
+      if (isProvisioned != null) {
+        deedTenant.setProvisioned(isProvisioned.booleanValue());
+      }
+      return deedTenant;
+    } catch (Exception e) {
+      LOG.warn("Error getting Deed Tenant information from blockchain", e);
+      return null;
     }
   }
 
-  public DeedTenantProvisioning getTenantProvisioningContract() {
-    BigInteger gasPrice = BigInteger.valueOf(20000000000l);
-    BigInteger gasLimit = BigInteger.valueOf(300000l);
-
-    Web3j web3jInstance = getWeb3j();
-    return DeedTenantProvisioning.load(tenantProvisioningAddress,
-                                       web3jInstance,
-                                       new ReadonlyTransactionManager(web3jInstance, Address.DEFAULT.toString()),
-                                       new StaticGasProvider(gasPrice, gasLimit));
+  public boolean isEnabled() {
+    return StringUtils.isNotBlank(tenantProvisioningAddress) && StringUtils.isNotBlank(networkUrl)
+        && StringUtils.isNotBlank(getDeedAddress());
   }
 
-  public Web3j getWeb3j() {
+  private String getDeedAddress() {
+    if (StringUtils.isBlank(deedAddress)) {
+      try {
+        deedAddress = getTenantProvisioningContract().deed().send();
+      } catch (Exception e) {
+        LOG.warn("Error Getting Deed Address from blockchain", e);
+      }
+    }
+    return deedAddress;
+  }
+
+  private DeedTenantProvisioning getTenantProvisioningContract() {
+    if (deedTenantProvisioning == null) {
+      BigInteger gasPrice = BigInteger.valueOf(20000000000l);
+      BigInteger gasLimit = BigInteger.valueOf(300000l);
+
+      Web3j web3jInstance = getWeb3j();
+      deedTenantProvisioning = DeedTenantProvisioning.load(tenantProvisioningAddress,
+                                                           web3jInstance,
+                                                           new ReadonlyTransactionManager(web3jInstance,
+                                                                                          Address.DEFAULT.toString()),
+                                                           new StaticGasProvider(gasPrice, gasLimit));
+    }
+    return deedTenantProvisioning;
+  }
+
+  private Deed getDeedContract() {
+    if (deed == null) {
+      BigInteger gasPrice = BigInteger.valueOf(20000000000l);
+      BigInteger gasLimit = BigInteger.valueOf(300000l);
+
+      Web3j web3jInstance = getWeb3j();
+      deed = Deed.load(getDeedAddress(),
+                       web3jInstance,
+                       new ReadonlyTransactionManager(web3jInstance, Address.DEFAULT.toString()),
+                       new StaticGasProvider(gasPrice, gasLimit));
+    }
+    return deed;
+  }
+
+  private Web3j getWeb3j() {
     if (web3j == null) {
       web3j = Web3j.build(new HttpService(networkUrl));
     }
     return web3j;
   }
+
 }

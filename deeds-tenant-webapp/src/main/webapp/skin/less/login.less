@@ -1,0 +1,30 @@
+@import "./variables.less";
+@import "./platform/portlets/extensions/login.less";
+
+body.VuetifyApp {
+  height: 100vh;
+}
+
+.v-application {
+  overflow: auto !important;
+  height: 100vh;
+}
+
+.VuetifyApp .v-navigation-drawer__content {
+  overflow-y: hidden;
+}
+
+#mainAppArea .v-main__wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+}
+
+.VuetifyApp .v-btn--outlined {
+  border: thin solid currentColor !important;
+}
+
+.login-button {
+  min-width: 222px !important;
+}
