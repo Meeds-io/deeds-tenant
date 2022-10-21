@@ -1,0 +1,46 @@
+@import "./variables.less";
+@import "./platform/portlets/extensions/login.less";
+
+body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main__wrap {
+  height: 100%;
+  max-height: 100%;
+  min-height: 100%;
+}
+
+#loginApplication {
+  display: none;
+
+  &.loaded {
+    display: flex;
+  }
+}
+
+.VuetifyApp .v-application .white-background {
+  background-color: #FFFFFF !important;
+}
+
+#mainAppArea .v-main__wrap {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.VuetifyApp .v-btn--outlined {
+  border: thin solid currentColor !important;
+}
+
+.login-button {
+  width: 222px !important;
+  max-width: 100% !important;
+}
+
+.brandingImageContent {
+  bottom: 3%;
+  right: 3%;
+  position: fixed;
+
+  img.brandingImage {
+    width: 10vw;
+    max-width: 150px;
+  }
+}

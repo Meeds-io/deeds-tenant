@@ -16,7 +16,10 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
@@ -52,6 +55,20 @@ public class MetamaskLoginExtension implements UIParamsExtension {
 
     HttpSession httpSession = controllerContext.getRequest().getSession(true);
     params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
+
+    long nftId = metamaskLoginService.getDeedId();
+    if (nftId >= 0) {
+      params.put("nftId", nftId);
+      params.put("isDeedTenant", true);
+
+      if (metamaskLoginService.isDeedTenant()) {
+        short cityIndex = metamaskLoginService.getCityIndex();
+        short cardTypeIndex = metamaskLoginService.getCardTypeIndex();
+
+        params.put("cityIndex", cityIndex);
+        params.put("cardTypeIndex", cardTypeIndex);
+      }
+    }
     return params;
   }
 

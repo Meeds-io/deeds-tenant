@@ -18,7 +18,9 @@ package io.meeds.tenant.metamask.service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
@@ -35,10 +37,20 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.organization.*;
+import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.GroupHandler;
+import org.exoplatform.services.organization.MembershipHandler;
+import org.exoplatform.services.organization.MembershipType;
+import org.exoplatform.services.organization.MembershipTypeHandler;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.Query;
+import org.exoplatform.services.organization.User;
+import org.exoplatform.services.organization.UserHandler;
+import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.RegistrationException;
+import io.meeds.tenant.model.DeedTenant;
 
 public class MetamaskLoginService implements Startable {
 
@@ -277,7 +289,48 @@ public class MetamaskLoginService implements Startable {
     }
   }
 
-  //
+  /**
+   * @return true if current instance if the one of a Tenant Management
+   */
+  public boolean isDeedTenant() {
+    try {
+      return tenantManagerService.isDeedTenant();
+    } catch (Exception e) {
+      LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
+      return false;
+    }
+  }
+
+  /**
+   * @return DEED NFT identifier
+   */
+  public long getDeedId() {
+    return tenantManagerService.getNftId();
+  }
+
+  /**
+   * @return DEED NFT city index
+   */
+  public short getCityIndex() {
+    DeedTenant deedTenant = getDeedTenant();
+    return deedTenant == null ? -1 : deedTenant.getCityIndex();
+  }
+
+  /**
+   * @return DEED NFT card type index
+   */
+  public short getCardTypeIndex() {
+    DeedTenant deedTenant = getDeedTenant();
+    return deedTenant == null ? -1 : getDeedTenant().getCardType();
+  }
+
+  /**
+   * @return DEED NFT properties
+   */
+  public DeedTenant getDeedTenant() {
+    return tenantManagerService.getDeedTenant();
+  }
+
   private void setTenantManagerRoles(User user) {
     List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
     LOG.info("Tenant manager registered, setting its default memberships as manager.");
