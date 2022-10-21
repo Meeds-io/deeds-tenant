@@ -16,20 +16,28 @@
  */
 package io.meeds.tenant.metamask.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.picocontainer.Startable;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import io.meeds.tenant.metamask.storage.TenantManagerStorage;
+import io.meeds.tenant.model.DeedTenant;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-public class TenantManagerService {
+public class TenantManagerService implements Startable {
+
+  public static final int      MAX_START_TENTATIVES        = 5;
 
   public static final String   MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
 
@@ -39,9 +47,13 @@ public class TenantManagerService {
 
   private TenantManagerStorage tenantManagerStorage;
 
+  private DeedTenant           deedTenant;
+
   private String               nftId;
 
   private List<String>         tenantManagerDefaultRoles   = new ArrayList<>();
+
+  private AtomicInteger        blockchainReadTentatives    = new AtomicInteger(0);
 
   public TenantManagerService(TenantManagerStorage tenantManagerStorage,
                               InitParams params) {
@@ -50,9 +62,46 @@ public class TenantManagerService {
     this.nftId = getParamValue(params, NFT_ID_PARAM);
   }
 
+  @Override
+  public void start() {
+    if (blockchainReadTentatives.incrementAndGet() > MAX_START_TENTATIVES) {
+      LOG.error("Reached Maximumum tentatives to retrieve Deed Tenant information from Blockchain. Tenant will be considered as not of Type Deed NFT.");
+      return;
+    }
+    CompletableFuture.runAsync(() -> {
+      try {
+        if (isEnabled()) {
+          deedTenant = this.tenantManagerStorage.getDeedTenant(nftId);
+        }
+      } catch (Exception e) {
+        LOG.warn("Error while retrieving Deed Tenant information from Blockchain, the operation will be retried", e);
+        if (hasConfiguredDeedId()) {
+          start();
+        }
+      }
+    });
+  }
+
+  @Override
+  public void stop() {
+    // Nothing to stop for now
+  }
+
   public boolean isTenantManager(String address) {
-    if (StringUtils.isNotBlank(this.nftId)) {
-      return this.tenantManagerStorage.isManagerAddress(this.nftId, address);
+    if (hasConfiguredDeedId()) {
+      try {
+        boolean tenantManager = this.tenantManagerStorage.isManagerAddress(this.nftId, address);
+        if (tenantManager && deedTenant != null && !StringUtils.equalsIgnoreCase(address, deedTenant.getManagerAddress())) {
+          deedTenant.setManagerAddress(address);
+        }
+        return tenantManager;
+      } catch (Exception e) {
+        LOG.warn("Error retrieving information whether address {} is manager of contract or not. Try with already retrieved DeedTenant {}",
+                 address,
+                 deedTenant,
+                 e);
+        return deedTenant != null && StringUtils.equalsIgnoreCase(address, deedTenant.getManagerAddress());
+      }
     } else {
       return false;
     }
@@ -62,8 +111,24 @@ public class TenantManagerService {
     return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
-  public String getNftId() {
-    return nftId;
+  public boolean isDeedTenant() throws Exception {
+    return isEnabled() && deedTenant != null;
+  }
+
+  public DeedTenant getDeedTenant() {
+    return deedTenant;
+  }
+
+  public long getNftId() {
+    return StringUtils.isBlank(nftId) ? -1 : Long.parseLong(nftId);
+  }
+
+  protected boolean isEnabled() throws Exception {
+    return hasConfiguredDeedId() && tenantManagerStorage.isEnabled();
+  }
+
+  protected boolean hasConfiguredDeedId() {
+    return StringUtils.isNotBlank(this.nftId);
   }
 
   private String getParamValue(InitParams params, String paramName) {

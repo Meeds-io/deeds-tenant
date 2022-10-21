@@ -96,7 +96,7 @@
     </component-plugin>
   </external-component-plugins>
 
-  <external-component-plugins>
+  <external-component-plugins profiles="wallet">
     <target-component>org.exoplatform.services.organization.OrganizationService</target-component>
     <component-plugin>
       <name>new.metamask.created.user.listener</name>
