@@ -18,37 +18,76 @@ package io.meeds.tenant.metamask.service;
 
 import static io.meeds.tenant.metamask.service.TenantManagerService.MANAGER_DEFAULT_ROLES_PARAM;
 import static io.meeds.tenant.metamask.service.TenantManagerService.NFT_ID_PARAM;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.after;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.exoplatform.container.xml.*;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.container.xml.ValuesParam;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import io.meeds.tenant.metamask.storage.TenantManagerStorage;
+import io.meeds.tenant.model.DeedTenant;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TenantManagerServiceTest {
 
+  protected static final Log LOG = ExoLogger.getLogger(TenantManagerServiceTest.class);
+
   @Mock
-  TenantManagerStorage tenantManagerStorage;
+  TenantManagerStorage       tenantManagerStorage;
 
-  TenantManagerService tenantManagerService;
+  TenantManagerService       tenantManagerService;
 
-  @Before
-  public void setUp() {
-    reset(tenantManagerStorage);
+  @Test
+  public void testStart() throws Exception {
+    String nftId = "nftId";
+    InitParams params = mock(InitParams.class);
+
+    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
+    ValueParam nftIdValue = new ValueParam();
+    nftIdValue.setValue(nftId);
+    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
+    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
+    tenantManagerService.start();
+    verify(tenantManagerStorage, never()).getDeedTenant(anyString());
+
+    when(tenantManagerStorage.getDeedTenant(anyString())).thenThrow(new RuntimeException("FAKE Exception for testStart"));
+    when(tenantManagerStorage.isEnabled()).thenReturn(true);
+    tenantManagerService.start();
+    for (int i = 0; i < TenantManagerService.MAX_START_TENTATIVES; i++) {
+      verify(tenantManagerStorage, timeout(2000).atLeast(i)).isEnabled();
+      assertNull(tenantManagerService.getDeedTenant());
+    }
+    tenantManagerService.start();
+    verify(tenantManagerStorage, after(2000).times(TenantManagerService.MAX_START_TENTATIVES)).isEnabled();
+    assertNull(tenantManagerService.getDeedTenant());
   }
 
   @Test
-  public void testIsTenantManager() {
+  public void testIsTenantManager() throws Exception {
     String nftId = "nftId";
     String walletAddress = "walletAddress";
 
@@ -72,6 +111,86 @@ public class TenantManagerServiceTest {
     when(tenantManagerStorage.isManagerAddress(nftId, walletAddress)).thenReturn(true);
     tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
     assertTrue(tenantManagerService.isTenantManager(walletAddress));
+  }
+
+  @Test
+  public void testIsTenantManagerBlockchainError() throws Exception {
+    String nftId = "0";
+    String walletAddress = "walletAddress";
+    String walletManagerAddress = "walletManagerAddress";
+
+    tenantManagerService = new TenantManagerService(tenantManagerStorage, null);
+
+    InitParams params = mock(InitParams.class);
+    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
+    ValueParam nftIdValue = new ValueParam();
+    nftIdValue.setValue(nftId);
+    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
+    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
+    assertFalse(tenantManagerService.isTenantManager(walletAddress));
+    when(tenantManagerStorage.isManagerAddress(nftId, walletManagerAddress)).thenReturn(true);
+    assertFalse(tenantManagerService.isTenantManager(walletAddress));
+    assertTrue(tenantManagerService.isTenantManager(walletManagerAddress));
+
+    DeedTenant deedTenant = new DeedTenant(Long.parseLong(nftId));
+    when(tenantManagerStorage.getDeedTenant(anyString())).thenReturn(deedTenant);
+    when(tenantManagerStorage.isEnabled()).thenReturn(true);
+    tenantManagerService.start();
+    verify(tenantManagerStorage, timeout(2000).times(1)).getDeedTenant(nftId);
+    assertFalse(tenantManagerService.isTenantManager(walletAddress));
+    assertNotNull(tenantManagerService.getDeedTenant());
+    assertTrue(tenantManagerService.isDeedTenant());
+
+    assertNull(tenantManagerService.getDeedTenant().getManagerAddress());
+    boolean isTenantManager = tenantManagerService.isTenantManager(walletManagerAddress);
+    assertTrue(isTenantManager);
+    assertEquals(walletManagerAddress, tenantManagerService.getDeedTenant().getManagerAddress());
+
+    when(tenantManagerStorage.isManagerAddress(nftId,
+                                               walletManagerAddress)).thenThrow(new RuntimeException("FAKE Exception for testIsTenantManagerBlockchainError"));
+    assertTrue(tenantManagerService.isTenantManager(walletManagerAddress));
+    assertEquals(walletManagerAddress, tenantManagerService.getDeedTenant().getManagerAddress());
+  }
+
+  @Test
+  public void testGetDeedTenant() throws Exception {
+    String nftId = "0";
+
+    tenantManagerService = new TenantManagerService(tenantManagerStorage, null);
+
+    assertEquals(-1, tenantManagerService.getNftId());
+    assertFalse(tenantManagerService.isDeedTenant());
+    assertNull(tenantManagerService.getDeedTenant());
+    tenantManagerService.start();
+    verify(tenantManagerStorage, never()).isEnabled();
+    verify(tenantManagerStorage, never()).getDeedTenant(anyString());
+    assertFalse(tenantManagerService.isDeedTenant());
+    assertNull(tenantManagerService.getDeedTenant());
+
+    InitParams params = mock(InitParams.class);
+    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
+    ValueParam nftIdValue = new ValueParam();
+    nftIdValue.setValue(nftId);
+    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
+    tenantManagerService = new TenantManagerService(tenantManagerStorage, params);
+    assertEquals(Long.parseLong(nftId), tenantManagerService.getNftId());
+    tenantManagerService.start();
+    verify(tenantManagerStorage, timeout(2000).times(1)).isEnabled();
+    assertFalse(tenantManagerService.isDeedTenant());
+    assertNull(tenantManagerService.getDeedTenant());
+
+    when(tenantManagerStorage.isEnabled()).thenReturn(true);
+    tenantManagerService.start();
+    verify(tenantManagerStorage, timeout(2000).times(1)).getDeedTenant(nftId);
+    assertFalse(tenantManagerService.isDeedTenant());
+    assertNull(tenantManagerService.getDeedTenant());
+
+    DeedTenant deedTenant = new DeedTenant(Long.parseLong(nftId));
+    when(tenantManagerStorage.getDeedTenant(anyString())).thenReturn(deedTenant);
+    tenantManagerService.start();
+    verify(tenantManagerStorage, timeout(2000).times(2)).getDeedTenant(nftId);
+    assertNotNull(tenantManagerService.getDeedTenant());
+    assertTrue(tenantManagerService.isDeedTenant());
   }
 
   @Test
