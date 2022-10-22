@@ -26,7 +26,7 @@
     flat>
     <div class="border-box-sizing">
       <v-card-title class="display-1 primary--text px-0 d-none d-sm-block center">
-        {{ $t('portal.deedTenant.login.web3Workspace') }}
+        {{ companyName }}
       </v-card-title>
   
       <div v-if="registerEnabled" class="center my-3">
@@ -151,19 +151,19 @@ export default {
       return this.showPassword ? 'text' :'password';
     },
     companyName() {
-      return this.params && this.params.companyName;
+      return this.params?.companyName;
     },
     initialUri() {
-      return this.params && this.params.initialUri;
+      return this.params?.initialUri;
     },
     forgotPasswordPath() {
-      return this.params && this.params.forgotPasswordPath;
+      return this.params?.forgotPasswordPath;
     },
     registerEnabled() {
-      return this.params && this.params.registerEnabled;
+      return this.params?.registerEnabled;
     },
     errorCode() {
-      return this.params && this.params.errorCode;
+      return this.params?.errorCode;
     },
     errorMessage() {
       return this.errorCode && this.$t(`UILoginForm.label.${this.errorCode}`);

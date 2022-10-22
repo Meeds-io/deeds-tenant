@@ -96,10 +96,10 @@ export default {
       return this.params?.metamaskEnabled;
     },
     rawMessage() {
-      return this.params && this.params.rawMessage;
+      return this.params?.rawMessage;
     },
     initialUri() {
-      return this.params && this.params.initialUri;
+      return this.params?.initialUri;
     },
   },
   created() {

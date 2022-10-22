@@ -36,7 +36,7 @@ export default {
   },
   computed: {
     brandingLogo() {
-      return this.params && this.params.brandingLogo;
+      return this.params?.brandingLogo;
     },
   },
 };
