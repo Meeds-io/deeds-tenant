@@ -55,8 +55,7 @@ public class TenantManagerService implements Startable {
 
   private AtomicInteger        blockchainReadTentatives    = new AtomicInteger(0);
 
-  public TenantManagerService(TenantManagerStorage tenantManagerStorage,
-                              InitParams params) {
+  public TenantManagerService(TenantManagerStorage tenantManagerStorage, InitParams params) {
     this.tenantManagerStorage = tenantManagerStorage;
     this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
     this.nftId = getParamValue(params, NFT_ID_PARAM);
@@ -64,22 +63,7 @@ public class TenantManagerService implements Startable {
 
   @Override
   public void start() {
-    if (blockchainReadTentatives.incrementAndGet() > MAX_START_TENTATIVES) {
-      LOG.error("Reached Maximumum tentatives to retrieve Deed Tenant information from Blockchain. Tenant will be considered as not of Type Deed NFT.");
-      return;
-    }
-    CompletableFuture.runAsync(() -> {
-      try {
-        if (isEnabled()) {
-          deedTenant = this.tenantManagerStorage.getDeedTenant(nftId);
-        }
-      } catch (Exception e) {
-        LOG.warn("Error while retrieving Deed Tenant information from Blockchain, the operation will be retried", e);
-        if (hasConfiguredDeedId()) {
-          start();
-        }
-      }
-    });
+    retrieveDeedTenant();
   }
 
   @Override
@@ -129,6 +113,25 @@ public class TenantManagerService implements Startable {
 
   protected boolean hasConfiguredDeedId() {
     return StringUtils.isNotBlank(this.nftId);
+  }
+
+  private void retrieveDeedTenant() {
+    if (blockchainReadTentatives.incrementAndGet() > MAX_START_TENTATIVES) {
+      LOG.error("Reached Maximumum tentatives to retrieve Deed Tenant information from Blockchain. Tenant will be considered as not of Type Deed NFT.");
+    } else {
+      CompletableFuture.runAsync(() -> {
+        try {
+          if (isEnabled()) {
+            deedTenant = this.tenantManagerStorage.getDeedTenant(nftId);
+          }
+        } catch (Exception e) {
+          LOG.warn("Error while retrieving Deed Tenant information from Blockchain, the operation will be retried", e);
+          if (hasConfiguredDeedId()) {
+            retrieveDeedTenant();
+          }
+        }
+      });
+    }
   }
 
   private String getParamValue(InitParams params, String paramName) {

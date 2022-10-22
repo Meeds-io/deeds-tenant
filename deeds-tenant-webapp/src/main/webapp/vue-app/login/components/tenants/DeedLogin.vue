@@ -45,7 +45,7 @@
           height="150px"
           class="d-sm-none d-block">
           <template #title>
-            {{ $t('portal.deedTenant.login.web3Workspace') }}
+            {{ companyName }}
           </template>
         </portal-deed-login-introduction>
         <portal-deed-login-main
@@ -64,34 +64,12 @@ export default {
       default: null,
     },
   },
-  data: () => ({
-    cities: ['Tanit', 'Reshef', 'Ashtarte', 'Melqart', 'Eshmun', 'Kushor', 'Hammon'],
-    cardTypes: ['Common', 'Uncommon', 'Rare', 'Legendary'],
-  }),
   computed: {
-    nftId() {
-      return this.params?.nftId;
-    },
-    cityIndex() {
-      return this.params?.cityIndex;
-    },
-    cardTypeIndex() {
-      return this.params?.cardTypeIndex;
-    },
-    cityName() {
-      return this.cities[this.cityIndex];
-    },
-    cardTypeName() {
-      return this.cardTypes[this.cardTypeIndex];
-    },
-    summary() {
-      return `${this.cardTypeName} #${this.nftId}`;
-    },
-    brandingLogo() {
-      return this.params && this.params.brandingLogo;
-    },
     mobile() {
       return this.$vuetify.breakpoint.xs;
+    },
+    companyName() {
+      return this.params?.companyName;
     },
   },
   created() {
