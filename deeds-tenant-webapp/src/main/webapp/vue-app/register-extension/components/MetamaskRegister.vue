@@ -91,13 +91,13 @@ export default {
   }),
   computed: {
     metamaskRegistrationEnabled() {
-      return this.params && this.params.metamaskRegistrationEnabled;
+      return this.params?.metamaskRegistrationEnabled;
     },
     rawMessage() {
-      return this.params && this.params.rawMessage;
+      return this.params?.rawMessage;
     },
     initialUri() {
-      return this.params && this.params.initialUri;
+      return this.params?.initialUri;
     },
   },
   created() {
