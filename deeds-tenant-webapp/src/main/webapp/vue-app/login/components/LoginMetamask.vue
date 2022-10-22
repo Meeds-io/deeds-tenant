@@ -97,13 +97,13 @@ export default {
   }),
   computed: {
     metamaskEnabled() {
-      return this.params && this.params.metamaskEnabled;
+      return this.params?.metamaskEnabled;
     },
     rawMessage() {
-      return this.params && this.params.rawMessage;
+      return this.params?.rawMessage;
     },
     initialUri() {
-      return this.params && this.params.initialUri;
+      return this.params?.initialUri;
     },
     isDeedTenant() {
       return this.params?.isDeedTenant;

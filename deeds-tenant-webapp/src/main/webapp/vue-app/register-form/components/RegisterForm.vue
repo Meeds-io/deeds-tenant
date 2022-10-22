@@ -160,13 +160,13 @@ export default {
   }),
   computed: {
     username() {
-      return this.params && this.params.username;
+      return this.params?.username;
     },
     brandingLogo() {
-      return this.params && this.params.brandingLogo;
+      return this.params?.brandingLogo;
     },
     errorCode() {
-      return this.params && this.params.errorCode;
+      return this.params?.errorCode;
     },
     errorMessage() {
       if (this.errorCode === 'USERNAME_MANDATORY') {
@@ -189,9 +189,9 @@ export default {
   },
   created() {
     document.title = this.$t('portal.register');
-    this.rememberme = this.params && this.params.rememberme;
-    this.fullName = this.params && this.params.fullName;
-    this.email = this.params && this.params.email;
+    this.rememberme = this.params?.rememberme;
+    this.fullName = this.params?.fullName;
+    this.email = this.params?.email;
     this.provider = new window.ethers.providers.Web3Provider(window.ethereum);
 
     if (this.username && !this.fullName && !this.email) {
