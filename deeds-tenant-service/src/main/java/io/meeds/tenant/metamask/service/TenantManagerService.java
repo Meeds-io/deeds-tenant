@@ -16,11 +16,11 @@
  */
 package io.meeds.tenant.metamask.service;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
 import org.picocontainer.Startable;
@@ -29,41 +29,43 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.tenant.metamask.storage.TenantManagerStorage;
-import io.meeds.tenant.model.DeedTenant;
+import io.meeds.tenant.SpringIntegration;
+import io.meeds.tenant.WebAppClassLoaderContext;
+import io.meeds.tenant.model.DeedTenantHost;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
 public class TenantManagerService implements Startable {
 
-  public static final int      MAX_START_TENTATIVES        = 5;
+  public static final int    MAX_START_TENTATIVES        = 5;
 
-  public static final String   MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
+  public static final String MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
 
-  public static final String   NFT_ID_PARAM                = "nftId";
+  public static final String NFT_ID_PARAM                = "nftId";
 
-  protected static final Log   LOG                         = ExoLogger.getLogger(TenantManagerService.class);
+  protected static final Log LOG                         = ExoLogger.getLogger(TenantManagerService.class);
 
-  private TenantManagerStorage tenantManagerStorage;
+  private String             nftId;
 
-  private DeedTenant           deedTenant;
+  private List<String>       tenantManagerDefaultRoles   = new ArrayList<>();
 
-  private String               nftId;
-
-  private List<String>         tenantManagerDefaultRoles   = new ArrayList<>();
-
-  private AtomicInteger        blockchainReadTentatives    = new AtomicInteger(0);
-
-  public TenantManagerService(TenantManagerStorage tenantManagerStorage, InitParams params) {
-    this.tenantManagerStorage = tenantManagerStorage;
+  public TenantManagerService(InitParams params) {
     this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
     this.nftId = getParamValue(params, NFT_ID_PARAM);
   }
 
   @Override
   public void start() {
-    retrieveDeedTenant();
+    CompletableFuture.runAsync(() -> {
+      if (hasConfiguredDeedId()) {
+        try {
+          retrieveDeedTenant(nftId);
+        } catch (Exception e) {
+          LOG.error("Error retrieving DeedTenant information", e);
+        }
+      }
+    });
   }
 
   @Override
@@ -73,19 +75,8 @@ public class TenantManagerService implements Startable {
 
   public boolean isTenantManager(String address) {
     if (hasConfiguredDeedId()) {
-      try {
-        boolean tenantManager = this.tenantManagerStorage.isManagerAddress(this.nftId, address);
-        if (tenantManager && deedTenant != null && !StringUtils.equalsIgnoreCase(address, deedTenant.getManagerAddress())) {
-          deedTenant.setManagerAddress(address);
-        }
-        return tenantManager;
-      } catch (Exception e) {
-        LOG.warn("Error retrieving information whether address {} is manager of contract or not. Try with already retrieved DeedTenant {}",
-                 address,
-                 deedTenant,
-                 e);
-        return deedTenant != null && StringUtils.equalsIgnoreCase(address, deedTenant.getManagerAddress());
-      }
+      DeedTenantHost deedTenantHost = DeedTenantHost.getInstance();
+      return deedTenantHost != null && StringUtils.equalsIgnoreCase(address, deedTenantHost.getManagerAddress());
     } else {
       return false;
     }
@@ -95,43 +86,40 @@ public class TenantManagerService implements Startable {
     return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
-  public boolean isDeedTenant() throws Exception {
-    return isEnabled() && deedTenant != null;
-  }
-
-  public DeedTenant getDeedTenant() {
-    return deedTenant;
+  public boolean isDeedTenant() {
+    return hasConfiguredDeedId();
   }
 
   public long getNftId() {
     return StringUtils.isBlank(nftId) ? -1 : Long.parseLong(nftId);
   }
 
-  protected boolean isEnabled() throws Exception {
-    return hasConfiguredDeedId() && tenantManagerStorage.isEnabled();
-  }
+  @WebAppClassLoaderContext
+  public DeedTenantHost retrieveDeedTenant(String nftId) throws Exception {// NOSONAR
+    if (hasConfiguredDeedId() && DeedTenantHost.getInstance() == null) {
+      String serviceName = "io.meeds.deeds.service.TenantService";
+      Class<?> serviceClass = Class.forName(serviceName, true, Thread.currentThread().getContextClassLoader());
+      Object serviceInstance = SpringIntegration.getSpringBean(serviceClass);
+      Method getDeedTenantMethod = serviceClass.getMethod("getDeedTenant", long.class);
+      long nftIdLong = Long.parseLong(nftId);
+      Object resultInstance = getDeedTenantMethod.invoke(serviceInstance, nftIdLong);
+      if (resultInstance != null) {
+        String resultName = "io.meeds.deeds.model.DeedTenant";
+        Class<?> resultClass = Class.forName(resultName, true, Thread.currentThread().getContextClassLoader());
+        short cityIndex = (short) resultClass.getMethod("getCityIndex").invoke(resultInstance);
+        short cardType = (short) resultClass.getMethod("getCardType").invoke(resultInstance);
+        boolean isProvisioned = (boolean) resultClass.getMethod("isStartProvisioningStatus").invoke(resultInstance);
+        String managerAddress = (String) resultClass.getMethod("getManagerAddress").invoke(resultInstance);
+        String managerEmail = (String) resultClass.getMethod("getManagerEmail").invoke(resultInstance);
 
-  protected boolean hasConfiguredDeedId() {
-    return StringUtils.isNotBlank(this.nftId);
-  }
-
-  private void retrieveDeedTenant() {
-    if (blockchainReadTentatives.incrementAndGet() > MAX_START_TENTATIVES) {
-      LOG.error("Reached Maximumum tentatives to retrieve Deed Tenant information from Blockchain. Tenant will be considered as not of Type Deed NFT.");
-    } else {
-      CompletableFuture.runAsync(() -> {
-        try {
-          if (isEnabled()) {
-            deedTenant = this.tenantManagerStorage.getDeedTenant(nftId);
-          }
-        } catch (Exception e) {
-          LOG.warn("Error while retrieving Deed Tenant information from Blockchain, the operation will be retried", e);
-          if (hasConfiguredDeedId()) {
-            retrieveDeedTenant();
-          }
-        }
-      });
+        return DeedTenantHost.setInstance(nftIdLong, cityIndex, cardType, isProvisioned, managerAddress, managerEmail);
+      }
     }
+    return null;
+  }
+
+  private boolean hasConfiguredDeedId() {
+    return StringUtils.isNotBlank(this.nftId);
   }
 
   private String getParamValue(InitParams params, String paramName) {

@@ -49,20 +49,6 @@
   </component>
 
   <component>
-    <type>io.meeds.tenant.metamask.storage.TenantManagerStorage</type>
-    <init-params>
-      <value-param>
-        <name>networkUrl</name>
-        <value>${meeds.blockchain.networkUrl:}</value>
-      </value-param>
-      <value-param>
-        <name>tenantProvisioningAddress</name>
-        <value>${meeds.blockchain.tenantProvisioningAddress:}</value>
-      </value-param>
-    </init-params>
-  </component>
-
-  <component>
     <type>io.meeds.tenant.metamask.service.MetamaskLoginService</type>
     <init-params>
       <value-param>

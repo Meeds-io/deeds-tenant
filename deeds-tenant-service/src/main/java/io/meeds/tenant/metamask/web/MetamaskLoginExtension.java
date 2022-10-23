@@ -16,6 +16,8 @@
  */
 package io.meeds.tenant.metamask.web;
 
+import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,21 +25,23 @@ import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.login.UIParamsExtension;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
+import io.meeds.tenant.model.DeedTenantHost;
 
 /**
  * A Login extension to submit Login parameters to UI
  */
 public class MetamaskLoginExtension implements UIParamsExtension {
 
-  private static final List<String> EXTENSION_NAMES =
-                                                    Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
+  private static final List<String> EXTENSION_NAMES = Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
 
-  private MetamaskLoginService      metamaskLoginService;
+  protected MetamaskLoginService    metamaskLoginService;
 
   public MetamaskLoginExtension(MetamaskLoginService metamaskLoginService) {
     this.metamaskLoginService = metamaskLoginService;
@@ -56,20 +60,28 @@ public class MetamaskLoginExtension implements UIParamsExtension {
     HttpSession httpSession = controllerContext.getRequest().getSession(true);
     params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
 
-    long nftId = metamaskLoginService.getDeedId();
-    if (nftId >= 0) {
-      params.put("nftId", nftId);
+    addDeedTenantParameters(httpSession, params, false);
+    return params;
+  }
+
+  protected void addDeedTenantParameters(HttpSession httpSession, Map<String, Object> params, boolean needManagerMail) {
+    if (metamaskLoginService.isDeedTenant()) {
+      params.put("nftId", metamaskLoginService.getDeedId());
       params.put("isDeedTenant", true);
 
-      if (metamaskLoginService.isDeedTenant()) {
-        short cityIndex = metamaskLoginService.getCityIndex();
-        short cardTypeIndex = metamaskLoginService.getCardTypeIndex();
-
-        params.put("cityIndex", cityIndex);
-        params.put("cardTypeIndex", cardTypeIndex);
+      DeedTenantHost deedTenantHost = DeedTenantHost.getInstance();
+      if (deedTenantHost != null) {
+        params.put("cityIndex", deedTenantHost.getCityIndex());
+        params.put("cardTypeIndex", deedTenantHost.getCardType());
+        String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
+        if (metamaskLoginService.isTenantManager(walletAddress) && needManagerMail) {
+          params.put("isTenantManager", true);
+          if (StringUtils.isNotBlank(deedTenantHost.getManagerEmail())) {
+            params.put("tenantManagerEmail", deedTenantHost.getManagerEmail());
+          }
+        }
       }
     }
-    return params;
   }
 
 }

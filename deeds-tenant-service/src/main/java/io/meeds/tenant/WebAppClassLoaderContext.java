@@ -13,27 +13,15 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.model;
+package io.meeds.tenant;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Data
-@NoArgsConstructor
-public class DeedTenant {
-
-  private long    nftId;
-
-  private short   cityIndex = -1;
-
-  private short   cardType  = -1;
-
-  private boolean provisioned;
-
-  private String  managerAddress;
-
-  public DeedTenant(long nftId) {
-    this.nftId = nftId;
-  }
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD })
+public @interface WebAppClassLoaderContext {
 
 }

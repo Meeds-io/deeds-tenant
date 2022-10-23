@@ -1,9 +1,9 @@
 <!--
 
  This file is part of the Meeds project (https://meeds.io/).
- 
+
  Copyright (C) 2020 - 2022 Meeds Association contact@meeds.io
- 
+
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
@@ -19,42 +19,9 @@
 
 -->
 <template>
-  <v-app>
-    <div class="d-flex flex-row full-height">
-      <v-card
-        tile
-        flat
-        min-width="33%"
-        height="100%"
-        class="primary fill-height width-min-content flex-shrink-1 d-none d-sm-flex">
-        <nav class="fill-height flex-grow-1">
-          <portal-deed-login-introduction>
-            <template #title>
-              {{ $t('portal.deedTenant.login.workMetaverse') }}
-            </template>
-            <template #subtitle>
-              {{ $t('portal.deedTenant.login.workMetaverseSubtitle') }}
-            </template>
-          </portal-deed-login-introduction>>
-        </nav>
-      </v-card>
-      <v-main
-        id="mainAppArea"
-        class="border-box-sizing overflow-y-auto fill-height flex-grow-1 flex-shrink-1 pa-0 mb-16 mb-sm-0">
-        <portal-deed-login-introduction
-          height="150px"
-          class="d-sm-none d-block">
-          <template #title>
-            {{ companyName }}
-          </template>
-        </portal-deed-login-introduction>
-        <portal-deed-login-main
-          :params="params"
-          class="mx-auto my-4 my-sm-auto px-4 px-sm-0" />
-        <portal-deed-login-branding-image :params="params" />
-      </v-main>
-    </div>
-  </v-app>
+  <deed-login-template :params="params" branding-image center>
+    <deed-login-main :params="params" />
+  </deed-login-template>
 </template>
 <script>
 export default {
@@ -62,14 +29,6 @@ export default {
     params: {
       type: Object,
       default: null,
-    },
-  },
-  computed: {
-    mobile() {
-      return this.$vuetify.breakpoint.xs;
-    },
-    companyName() {
-      return this.params?.companyName;
     },
   },
   created() {

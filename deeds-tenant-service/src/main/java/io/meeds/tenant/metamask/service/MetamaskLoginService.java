@@ -50,7 +50,6 @@ import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.RegistrationException;
-import io.meeds.tenant.model.DeedTenant;
 
 public class MetamaskLoginService implements Startable {
 
@@ -139,8 +138,16 @@ public class MetamaskLoginService implements Startable {
     if (allowUserRegistration) {
       return true;
     } else {
-      return tenantManagerService.isTenantManager(walletAddress);
+      return isTenantManager(walletAddress);
     }
+  }
+
+  /**
+   * @param walletAddress to check if it's of Tenant Manager
+   * @return true is wallet address is of the Tenant Manager else return false.
+   */
+  public boolean isTenantManager(String walletAddress) {
+    return tenantManagerService.isTenantManager(walletAddress);
   }
 
   /**
@@ -306,29 +313,6 @@ public class MetamaskLoginService implements Startable {
    */
   public long getDeedId() {
     return tenantManagerService.getNftId();
-  }
-
-  /**
-   * @return DEED NFT city index
-   */
-  public short getCityIndex() {
-    DeedTenant deedTenant = getDeedTenant();
-    return deedTenant == null ? -1 : deedTenant.getCityIndex();
-  }
-
-  /**
-   * @return DEED NFT card type index
-   */
-  public short getCardTypeIndex() {
-    DeedTenant deedTenant = getDeedTenant();
-    return deedTenant == null ? -1 : getDeedTenant().getCardType();
-  }
-
-  /**
-   * @return DEED NFT properties
-   */
-  public DeedTenant getDeedTenant() {
-    return tenantManagerService.getDeedTenant();
   }
 
   private void setTenantManagerRoles(User user) {

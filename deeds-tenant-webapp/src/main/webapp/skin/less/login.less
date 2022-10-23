@@ -21,17 +21,21 @@ body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main_
 
 #mainAppArea .v-main__wrap {
   display: flex;
-  flex-direction: column;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .VuetifyApp .v-btn--outlined {
   border: thin solid currentColor !important;
 }
 
-.login-button {
+.login-button, .register-button {
   width: 222px !important;
   max-width: 100% !important;
+}
+
+.v-input legend {
+  width: 0;
 }
 
 .brandingImageContent {
