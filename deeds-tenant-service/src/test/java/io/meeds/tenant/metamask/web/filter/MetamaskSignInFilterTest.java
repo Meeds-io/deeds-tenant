@@ -46,6 +46,7 @@ import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.services.organization.idm.UserImpl;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.services.resources.ResourceBundleService;
+import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
@@ -74,6 +75,9 @@ public class MetamaskSignInFilterTest {
 
   @Mock
   private MetamaskLoginService    metamaskLoginService;
+
+  @Mock
+  private ControllerContext       controllerContext;
 
   @Mock
   private HttpServletRequest      request;
@@ -124,6 +128,7 @@ public class MetamaskSignInFilterTest {
     container = mock(PortalContainer.class);
     when(container.getPortalContext()).thenReturn(context);
     when(context.getRequestDispatcher(any())).thenReturn(requestDispatcher);
+    when(controllerContext.getRequest()).thenReturn(request);
     when(request.getContextPath()).thenReturn("/portal");
     when(request.getSession()).thenReturn(session);
     filter = spy(new MetamaskSignInFilter(container,
@@ -138,7 +143,7 @@ public class MetamaskSignInFilterTest {
       public Boolean answer(InvocationOnMock invocation) throws Throwable {
         String errorCode = invocation.getArgument(1);
         forwardParameters = new JSONObject();
-        filter.addRegisterFormParams(forwardParameters, request, errorCode);
+        filter.addRegisterFormParams(forwardParameters, controllerContext, errorCode);
         return true;
       }
     });

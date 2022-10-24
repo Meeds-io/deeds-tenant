@@ -19,12 +19,13 @@
 
 -->
 <template>
-  <v-app class="loaded">
-    <v-main>
-      <deed-login v-if="isDeedTenant" :params="params" />
-      <portal-original-login v-else :params="params" />
-    </v-main>
-  </v-app>
+  <div class="brandingImageContent d-none d-lg-block">
+    <img
+      :src="brandingLogo"
+      class="brandingImage"
+      role="presentation"
+      alt="Branding Company Logo">
+  </div>
 </template>
 <script>
 export default {
@@ -35,12 +36,9 @@ export default {
     },
   },
   computed: {
-    isDeedTenant() {
-      return this.params?.isDeedTenant;
+    brandingLogo() {
+      return this.params?.brandingLogo;
     },
-  },
-  created() {
-    document.title = this.$t('UILoginForm.label.login');
   },
 };
 </script>

@@ -16,7 +16,10 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
@@ -24,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
-import org.exoplatform.web.login.UIParamsExtension;
 import org.exoplatform.web.register.RegisterHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
@@ -32,17 +34,15 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
 /**
  * An extension to submit parameters to Register UI
  */
-public class MetamaskRegisterExtension implements UIParamsExtension {
+public class MetamaskRegisterExtension extends MetamaskLoginExtension {
 
   public static final String        METAMASK_REGISTRATION_ENABLED = "metamaskRegistrationEnabled";
 
   private static final List<String> EXTENSION_NAMES               = Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
                                                                                   LoginHandler.LOGIN_EXTENSION_NAME);
 
-  private MetamaskLoginService      metamaskLoginService;
-
   public MetamaskRegisterExtension(MetamaskLoginService metamaskLoginService) {
-    this.metamaskLoginService = metamaskLoginService;
+    super(metamaskLoginService);
   }
 
   @Override
@@ -60,6 +60,8 @@ public class MetamaskRegisterExtension implements UIParamsExtension {
         params.put(METAMASK_REGISTRATION_ENABLED, true);
         HttpSession httpSession = controllerContext.getRequest().getSession(true);
         params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
+
+        addDeedTenantParameters(httpSession, params, true);
       }
     }
     return params;
