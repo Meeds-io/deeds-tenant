@@ -24,7 +24,7 @@
   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
   <component>
-    <type>io.meeds.tenant.metamask.service.TenantKernelProfileService</type>
+    <type>io.meeds.tenant.configuration.TenantKernelProfileService</type>
     <init-params>
       <values-param>
         <name>profiles</name>
@@ -36,7 +36,7 @@
 
   <component>
     <key>DeedTenantProperties</key>
-    <type>io.meeds.tenant.metamask.service.TenantKernelPropertyConfigurator</type>
+    <type>io.meeds.tenant.configuration.TenantKernelPropertyConfigurator</type>
     <init-params>
       <properties-param>
         <name>DeedTenantProperties</name>

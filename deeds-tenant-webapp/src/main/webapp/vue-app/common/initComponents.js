@@ -16,16 +16,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import RegisterForm from './components/RegisterForm.vue';
-import RegularRegisterForm from './components/RegularRegisterForm.vue';
-import DeedRegisterForm from './components/tenants/DeedRegisterForm.vue';
-import DeedRegisterFormMain from './components/tenants/DeedRegisterFormMain.vue';
+import DeedBrandingImage from './components/DeedBrandingImage.vue';
+import DeedIntroduction from './components/DeedIntroduction.vue';
+import DeedTemplate from './components/DeedTemplate.vue';
 
 const components = {
-  'portal-register-metamask-form': RegisterForm,
-  'portal-regular-register-metamask-form': RegularRegisterForm,
-  'deed-register-metamask-form': DeedRegisterForm,
-  'deed-register-metamask-form-main': DeedRegisterFormMain,
+  'deed-login-template': DeedTemplate,
+  'deed-login-introduction': DeedIntroduction,
+  'deed-login-branding-image': DeedBrandingImage,
 };
 
 for (const key in components) {
