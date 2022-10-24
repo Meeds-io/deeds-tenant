@@ -38,7 +38,6 @@
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>/</outputDirectory>
       <includes>
-        <include>io.meeds.deeds-dapp:*:jar</include>
         <include>${project.groupId}:*:jar</include>
       </includes>
       <scope>provided</scope>

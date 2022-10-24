@@ -50,6 +50,7 @@ import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.RegistrationException;
+import io.meeds.tenant.service.TenantManagerService;
 
 public class MetamaskLoginService implements Startable {
 
@@ -301,7 +302,7 @@ public class MetamaskLoginService implements Startable {
    */
   public boolean isDeedTenant() {
     try {
-      return tenantManagerService.isDeedTenant();
+      return tenantManagerService.isTenant();
     } catch (Exception e) {
       LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
       return false;

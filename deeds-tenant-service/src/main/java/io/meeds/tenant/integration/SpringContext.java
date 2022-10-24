@@ -13,45 +13,41 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant;
+package io.meeds.tenant.integration;
 
 import javax.servlet.ServletContext;
 
-public class SpringIntegration {
+public class SpringContext {
 
   private static ServletContext servletContext; // NOSONAR
 
-  private static ClassLoader    classLoader;    // NOSONAR
-
-  private SpringIntegration() {
+  private SpringContext() {
     // Static methods class
   }
 
   public static void setServletContext(ServletContext servletContext) {
-    SpringIntegration.servletContext = servletContext;
+    SpringContext.servletContext = servletContext;
   }
 
   public static ServletContext getServletContext() {
     return servletContext;
   }
 
-  public static void setClassLoader(ClassLoader classLoader) {
-    SpringIntegration.classLoader = classLoader;
-  }
-
   public static ClassLoader getClassLoader() {
-    return classLoader;
+    return servletContext == null ? null : servletContext.getClassLoader();
   }
 
-  @SuppressWarnings("unchecked")
-  @WebAppClassLoaderContext
+  @SpringIntegration
   public static <T> T getSpringBean(Class<T> clazz) {
-    if (servletContext != null) {
+    ClassLoader classLoader = getClassLoader();
+    if (classLoader != null) {
       try {
-        Object webApplicationContext = classLoader.loadClass("org.springframework.web.context.support.WebApplicationContextUtils")
-                                                  .getMethod("getRequiredWebApplicationContext", ServletContext.class)
-                                                  .invoke(null, servletContext);
-        return (T) webApplicationContext.getClass().getMethod("getBean", Class.class).invoke(webApplicationContext, clazz);
+        Object springContext = classLoader.loadClass("org.springframework.web.context.support.WebApplicationContextUtils")
+                                          .getMethod("getRequiredWebApplicationContext", ServletContext.class)
+                                          .invoke(null, servletContext);
+        @SuppressWarnings("unchecked")
+        T serviceInstance = (T) springContext.getClass().getMethod("getBean", Class.class).invoke(springContext, clazz);
+        return serviceInstance;
       } catch (Exception e) {
         throw new IllegalStateException("Error loading Bean with name " + clazz, e);
       }

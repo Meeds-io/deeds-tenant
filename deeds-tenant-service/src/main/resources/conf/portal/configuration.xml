@@ -24,15 +24,7 @@
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
 
   <component>
-    <type>io.meeds.tenant.metamask.web.MetamaskLoginExtension</type>
-  </component>
-
-  <component>
-    <type>io.meeds.tenant.metamask.web.MetamaskRegisterExtension</type>
-  </component>
-
-  <component>
-    <type>io.meeds.tenant.metamask.service.TenantManagerService</type>
+    <type>io.meeds.tenant.service.TenantManagerService</type>
     <init-params>
       <value-param>
         <name>nftId</name>
@@ -46,6 +38,14 @@
         <value>*:/platform/rewarding</value>
       </values-param>
     </init-params>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.metamask.web.MetamaskLoginExtension</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.metamask.web.MetamaskRegisterExtension</type>
   </component>
 
   <component>

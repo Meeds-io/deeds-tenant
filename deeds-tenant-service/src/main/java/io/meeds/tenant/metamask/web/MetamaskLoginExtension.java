@@ -74,7 +74,9 @@ public class MetamaskLoginExtension implements UIParamsExtension {
         params.put("cityIndex", deedTenantHost.getCityIndex());
         params.put("cardTypeIndex", deedTenantHost.getCardType());
         String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
-        if (metamaskLoginService.isTenantManager(walletAddress) && needManagerMail) {
+        if (needManagerMail
+            && StringUtils.isNotBlank(walletAddress)
+            && metamaskLoginService.isTenantManager(walletAddress)) {
           params.put("isTenantManager", true);
           if (StringUtils.isNotBlank(deedTenantHost.getManagerEmail())) {
             params.put("tenantManagerEmail", deedTenantHost.getManagerEmail());

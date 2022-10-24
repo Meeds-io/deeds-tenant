@@ -13,15 +13,18 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant;
+package io.meeds.tenant.configuration;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.exoplatform.container.ExtendedPropertyConfigurator;
+import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.xml.InitParams;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-public @interface WebAppClassLoaderContext {
+public class TenantKernelPropertyConfigurator extends ExtendedPropertyConfigurator {
+
+  public TenantKernelPropertyConfigurator(TenantKernelProfileService tenantProfileService,
+                                    ConfigurationManager confManager,
+                                    InitParams params) {
+    super(tenantProfileService.isDeedTenant() ? params : new InitParams(), confManager);
+  }
 
 }

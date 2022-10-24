@@ -157,6 +157,7 @@ export default {
   data: () => ({
     fullName: null,
     email: null,
+    validForm: false,
     provider: null,
     resolvedEnsName: null,
     loading: false,
@@ -171,9 +172,6 @@ export default {
     },
     username() {
       return this.params?.username;
-    },
-    validForm() {
-      return this.email?.length && this.fullName?.length && this.$refs.form?.checkValidity();
     },
     buttonTitle() {
       return this.validForm
@@ -202,12 +200,20 @@ export default {
       return this.errorCode;
     },
   },
+  watch: {
+    fullName() {
+      this.checkFormValidity();
+    },
+    email() {
+      this.checkFormValidity();
+    },
+  },
   created() {
     this.fullName = this.params?.fullName;
     this.email = this.params?.email || this.params?.tenantManagerEmail || '';
     this.provider = new window.ethers.providers.Web3Provider(window.ethereum);
 
-    if (this.username && !this.fullName && !this.email) {
+    if (this.username && (!this.fullName || !this.email)) {
       // Resolve ENS only when it's wasn't already resolved.
       // The user may have sent an invalid form,
       // thus no new ENS resolution should be made
@@ -219,6 +225,11 @@ export default {
     this.$root.$applicationLoaded();
   },
   methods: {
+    checkFormValidity() {
+      this.$nextTick(() => {
+        this.validForm = this.email?.length && this.fullName?.length && this.$refs.form?.checkValidity();
+      });
+    },
     resolveEnsAttributes() {
       return this.provider.lookupAddress(this.username)
         .then(ensName => {
@@ -231,9 +242,9 @@ export default {
           if (resolver) {
             return Promise.all([
               resolver.getText('display')
-                .then(displayName => this.fullName = displayName || this.resolvedEnsName),
+                .then(displayName => this.fullName = this.fullName || displayName || this.resolvedEnsName),
               resolver.getText('email')
-                .then(email => this.email = email)
+                .then(email => this.email = this.email || email)
             ]);
           }
         });

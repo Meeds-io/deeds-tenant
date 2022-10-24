@@ -22,10 +22,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-@SpringBootApplication(exclude = RedisAutoConfiguration.class, scanBasePackages = { "io.meeds.deeds", "io.meeds.tenant" })
-@EnableElasticsearchRepositories(basePackages = "io.meeds")
+import io.meeds.tenant.integration.SpringContext;
+
+@SpringBootApplication(
+  exclude = RedisAutoConfiguration.class,
+  scanBasePackages = {
+    "io.meeds"
+  }
+)
 @EnableCaching
 public class DeedTenantApplication extends SpringBootServletInitializer {
 
@@ -34,8 +39,13 @@ public class DeedTenantApplication extends SpringBootServletInitializer {
     // Used to disable LogBack initialization in WebApp context after having
     // initialized it already in Meeds Server globally
     System.setProperty("org.springframework.boot.logging.LoggingSystem", "none");
-    SpringIntegration.setServletContext(servletContext);
-    SpringIntegration.setClassLoader(Thread.currentThread().getContextClassLoader());
+    // Avoid creating Deed Tenants Indexes in Deed Tenant Elasticsearch
+    // When the ES is misconfigured
+    System.setProperty("meeds.elasticsearch.autoCreateIndex", "false");
+    // Share ServletContext with Kernel based Services to integrate with Spring
+    // Beans
+    SpringContext.setServletContext(servletContext);
+
     super.onStartup(servletContext);
   }
 

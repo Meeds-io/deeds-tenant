@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package io.meeds.tenant;
+package io.meeds.tenant.integration;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -26,13 +26,13 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 @Aspect
-public class WebAppClassLoaderContextAspect {
+public class SpringIntegrationAspect {
 
-  private static final Log LOG = ExoLogger.getLogger(WebAppClassLoaderContextAspect.class);
+  private static final Log LOG = ExoLogger.getLogger(SpringIntegrationAspect.class);
 
-  @Around("execution(* *(..)) && @annotation(io.meeds.tenant.WebAppClassLoaderContext)")
+  @Around("execution(* *(..)) && @annotation(io.meeds.tenant.integration.SpringIntegration)")
   public Object around(ProceedingJoinPoint point) throws Throwable {
-    ClassLoader springClassLoader = SpringIntegration.getClassLoader();
+    ClassLoader springClassLoader = SpringContext.getClassLoader();
     if (springClassLoader != null) {
       ClassLoader originalContextClassLoader = Thread.currentThread().getContextClassLoader();
       try {

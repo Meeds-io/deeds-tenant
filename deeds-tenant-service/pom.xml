@@ -26,39 +26,12 @@
   <artifactId>deeds-tenant-service</artifactId>
   <name>Meeds - Deeds Tenant Addon - Services</name>
   <properties>
-    <exo.test.coverage.ratio>0.86</exo.test.coverage.ratio>
+    <exo.test.coverage.ratio>0.81</exo.test.coverage.ratio>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>io.meeds.deeds-dapp</groupId>
-      <artifactId>deeds-dapp-contract</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>org.web3j</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.meeds.deeds-dapp</groupId>
-      <artifactId>deeds-dapp-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.json</groupId>
-      <artifactId>jakarta.json-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.johnzon</groupId>
-      <artifactId>johnzon-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.reactivex.rxjava2</groupId>
-      <artifactId>rxjava</artifactId>
-    </dependency>
-    <dependency>
       <groupId>javax.annotation</groupId>
       <artifactId>jsr250-api</artifactId>
-      <scope>compile</scope>
     </dependency>
 
     <!-- Provided artifacts in Server Shared library, used for compilation only -->
