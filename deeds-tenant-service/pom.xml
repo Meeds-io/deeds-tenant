@@ -26,12 +26,12 @@
   <artifactId>deeds-tenant-service</artifactId>
   <name>Meeds - Deeds Tenant Addon - Services</name>
   <properties>
-    <exo.test.coverage.ratio>0.86</exo.test.coverage.ratio>
+    <exo.test.coverage.ratio>0.77</exo.test.coverage.ratio>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>io.meeds.deeds-dapp</groupId>
-      <artifactId>deeds-dapp-contract</artifactId>
+      <groupId>javax.annotation</groupId>
+      <artifactId>jsr250-api</artifactId>
     </dependency>
 
     <!-- Provided artifacts in Server Shared library, used for compilation only -->
@@ -56,6 +56,16 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.exoplatform.social</groupId>
+      <artifactId>social-component-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.addons.wallet</groupId>
+      <artifactId>wallet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.web3j</groupId>
       <artifactId>crypto</artifactId>
       <scope>provided</scope>
@@ -63,6 +73,21 @@
     <dependency>
       <groupId>org.web3j</groupId>
       <artifactId>core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -81,19 +106,15 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.exoplatform.addons.wallet</groupId>
-      <artifactId>wallet-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.exoplatform.social</groupId>
-      <artifactId>social-component-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 
   <build>
     <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>com.jcabi</groupId>
+        <artifactId>jcabi-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
 </project>

@@ -12,7 +12,7 @@ let config = {
     metamaskRegisterForm: './src/main/webapp/vue-app/register-form/main.js',
   },
   plugins: [
-	new ESLintPlugin(),
+	  new ESLintPlugin(),
     new VueLoaderPlugin()
   ],
   module: {

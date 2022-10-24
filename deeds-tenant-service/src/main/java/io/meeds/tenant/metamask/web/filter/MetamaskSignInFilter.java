@@ -16,9 +16,13 @@
  */
 package io.meeds.tenant.metamask.web.filter;
 
+import static org.exoplatform.web.register.RegisterHandler.REGISTER_ERROR_PARAM;
+import static org.exoplatform.web.register.RegisterHandler.REGISTER_EXTENSION_NAME;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
@@ -30,7 +34,12 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
@@ -45,8 +54,7 @@ import org.exoplatform.web.application.JspBasedWebHandler;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
 import org.exoplatform.web.login.LoginUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.exoplatform.web.login.UIParamsExtension;
 
 import io.meeds.tenant.metamask.RegistrationException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
@@ -89,6 +97,8 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
 
   private ServletContext                  servletContext;
 
+  private PortalContainer                 container;
+
   public MetamaskSignInFilter(PortalContainer container, // NOSONAR
                               WebAppController webAppController,
                               LocaleConfigService localeConfigService,
@@ -99,6 +109,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     super(localeConfigService, brandingService, javascriptConfigService, skinService);
     this.webAppController = webAppController;
     this.metamaskLoginService = metamaskLoginService;
+    this.container = container;
     this.servletContext = container.getPortalContext();
   }
 
@@ -181,17 +192,16 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       return false;
     }
     List<String> additionalCSSModules = Collections.singletonList("portal/login");
-    HttpServletRequest request = controllerContext.getRequest();
-
     super.prepareDispatch(controllerContext,
                           "SHARED/metamaskRegisterForm",
                           null,
                           additionalCSSModules,
-                          params -> addRegisterFormParams(params, request, errorCode));
+                          params -> addRegisterFormParams(params, controllerContext, errorCode));
     return true;
   }
 
-  protected void addRegisterFormParams(JSONObject params, HttpServletRequest request, String errorCode) {
+  protected void addRegisterFormParams(JSONObject params, ControllerContext controllerContext, String errorCode) {
+    HttpServletRequest request = controllerContext.getRequest();
     HttpSession session = request.getSession();
     try {
       params.put(USERNAME_REQUEST_PARAM,
@@ -207,6 +217,36 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       }
     } catch (JSONException e) {
       LOG.warn("Error putting error code in parameters", e);
+    }
+    extendUIParameters(controllerContext, params);
+  }
+
+  private void extendUIParameters(ControllerContext controllerContext, JSONObject params) {
+    try {
+      Object errorCode = controllerContext.getRequest().getAttribute(REGISTER_ERROR_PARAM);
+      if (errorCode != null) {
+        params.put(REGISTER_ERROR_PARAM, errorCode);
+      }
+      List<UIParamsExtension> paramsExtensions = this.container.getComponentInstancesOfType(UIParamsExtension.class);
+      if (CollectionUtils.isNotEmpty(paramsExtensions)) {
+        paramsExtensions.stream()
+                        .filter(extension -> extension.getExtensionNames().contains(REGISTER_EXTENSION_NAME))
+                        .forEach(paramsExtension -> {
+                          Map<String, Object> extendedParams = paramsExtension.extendParameters(controllerContext,
+                                                                                                REGISTER_EXTENSION_NAME);
+                          if (MapUtils.isNotEmpty(extendedParams)) {
+                            extendedParams.forEach((key, value) -> {
+                              try {
+                                params.put(key, value);
+                              } catch (Exception e) {
+                                LOG.warn("Error while adding {}/{} in register params map", key, value, e);
+                              }
+                            });
+                          }
+                        });
+      }
+    } catch (Exception e) {
+      LOG.warn("Error while computing Register UI parameters", e);
     }
   }
 

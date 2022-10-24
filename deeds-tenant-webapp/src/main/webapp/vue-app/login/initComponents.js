@@ -22,19 +22,15 @@ import DeedLogin from './components/tenants/DeedLogin.vue';
 import DeedLoginMain from './components/tenants/DeedLoginMain.vue';
 import DeedLoginMainTopExtensions from './components/tenants/DeedLoginMainTopExtensions.vue';
 import DeedLoginMainBottomExtensions from './components/tenants/DeedLoginMainBottomExtensions.vue';
-import DeedLoginIntroduction from './components/tenants/DeedLoginIntroduction.vue';
-import DeedLoginBrandingImage from './components/tenants/DeedLoginBrandingImage.vue';
 
 const components = {
   'portal-login': Login,
   'portal-login-metamask': LoginMetamask,
   'portal-original-login': Vue.options.components['portal-login'],
-  'portal-deed-login': DeedLogin,
-  'portal-deed-login-main': DeedLoginMain,
-  'portal-deed-login-main-top-extensions': DeedLoginMainTopExtensions,
-  'portal-deed-login-main-bottom-extensions': DeedLoginMainBottomExtensions,
-  'portal-deed-login-introduction': DeedLoginIntroduction,
-  'portal-deed-login-branding-image': DeedLoginBrandingImage,
+  'deed-login': DeedLogin,
+  'deed-login-main': DeedLoginMain,
+  'deed-login-main-top-extensions': DeedLoginMainTopExtensions,
+  'deed-login-main-bottom-extensions': DeedLoginMainBottomExtensions,
 };
 
 for (const key in components) {

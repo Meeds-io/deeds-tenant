@@ -13,18 +13,14 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.metamask.service;
+package io.meeds.tenant.integration.service;
 
-import org.exoplatform.container.ExtendedPropertyConfigurator;
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.xml.InitParams;
+import io.meeds.tenant.model.DeedTenantHost;
 
-public class TenantKernelPropertyConfigurator extends ExtendedPropertyConfigurator {
+public interface TenantServiceFacade {
 
-  public TenantKernelPropertyConfigurator(TenantKernelProfileService tenantProfileService,
-                                    ConfigurationManager confManager,
-                                    InitParams params) {
-    super(tenantProfileService.isDeedTenant() ? params : new InitParams(), confManager);
-  }
+  DeedTenantHost getDeedTenant(long nftId);
+
+  boolean isTenantManager(String address, long nftId);
 
 }

@@ -16,10 +16,27 @@
  */
 package io.meeds.tenant.metamask.service;
 
-import static io.meeds.tenant.metamask.service.MetamaskLoginService.*;
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static io.meeds.tenant.metamask.service.MetamaskLoginService.ALLOWED_ROOT_ACCESS_WALLETS_PARAM;
+import static io.meeds.tenant.metamask.service.MetamaskLoginService.LOGIN_MESSAGE_ATTRIBUTE_NAME;
+import static io.meeds.tenant.metamask.service.MetamaskLoginService.METAMASK_ALLOW_REGISTRATION_PARAM;
+import static io.meeds.tenant.metamask.service.MetamaskLoginService.SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -44,12 +61,22 @@ import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.portal.config.UserACL;
-import org.exoplatform.services.organization.*;
+import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.GroupHandler;
+import org.exoplatform.services.organization.MembershipHandler;
+import org.exoplatform.services.organization.MembershipType;
+import org.exoplatform.services.organization.MembershipTypeHandler;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.Query;
+import org.exoplatform.services.organization.User;
+import org.exoplatform.services.organization.UserHandler;
+import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.services.organization.idm.UserImpl;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.metamask.RegistrationException;
+import io.meeds.tenant.service.TenantManagerService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MetamaskLoginServiceTest {

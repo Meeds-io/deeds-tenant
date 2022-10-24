@@ -1,9 +1,9 @@
 <!--
 
  This file is part of the Meeds project (https://meeds.io/).
- 
+
  Copyright (C) 2020 - 2022 Meeds Association contact@meeds.io
- 
+
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
@@ -19,12 +19,12 @@
 
 -->
 <template>
-  <div class="brandingImageContent d-none d-lg-block">
-    <img
-      :src="brandingLogo"
-      class="brandingImage"
-      role="presentation">
-  </div>
+  <deed-login-template :params="params">
+    <template #title>
+      {{ title }}
+    </template>
+    <deed-register-metamask-form-main :params="params" />
+  </deed-login-template>
 </template>
 <script>
 export default {
@@ -35,8 +35,15 @@ export default {
     },
   },
   computed: {
-    brandingLogo() {
-      return this.params?.brandingLogo;
+    companyName() {
+      return this.params?.companyName;
+    },
+    isTenantManager() {
+      return this.params?.isTenantManager;
+    },
+    title() {
+      return this.isTenantManager && this.$t('deed.register.moveInTenant', {0: this.companyName})
+        || this.$t('deed.register.registerInTenant', {0: this.companyName});
     },
   },
 };

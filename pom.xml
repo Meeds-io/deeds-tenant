@@ -46,6 +46,12 @@
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
     <exo.snapshots.repo.url>https://repository.exoplatform.org/content/repositories/meeds-snapshots</exo.snapshots.repo.url>
+
+    <!--
+      FIXME: Workaround for https://github.com/Meeds-io/meeds/issues/346
+      (Dependency conflict with eXo)
+    -->
+    <org.apache.lucene.version>8.9.0</org.apache.lucene.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -65,25 +71,39 @@
         <scope>import</scope>
       </dependency>
 
+      <!--
+        FIXME: Workaround for https://github.com/Meeds-io/meeds/issues/346
+        (Dependency conflict with eXo)
+      -->
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-core</artifactId>
+        <version>8.9.0</version>
+        <scope>compile</scope>
+        <exclusions>
+          <exclusion>
+            <artifactId>*</artifactId>
+            <groupId>*</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
       <!-- Current project artifacts -->
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>deeds-tenant-service</artifactId>
         <version>${project.version}</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>deeds-tenant-webapp</artifactId>
         <version>${project.version}</version>
-        <scope>provided</scope>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>deeds-tenant-packaging</artifactId>
         <version>${project.version}</version>
-        <scope>provided</scope>
         <type>zip</type>
       </dependency>
     </dependencies>
