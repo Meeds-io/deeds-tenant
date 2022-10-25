@@ -65,10 +65,11 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
  */
 public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
 
-  public static final Log                 LOG                            =
-                                              ExoLogger.getLogger(MetamaskSignInFilter.class);
+  public static final Log                 LOG                            = ExoLogger.getLogger(MetamaskSignInFilter.class);
 
   public static final String              METAMASK_REGISTER_FORM         = "/WEB-INF/jsp/metamaskRegisterForm.jsp";
+
+  public static final String              METAMASK_TENANT_SETUP_FORM     = "/WEB-INF/jsp/metamaskSetupForm.jsp";
 
   public static final String              EMAIL_REQUEST_PARAM            = "email";
 
@@ -85,6 +86,8 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
   public static final String              USERNAME_REQUEST_PARAM         = "username";
 
   public static final String              PASSWORD_REQUEST_PARAM         = "password";
+
+  public static final String              INITIAL_URI_REQUEST_PARAM      = "initialURI";
 
   public static final String              METAMASK_SIGNED_MESSAGE_PREFIX = "SIGNED_MESSAGE@";
 
@@ -120,6 +123,15 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       HttpServletRequest request = (HttpServletRequest) servletRequest;
       HttpServletResponse response = (HttpServletResponse) servletResponse;
 
+      if (isDeedTenatStep(request)) {
+        forwardDeedTenantSetupForm(new ControllerContext(webAppController,
+                                                         webAppController.getRouter(),
+                                                         request,
+                                                         response,
+                                                         null));
+        return;
+      }
+
       String walletAddress = request.getParameter(USERNAME_REQUEST_PARAM);
       String password = request.getParameter(PASSWORD_REQUEST_PARAM);
       boolean isRegistrationRequest = request.getParameter(METAMASK_REGISTER_USER) != null;
@@ -129,10 +141,8 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       }
 
       // If user is already authenticated, no registration form is required
-      if (request.getRemoteUser() == null
-          && StringUtils.isNotBlank(walletAddress)
-          && (StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)
-              || metamaskLoginService.isSuperUser(walletAddress)
+      if (request.getRemoteUser() == null && StringUtils.isNotBlank(walletAddress)
+          && (StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX) || metamaskLoginService.isSuperUser(walletAddress)
               || metamaskLoginService.isAllowUserRegistration(walletAddress))) {
 
         if (StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)) {
@@ -161,9 +171,9 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
                                         errorCode);
             return;
           } else {
-            // Proceed to login with Metamask uing regular LoginModule
+            // Proceed to login with Metamask using regular LoginModule
             String compoundPassword = getCompoundPassword(request);
-            servletRequest = wrapRequestForLogin(request, username, compoundPassword);
+            servletRequest = wrapRequestForLogin(request, username, compoundPassword, false);
           }
         } else if (isRegistrationRequest) {
           // Step 2: Proceed to user registration
@@ -180,11 +190,20 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     chain.doFilter(servletRequest, servletResponse);
   }
 
+  protected void forwardDeedTenantSetupForm(ControllerContext controllerContext) throws Exception {
+    super.prepareDispatch(controllerContext,
+                          "SHARED/metamaskSetupForm",
+                          null,
+                          Collections.singletonList("portal/login"),
+                          null);
+    servletContext.getRequestDispatcher(METAMASK_TENANT_SETUP_FORM)
+                  .include(controllerContext.getRequest(), controllerContext.getResponse());
+  }
+
   protected void forwardUserRegistrationForm(ControllerContext controllerContext, String errorCode) throws Exception {
     prepareDispatch(controllerContext, errorCode);
     servletContext.getRequestDispatcher(METAMASK_REGISTER_FORM)
-                  .include(controllerContext.getRequest(),
-                           controllerContext.getResponse());
+                  .include(controllerContext.getRequest(), controllerContext.getResponse());
   }
 
   protected boolean prepareDispatch(ControllerContext controllerContext, String errorCode) throws Exception {
@@ -204,14 +223,10 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     HttpServletRequest request = controllerContext.getRequest();
     HttpSession session = request.getSession();
     try {
-      params.put(USERNAME_REQUEST_PARAM,
-                 session.getAttribute(USERNAME_REQUEST_PARAM));
-      params.put(FULL_NAME_REQUEST_PARAM,
-                 request.getParameter(FULL_NAME_REQUEST_PARAM));
-      params.put(EMAIL_REQUEST_PARAM,
-                 request.getParameter(EMAIL_REQUEST_PARAM));
-      params.put(LoginUtils.COOKIE_NAME,
-                 request.getParameter(LoginUtils.COOKIE_NAME));
+      params.put(USERNAME_REQUEST_PARAM, session.getAttribute(USERNAME_REQUEST_PARAM));
+      params.put(FULL_NAME_REQUEST_PARAM, request.getParameter(FULL_NAME_REQUEST_PARAM));
+      params.put(EMAIL_REQUEST_PARAM, request.getParameter(EMAIL_REQUEST_PARAM));
+      params.put(LoginUtils.COOKIE_NAME, request.getParameter(LoginUtils.COOKIE_NAME));
       if (StringUtils.isNotBlank(errorCode)) {
         params.put(ERROR_CODE_PARAM, errorCode);
       }
@@ -270,37 +285,38 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       User user = metamaskLoginService.registerUser(walletAddress, fullName, email);
 
       // Proceed to login with Metamask uing regular LoginModule
-      return wrapRequestForLogin(request, user.getUserName(), password);
+      // And redirect to Setup Screen for Deed Tenant Owner (Host)
+      // when done
+      boolean isTenantManager = metamaskLoginService.isTenantManager(walletAddress);
+      return wrapRequestForLogin(request, user.getUserName(), password, isTenantManager);
     } catch (RegistrationException e) {
       String errorCode = e.getMessage();
-      forwardUserRegistrationForm(new ControllerContext(webAppController,
-                                                        webAppController.getRouter(),
-                                                        request,
-                                                        response,
-                                                        null),
+      forwardUserRegistrationForm(new ControllerContext(webAppController, webAppController.getRouter(), request, response, null),
                                   errorCode);
     } catch (Exception e) {
-      forwardUserRegistrationForm(new ControllerContext(webAppController,
-                                                        webAppController.getRouter(),
-                                                        request,
-                                                        response,
-                                                        null),
+      forwardUserRegistrationForm(new ControllerContext(webAppController, webAppController.getRouter(), request, response, null),
                                   "REGISTRATION_ERROR");
     }
     return null;
   }
 
-  private HttpServletRequestWrapper wrapRequestForLogin(HttpServletRequest request, String username, String password) {
+  private HttpServletRequestWrapper wrapRequestForLogin(HttpServletRequest request,
+                                                        String username,
+                                                        String password,
+                                                        boolean redirectToSetup) {
+
     return new HttpServletRequestWrapper(request) {
       @Override
       public String getParameter(String name) {
         if (StringUtils.equals(name, USERNAME_REQUEST_PARAM)) {
           return username;
-        }
-        if (StringUtils.equals(name, PASSWORD_REQUEST_PARAM)) {
+        } else if (StringUtils.equals(name, PASSWORD_REQUEST_PARAM)) {
           return password;
+        } else if (redirectToSetup && StringUtils.equals(name, INITIAL_URI_REQUEST_PARAM)) {
+          return getContextPath() + "/tenantSetup";
+        } else {
+          return super.getParameter(name);
         }
-        return super.getParameter(name);
       }
 
       @Override
@@ -330,6 +346,14 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       return metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage);
     }
     return false;
+  }
+
+  private boolean isDeedTenatStep(HttpServletRequest request) {
+    String walletAddress = request.getRemoteUser();
+    return StringUtils.isNotBlank(walletAddress)
+        && StringUtils.equals(request.getRequestURI(), request.getContextPath() + "/tenantSetup")
+        && metamaskLoginService.isDeedTenant()
+        && metamaskLoginService.isTenantManager(walletAddress);
   }
 
 }

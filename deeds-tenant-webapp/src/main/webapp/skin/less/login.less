@@ -25,6 +25,13 @@ body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main_
   overflow-x: hidden;
 }
 
+.absolute-all-center {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
 .VuetifyApp .v-btn--outlined {
   border: thin solid currentColor !important;
 }
@@ -32,6 +39,18 @@ body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main_
 .login-button, .register-button {
   width: 222px !important;
   max-width: 100% !important;
+}
+
+.login-preview {
+  transform: ~"scale(0.7)";
+
+  .brandingImage {
+    max-width: 60px !important;
+  }
+}
+
+.branding-logo-selector .v-input__control {
+  display: none;
 }
 
 .v-input legend {

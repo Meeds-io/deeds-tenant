@@ -24,6 +24,9 @@
     max-width="100%"
     class="mx-auto"
     flat>
+    <v-card-title class="display-1 primary--text px-0 center d-none d-sm-block">
+      {{ companyName }}
+    </v-card-title>
     <div v-if="registerEnabled" class="center my-3">
       {{ $t('UILoginForm.label.registerNewAccount') }}
       <a
@@ -51,7 +54,8 @@
       action="/portal/login"
       method="post"
       autocomplete="off"
-      class="d-flex ma-0 flex-column">
+      class="d-flex ma-0 flex-column"
+      onsubmit="return isValidForm()">
       <input
         v-if="initialUri"
         type="hidden"
@@ -63,6 +67,7 @@
             id="username"
             v-model="username"
             :placeholder="$t('portal.login.Username')"
+            :readonly="disabled"
             prepend-inner-icon="fas fa-user ms-n2 grey--text text--lighten-1"
             class="login-username border-box-sizing"
             name="username"
@@ -81,6 +86,7 @@
             :placeholder="$t('portal.login.Password')"
             :type="passwordType"
             :append-icon="showPassword ? 'fas fa-eye-slash subtitle-1 mt-0' : 'fas fa-eye subtitle-1 mt-0'"
+            :readonly="disabled"
             prepend-inner-icon="fas fa-lock ms-n2 grey--text text--lighten-1"
             class="login-password border-box-sizing"
             name="password"
@@ -102,7 +108,7 @@
           <v-spacer />
           <a
             :href="forgotPasswordPath"
-            :title="$t('gatein.forgotPassword.loginLinkTitle')"
+            :title="$t('portal.login.forgotPassword')"
             class="text-decoration-underline d-flex">
             <span class="v-label theme--light pb-2px my-auto">
               {{ $t('portal.login.forgotPassword') }}
@@ -112,8 +118,8 @@
         <v-row class="mx-0 mt-8 pa-0">
           <v-btn
             :aria-label="$t('portal.login.Signin')"
+            :type="disabled && 'button' || 'submit'"
             tabindex="4"
-            type="submit"
             color="primary"
             class="mx-auto login-button"
             elevation="0">
@@ -148,6 +154,9 @@ export default {
     companyName() {
       return this.params?.companyName;
     },
+    disabled() {
+      return this.params?.disabled;
+    },
     initialUri() {
       return this.params?.initialUri;
     },
@@ -171,7 +180,9 @@ export default {
     },
   },
   mounted() {
-    this.setupUserName();
+    if (!this.disabled) {
+      this.setupUserName();
+    }
   },
   methods: {
     setupUserName(){
@@ -182,7 +193,10 @@ export default {
     },
     toggleShow(){
       this.showPassword = !this.showPassword;
-    }
+    },
+    isValidForm(){
+      return !this.disabled;
+    },
   },
 };
 </script>
