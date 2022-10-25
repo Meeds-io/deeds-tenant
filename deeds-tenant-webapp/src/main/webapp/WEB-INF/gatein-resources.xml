@@ -101,6 +101,35 @@
   </module>
 
   <module>
+    <name>metamaskSetupForm</name>
+    <script>
+      <path>/js/metamaskSetupForm.js</path>
+    </script>
+    <depends>
+      <module>vue</module>
+    </depends>
+    <depends>
+      <module>vuetify</module>
+    </depends>
+    <depends>
+      <module>eXoVueI18n</module>
+    </depends>
+    <depends>
+      <module>extensionRegistry</module>
+    </depends>
+    <depends>
+      <module>commonVueComponents</module>
+    </depends>
+    <depends>
+      <module>jquery</module>
+      <as>$</as>
+    </depends>
+    <depends>
+      <module>filedrop</module>
+    </depends>
+  </module>
+
+  <module>
     <name>ethers</name>
     <script>
       <path>/js/ethers.umd.min.js</path>
