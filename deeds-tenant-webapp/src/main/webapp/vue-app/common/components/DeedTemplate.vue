@@ -55,11 +55,8 @@
               </template>
             </deed-login-introduction>
             <div :class="center && 'd-block' || 'd-sm-flex flex-column flex-grow-1 px-sm-8'" class="px-4 px-sm-0">
-              <v-card-title class="display-1 primary--text px-0 d-none d-sm-block">
+              <v-card-title v-if="$slots.title" class="display-1 primary--text px-0 d-none d-sm-block">
                 <slot name="title"></slot>
-                <div v-if="!$slots.title" class="center">
-                  {{ companyName }}
-                </div>
               </v-card-title>
               <div :class="center && 'd-block' || 'd-sm-flex flex mx-0'">
                 <slot></slot>

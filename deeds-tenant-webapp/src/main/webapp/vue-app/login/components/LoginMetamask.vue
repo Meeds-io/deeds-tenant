@@ -108,17 +108,26 @@ export default {
     isDeedTenant() {
       return this.params?.isDeedTenant;
     },
+    disabled() {
+      return this.params?.disabled;
+    },
   },
   created() {
-    this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
-    if (this.isMetamaskInstalled) {
-      this.retrieveAddress();
-      window.ethereum.on('accountsChanged', () => this.retrieveAddress());
+    if (this.disabled) {
+      this.isMetamaskInstalled = true;
+    } else {
+      this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
+      if (this.isMetamaskInstalled) {
+        this.retrieveAddress();
+        window.ethereum.on('accountsChanged', () => this.retrieveAddress());
+      }
     }
   },
   methods: {
     signInWithMetamask(forwarded) {
-      if (!this.address) {
+      if (this.disabled) {
+        return;
+      } else if (!this.address) {
         if (forwarded) {
           return;
         } else {
