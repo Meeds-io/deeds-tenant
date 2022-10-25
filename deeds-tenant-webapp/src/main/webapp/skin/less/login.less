@@ -49,20 +49,16 @@ body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main_
   max-width: 100% !important;
 }
 
-.login-preview {
-  transform: ~"scale(0.7)";
-
-  .brandingImage {
-    max-width: 60px !important;
-  }
-}
-
 .branding-logo-selector .v-input__control {
   display: none;
 }
 
 .v-input legend {
   width: 0;
+}
+
+.max-width-fit {
+  max-width: 100%;
 }
 
 .brandingImageContent {
@@ -73,5 +69,20 @@ body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main_
   img.brandingImage {
     width: 10vw;
     max-width: 150px;
+  }
+}
+
+.login-preview {
+  transform: ~"scale(0.7)";
+
+  .brandingImageContent {
+    bottom: 3px !important;
+    right: 3px !important;
+
+    img.brandingImage {
+      width: auto !important;
+      max-width: 60px !important;
+      max-height: 60px !important;
+    }
   }
 }

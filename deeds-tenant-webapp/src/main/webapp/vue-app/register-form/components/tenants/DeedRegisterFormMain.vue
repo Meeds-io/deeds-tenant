@@ -98,7 +98,7 @@
               id="email"
               v-model="email"
               :loading="loading"
-              :placeholder="$t('portal.register.email')"
+              :placeholder="$t('deed.onboarding.emailPlaceholder')"
               :autofocus="fullName && 'autofocus' || ''"
               class="register-full-name border-box-sizing"
               name="email"
