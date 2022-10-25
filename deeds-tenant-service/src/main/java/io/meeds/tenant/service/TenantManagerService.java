@@ -98,9 +98,6 @@ public class TenantManagerService implements Startable {
   }
 
   protected TenantServiceFacade getTenantServiceFacade() {
-    if (SpringContext.getClassLoader() != Thread.currentThread().getContextClassLoader()) {
-      throw new IllegalStateException("You should add @SpringIntegration in top of the method to make this integration works");
-    }
     if (tenantServiceFacade == null) {
       try {
         tenantServiceFacade = SpringContext.getSpringBean(TenantServiceFacade.class);

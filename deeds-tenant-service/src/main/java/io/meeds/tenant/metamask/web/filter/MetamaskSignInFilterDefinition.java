@@ -60,7 +60,7 @@ public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
 
   @Override
   public List<FilterDefinition> getFilterDefinitions() {
-    return Collections.singletonList(new FilterDefinition(filter, Arrays.asList("/login", "/register")));
+    return Collections.singletonList(new FilterDefinition(filter, Arrays.asList("/login", "/register", "/tenantSetup")));
   }
 
 }

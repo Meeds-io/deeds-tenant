@@ -19,9 +19,15 @@
 import './initComponents.js';
 import '../common/initComponents.js';
 
+import * as brandingService from './js/brandingService.js';
+
+window.Object.defineProperty(Vue.prototype, '$brandingService', {
+  value: brandingService,
+});
+
 // get overrided components if exists
 if (extensionRegistry) {
-  const components = extensionRegistry.loadComponents('MetamaskRegister');
+  const components = extensionRegistry.loadComponents('MetamaskTenantSetup');
   if (components && components.length > 0) {
     components.forEach(cmp => {
       Vue.component(cmp.componentName, cmp.componentOptions);
@@ -30,13 +36,14 @@ if (extensionRegistry) {
 }
 
 //getting language of the PLF
-const lang = typeof eXo !== 'undefined' ? eXo.env.portal.language : 'en';
+const lang = window.eXo && eXo.env.portal.language || 'en';
 
-const appId = 'metamaskRegistrationApplication';
+const appId = 'metamaskTenantSetupApplication';
 
 //should expose the locale ressources as REST API 
 const urls = [
   `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.Login-${lang}.json`,
+  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.Branding-${lang}.json`,
   `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portal.login-${lang}.json`
 ];
 
@@ -47,9 +54,9 @@ export function init(params) {
       data: {
         params: params,
       },
-      template: `<portal-register-metamask-form id="${appId}" :params="params" />`,
+      template: `<deed-tenant-setup id="${appId}" :params="params" />`,
       vuetify: Vue.prototype.vuetifyOptions,
       i18n
-    }, `#${appId}`, 'Metamask Register');
+    }, `#${appId}`, 'Metamask Setup');
   });
 }
