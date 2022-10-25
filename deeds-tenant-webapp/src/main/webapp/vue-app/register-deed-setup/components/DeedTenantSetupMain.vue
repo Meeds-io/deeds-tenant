@@ -45,12 +45,14 @@
         <v-btn
           :aria-label="$t('portal.skip')"
           :disabled="sending || resetting"
+          :loading="skipped"
           class="pa-0"
           href="/portal/"
           text
           link
           elevation="0"
-          small>
+          small
+          @click="skipped = true">
           <span class="text-capitalize text-decoration-underline">
             {{ $t('portal.skip') }}
           </span>
@@ -99,6 +101,7 @@ export default {
     validForm: false,
     resetting: false,
     sending: false,
+    skipped: false,
   }),
   methods: {
     saveSettings() {

@@ -31,13 +31,13 @@
       href="https://metamask.io/"
       target="_blank"
       rel="noreferrer"
-      class="mx-auto white-background"
+      class="mx-auto white-background d-block max-width-fit"
       outlined>
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-truncate text-capitalize">{{ $t('portal.login.SigninWithMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
@@ -45,14 +45,14 @@
       :color="isDeedTenant && 'primary'"
       :large="isDeedTenant"
       :class="!isDeedTenant && 'rounded-lg'"
-      class="mx-auto white-background"
+      class="mx-auto white-background d-block max-width-fit"
       outlined
       @click="signInWithMetamask()">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2">{{ $t('portal.login.SigninWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-truncate">{{ $t('portal.login.SigninWithMetamask') }}</span>
     </v-btn>
     <form
       ref="metamaskLoginForm"
