@@ -68,6 +68,7 @@
             v-model="username"
             :placeholder="$t('portal.login.Username')"
             :readonly="disabled"
+            :autofocus="!disabled && 'autofocus'"
             prepend-inner-icon="fas fa-user ms-n2 grey--text text--lighten-1"
             class="login-username border-box-sizing"
             name="username"
@@ -75,7 +76,6 @@
             type="text"
             tabindex="1"
             required="required"
-            autofocus="autofocus"
             outlined
             dense />
         </v-row>

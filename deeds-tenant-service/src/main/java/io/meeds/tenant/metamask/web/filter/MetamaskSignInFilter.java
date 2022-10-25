@@ -123,7 +123,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       HttpServletRequest request = (HttpServletRequest) servletRequest;
       HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-      if (isDeedTenatStep(request)) {
+      if (isDeedTenantStep(request)) {
         forwardDeedTenantSetupForm(new ControllerContext(webAppController,
                                                          webAppController.getRouter(),
                                                          request,
@@ -348,7 +348,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     return false;
   }
 
-  private boolean isDeedTenatStep(HttpServletRequest request) {
+  private boolean isDeedTenantStep(HttpServletRequest request) {
     String walletAddress = request.getRemoteUser();
     return StringUtils.isNotBlank(walletAddress)
         && StringUtils.equals(request.getRequestURI(), request.getContextPath() + "/tenantSetup")

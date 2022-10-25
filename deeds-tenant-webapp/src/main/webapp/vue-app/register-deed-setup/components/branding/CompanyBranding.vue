@@ -42,6 +42,7 @@
           class="setup-company-name border-box-sizing"
           name="companyName"
           type="text"
+          autofocus="autofocus"
           aria-required="true"
           required="required"
           outlined
