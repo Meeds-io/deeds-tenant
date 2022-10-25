@@ -19,8 +19,12 @@
 
 -->
 <template>
-  <v-row class="mx-auto mx-md-8 mt-8">
-    <v-col class="pa-0">
+  <v-row class="mx-auto mx-lg-8 mt-8">
+    <v-col
+      sm="12"
+      md="7"
+      lg="6"
+      class="pa-0">
       <h4>
         {{ `2. ${$t('deed.register.tenantSetupStepDescription')}` }}
       </h4>
@@ -35,18 +39,20 @@
         <h4 class="font-weight-bold mb-0 mt-8">
           {{ $t('deed.setup.companyNameLabel') }}
         </h4>
-        <v-text-field
-          id="companyName"
-          v-model="companyName"
-          :placeholder="$t('deed.setup.companyNamePlaceholder')"
-          class="setup-company-name border-box-sizing"
-          name="companyName"
-          type="text"
-          autofocus="autofocus"
-          aria-required="true"
-          required="required"
-          outlined
-          dense />
+        <v-card max-width="350px" flat>
+          <v-text-field
+            id="companyName"
+            v-model="companyName"
+            :placeholder="$t('deed.setup.companyNamePlaceholder')"
+            class="setup-company-name border-box-sizing"
+            name="companyName"
+            type="text"
+            autofocus="autofocus"
+            aria-required="true"
+            required="required"
+            outlined
+            dense />
+        </v-card>
         <h4 class="font-weight-bold mb-0 mt-4">
           {{ $t('deed.setup.companyLogoLabel') }}
         </h4>
@@ -76,7 +82,10 @@
         </v-row>
       </v-card>
     </v-col>
-    <v-col class="hidden-sm-and-down">
+    <v-col
+      md="5"
+      lg="6"
+      class="px-0 d-none d-sm-flex">
       <deed-tenant-setup-login-preview
         :params="params"
         :company-name="companyName"
