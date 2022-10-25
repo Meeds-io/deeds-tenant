@@ -19,34 +19,38 @@
 
 -->
 <template>
-  <div v-if="metamaskRegistrationEnabled" class="border-box-sizing mt-4">
+  <div v-if="metamaskRegistrationEnabled" class="d-flex border-box-sizing mt-4">
     <v-btn
       v-if="!isMetamaskInstalled"
+      :block="!isDeedTenant"
+      :color="isDeedTenant && 'primary'"
+      :large="isDeedTenant"
+      :class="!isDeedTenant && 'rounded-lg'"
       href="https://metamask.io/"
       target="_blank"
       rel="noreferrer"
-      class="rounded-lg btn"
-      block
-      outlined
-      text>
+      class="mx-auto white-background d-block max-width-fit"
+      outlined>
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2 text-capitalize">{{ $t('portal.login.SignupWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-truncate text-capitalize">{{ $t('portal.login.SignupWithMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
-      class="rounded-lg btn"
-      block
+      :block="!isDeedTenant"
+      :color="isDeedTenant && 'primary'"
+      :large="isDeedTenant"
+      :class="!isDeedTenant && 'rounded-lg'"
+      class="mx-auto white-background d-block max-width-fit"
       outlined
-      text
       @click="signInWithMetamask()">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2">{{ $t('portal.login.SignupWithMetamask') }}</span>
+      <span class="py-2 ms-2 text-truncate">{{ $t('portal.login.SignupWithMetamask') }}</span>
     </v-btn>
     <form
       ref="metamaskLoginForm"
@@ -98,6 +102,9 @@ export default {
     },
     initialUri() {
       return this.params?.initialUri;
+    },
+    isDeedTenant() {
+      return this.params?.isDeedTenant;
     },
   },
   created() {
