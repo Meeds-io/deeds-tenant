@@ -1,15 +1,15 @@
 {
-  "name": "meeds-deeds-dapp",
+  "name": "meeds-deeds-tenant",
   "version": "1.0.0",
-  "description": "Meeds - Deeds Decentralized application",
+  "description": "Meeds - Deed Tenants application",
   "repository": {
     "type": "git",
-    "url": "https://github.com/meeds/deeds-dapp"
+    "url": "https://github.com/meeds/deeds-tenant"
   },
   "scripts": {
     "watch": "webpack --config webpack.dev.js --progress --color --watch",
     "lint": "eslint --fix './src/main/webapp/vue-app/**'",
-    "eslint-check": "eslint \"./src/main/webapp/**\"",
+    "eslint-check": "eslint \"./src/main/webapp/vue-app/**\"",
     "build": "webpack --config webpack.prod.js --mode production"
   },
   "author": "Meeds",

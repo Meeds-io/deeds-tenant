@@ -19,7 +19,10 @@
 
 -->
 <template>
-  <deed-login-template :params="params" branding-image center>
+  <deed-login-template
+    :params="params"
+    branding-image
+    center>
     <deed-register-main :params="params" />
   </deed-login-template>
 </template>

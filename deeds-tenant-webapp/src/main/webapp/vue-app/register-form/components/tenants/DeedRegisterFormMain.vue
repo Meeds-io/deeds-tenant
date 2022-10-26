@@ -60,7 +60,7 @@
             <h4
               :class="isTenantManager && 'mt-8'"
               class="font-weight-bold mb-0">
-              {{ $t('deed.register.yourETHAddress') }}
+              {{ $t('deed.register.yourETHAddress') }}
             </h4>
             <v-text-field
               id="username"
@@ -79,7 +79,7 @@
           </v-row>
           <v-row class="d-block ma-0 pa-0">
             <h4 class="font-weight-bold mb-0 mt-4">
-              {{ $t('deed.register.yourProfile') }}
+              {{ $t('deed.register.yourProfile') }}
             </h4>
             <v-text-field
               id="fullName"

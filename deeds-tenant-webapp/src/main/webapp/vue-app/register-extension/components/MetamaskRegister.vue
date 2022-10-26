@@ -108,39 +108,27 @@ export default {
     },
   },
   created() {
-    this.isMetamaskInstalled = window.ethereum && window.ethereum.isMetaMask;
+    this.isMetamaskInstalled = !this.disabled && window.ethereum && window.ethereum.isMetaMask;
     if (this.isMetamaskInstalled) {
       this.retrieveAddress();
       window.ethereum.on('accountsChanged', () => this.retrieveAddress());
     }
   },
   methods: {
-    signInWithMetamask(forwarded) {
-      if (!this.address) {
-        if (forwarded) {
-          return;
-        } else {
-          return this.connectToMetamask();
-        }
+    signInWithMetamask() {
+      if (this.disabled) {
+        return;
       }
-      return window.ethereum.request({
-        method: 'personal_sign',
-        params: [this.rawMessage, this.address],
-      }).then(signedMessage => {
-        this.password = `SIGNED_MESSAGE@${signedMessage}`;
-        return this.$nextTick();
-      }).then(() => this.$refs.metamaskLoginForm.submit());
-    },
-    connectToMetamask() {
-      return window.ethereum.request({
-        method: 'eth_requestAccounts'
-      })
+      return this.$metamaskUtils.signInWithMetamask(this.rawMessage)
+        .then(password => this.password = password)
         .then(() => this.retrieveAddress())
-        .then(() => this.signInWithMetamask(true));
+        .then(() => this.$nextTick())
+        .then(() => this.$refs.metamaskLoginForm.submit())
+        .catch(console.debug);// eslint-disable-line no-console
     },
     retrieveAddress() {
-      return window.ethereum.request({ method: 'eth_accounts' })
-        .then(address => this.address = address && address.length && address[0] || null);
+      return this.$metamaskUtils.retrieveAddress()
+        .then(address => this.address = address);
     },
   },
 };
