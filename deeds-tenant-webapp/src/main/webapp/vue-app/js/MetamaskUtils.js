@@ -1,7 +1,7 @@
 /*
  * This file is part of the Meeds project (https://meeds.io/).
  * 
- * Copyright (C) 2020 - 2022 Meeds Association contact@meeds.io
+ * Copyright (C) 2022 Meeds Association contact@meeds.io
  * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,13 +16,28 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import './initComponents.js';
-import '../common/initComponents.js';
-import './extensions.js';
+export function retrieveAddress() {
+  return window.ethereum.request({ method: 'eth_accounts' })
+    .then(address => address?.length && address[0] || null);
+}
 
-import * as metamaskUtils from '../js/MetamaskUtils.js';
-if (!Vue.prototype.$metamaskUtils) {
-  window.Object.defineProperty(Vue.prototype, '$metamaskUtils', {
-    value: metamaskUtils,
-  });
+export function signInWithMetamask(rawMessage) {
+  return window.ethereum.request({
+    method: 'wallet_requestPermissions',
+    params: [{
+      eth_accounts: {},
+    }]
+  }).then(accounts => {
+    const account = accounts?.length && accounts[0];
+    if (account) {
+      return retrieveAddress();
+    } else {
+      throw new Error('No selected account');
+    }
+  }).then(address => 
+    window.ethereum.request({
+      method: 'personal_sign',
+      params: [rawMessage, address],
+    })
+  ).then(signedMessage => `SIGNED_MESSAGE@${signedMessage}`);
 }

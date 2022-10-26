@@ -25,7 +25,10 @@
     color="white"
     width="290px">
     <template #activator="{ on }">
-      <v-list-item two-line class="px-0" dense>
+      <v-list-item
+        two-line
+        class="px-0"
+        dense>
         <v-list-item-action class="me-2">
           <v-card
             :color="value"
@@ -45,7 +48,7 @@
       </v-list-item>
     </template>
     <v-color-picker
-      v-model="value"
+      v-model="color"
       :swatches="swatches"
       mode="hexa"
       show-swatches />
@@ -83,6 +86,7 @@ export default {
   },
   data: () => ({
     modal: false,
+    color: null,
     originalValue: null,
     swatches: [
       ['#FF0000', '#319ab3', '#f97575'],
@@ -97,15 +101,21 @@ export default {
       if (this.modal) {
         this.originalValue = this.value;
       }
-    }
+    },
+    value() {
+      this.color = this.value;
+    },
+  },
+  created() {
+    this.color = this.value;
   },
   methods: {
     cancel() {
-      this.value = this.originalValue;
+      this.$emit('input', this.originalValue);
       this.modal = false;
     },
     save() {
-      this.$emit('input', this.value);
+      this.$emit('input', this.color);
       this.modal = false;
     }
   }

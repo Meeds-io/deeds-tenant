@@ -19,3 +19,10 @@
 import './initComponents.js';
 import '../common/initComponents.js';
 import './extensions.js';
+
+import * as metamaskUtils from '../js/MetamaskUtils.js';
+if (!Vue.prototype.$metamaskUtils) {
+  window.Object.defineProperty(Vue.prototype, '$metamaskUtils', {
+    value: metamaskUtils,
+  });
+}

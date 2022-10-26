@@ -57,7 +57,7 @@ export default {
         '--allPagesPrimaryColor': this.primaryColor,
         '--allPagesSecondaryColor': this.secondaryColor,
         '--allPagesTertiaryColor': this.secondaryColor,
-      }
+      };
     },
     previewParams() {
       const params = this.params && Object.assign({}, this.params) || {};

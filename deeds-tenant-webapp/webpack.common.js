@@ -13,7 +13,14 @@ let config = {
     metamaskSetupForm: './src/main/webapp/vue-app/register-deed-setup/main.js',
   },
   plugins: [
-	  new ESLintPlugin(),
+    new ESLintPlugin({
+      files: [
+        './src/main/webapp/vue-app/*.js',
+        './src/main/webapp/vue-app/*.vue',
+        './src/main/webapp/vue-app/**/*.js',
+        './src/main/webapp/vue-app/**/*.vue',
+      ],
+    }),
     new VueLoaderPlugin()
   ],
   module: {
