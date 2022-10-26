@@ -47,9 +47,11 @@ export default {
   },
   data: () => ({
     enabled: false,
+    deedRegisterExtension: Vue.options.components['deed-register-onboarding'],
   }),
   created() {
     this.extendOriginalOnboarding();
+    document.addEventListener('component-Register-register-extension-updated', () => this.extendOriginalOnboarding());
   },
   mounted() {
     if (!this.enabled) {
@@ -61,15 +63,16 @@ export default {
     extendOriginalOnboarding() {
       const registeredComponents = extensionRegistry.loadComponents('Register');
       const componentIndex = registeredComponents.findIndex(component => component?.componentOptions?.id === 'onboarding');
-      if (componentIndex) {
+      if (componentIndex && registeredComponents[componentIndex].vueComponent !== this.deedRegisterExtension) {
         registeredComponents.splice(componentIndex, 1);
         extensionRegistry.registerComponent('Register', 'register-extension', {
           id: 'onboarding',
-          vueComponent: Vue.options.components['deed-register-onboarding'],
+          vueComponent: this.deedRegisterExtension,
           isEnabled: params => params && params.params && params.params.onboardingRegisterEnabled,
           rank: 80,
         });
-        this.enabled = true;
+        this.enabled = false;
+        this.$nextTick(() => this.enabled = true);
       }
     }
   },
