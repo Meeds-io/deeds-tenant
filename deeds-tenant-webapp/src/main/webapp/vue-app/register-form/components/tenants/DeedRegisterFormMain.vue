@@ -28,21 +28,23 @@
     class="d-flex flex-column flex ma-0">
     <v-row class="flex mx-0">
       <v-col class="px-0">
-        <h4>
-          {{ isTenantManager && $t('deed.register.moveInIntroduction') || $t('deed.register.registerInIntroduction') }}
+        <h4 v-if="isTenantManager">
+          {{ $t('deed.register.moveInIntroduction') }}
+        </h4>
+        <h4 v-else class="primary--text">
+          <div>
+            {{ $t('deed.register.registerInIntroduction1') }}
+          </div>
+          <div class="pt-4">
+            {{ $t('deed.register.registerInIntroduction2') }}
+          </div>
         </h4>
         <v-card
+          :class="isTenantManager && 'mx-auto mx-sm-8'"
+          class="mt-8"
           width="350px"
           max-width="100%"
-          class="mx-auto mx-sm-8 mt-8"
           flat>
-          <v-alert
-            v-if="errorCode"
-            type="error"
-            class="position-static elevation-0"
-            dismissible>
-            {{ errorMessage }}
-          </v-alert>
           <input
             name="metamaskUserRegistration"
             type="hidden"
@@ -52,11 +54,12 @@
             name="rememberme"
             type="hidden">
           <v-row class="d-block ma-0 pa-0">
-            <h4>
-              {{ isTenantManager && '1. ' || '' }}
-              {{ $t('deed.register.startWithYourProfile') }}
+            <h4 v-if="isTenantManager">
+              {{ `1. $t('deed.register.startWithYourProfile')` }}
             </h4>
-            <h4 class="font-weight-bold mb-0 mt-8">
+            <h4
+              :class="isTenantManager && 'mt-8'"
+              class="font-weight-bold mb-0">
               {{ $t('deed.register.yourETHAddress') }}
             </h4>
             <v-text-field
@@ -82,7 +85,7 @@
               id="fullName"
               v-model="fullName"
               :loading="loading"
-              :placeholder="$t('portal.register.displayName')"
+              :placeholder="$t('deed.register.usernamePlaceholder')"
               :autofocus="!fullName && 'autofocus' || ''"
               class="register-full-name border-box-sizing"
               name="fullName"
@@ -98,7 +101,7 @@
               id="email"
               v-model="email"
               :loading="loading"
-              :placeholder="$t('deed.onboarding.emailPlaceholder')"
+              :placeholder="$t('deed.register.emailPlaceholder')"
               :autofocus="fullName && 'autofocus' || ''"
               class="register-full-name border-box-sizing"
               name="email"
@@ -109,6 +112,17 @@
               required="required"
               outlined
               dense />
+            <div
+              :class="isTenantManager && 'mx-auto mx-sm-8'"
+              class="d-flex mt-6">
+              <v-alert
+                v-if="errorCode"
+                type="error"
+                class="position-static elevation-0"
+                dismissible>
+                {{ errorMessage }}
+              </v-alert>
+            </div>
           </v-row>
         </v-card>
       </v-col>
