@@ -26,7 +26,7 @@
       lg="6"
       class="pa-0">
       <h4>
-        {{ `2. ${$t('deed.register.tenantSetupStepDescription')}` }}
+        {{ `2. ${$t('deed.register.tenantSetupStepDescription')}` }}
       </h4>
       <v-card flat>
         <v-alert
@@ -37,7 +37,7 @@
           {{ errorMessage }}
         </v-alert>
         <h4 class="font-weight-bold mb-0 mt-8">
-          {{ $t('deed.setup.companyNameLabel') }}
+          {{ $t('deed.setup.companyNameLabel') }}
         </h4>
         <v-card max-width="350px" flat>
           <v-text-field
@@ -54,10 +54,10 @@
             dense />
         </v-card>
         <h4 class="font-weight-bold mb-0 mt-4">
-          {{ $t('deed.setup.companyLogoLabel') }}
+          {{ $t('deed.setup.companyLogoLabel') }}
         </h4>
         <h6 class="text-subtitle grey--text">
-          {{ $t('deed.setup.companyLogoSubtitle') }}
+          {{ $t('deed.setup.companyLogoSubtitle') }}
         </h6>
         <deed-tenant-setup-company-logo
           ref="companyLogo"
@@ -66,7 +66,7 @@
           @logo-src="logoSrc = $event"
           @error="errorMessage = $event" />
         <h4 class="font-weight-bold mb-0 mt-8">
-          {{ $t('themeColors.label') }}
+          {{ $t('themeColors.label') }}
         </h4>
         <v-row class="colorsBlock">
           <v-col cols="6">

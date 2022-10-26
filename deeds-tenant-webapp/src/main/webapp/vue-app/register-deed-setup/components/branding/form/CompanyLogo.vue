@@ -35,7 +35,6 @@
         <div
           v-show="hover"
           class="justify-center light-grey-background absolute-full-size">
-
           <v-btn
             v-if="hover && !isDefaultSrc"
             color="error"
