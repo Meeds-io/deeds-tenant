@@ -16,28 +16,43 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+export function isMetamaskInstalled() {
+  return MetaMaskOnboarding.isMetaMaskInstalled();
+}
+
+export async function signInWithMetamask(rawMessage, isMobile) {
+  if (!MetaMaskOnboarding.isMetaMaskInstalled()) {
+    const onboarding = new MetaMaskOnboarding();
+    return onboarding.startOnboarding();
+  } else {
+    if (!isMobile) {
+      try {
+        const accounts = await window.ethereum.request({
+          method: 'wallet_requestPermissions',
+          params: [{
+            eth_accounts: {},
+          }]
+        });
+        const account = accounts?.length && accounts[0];
+        if (!account) {
+          throw new Error('No selected account');
+        }
+      } catch (e) {
+        if (!String(e).includes('32601')) {
+          throw e;
+        }
+      }
+    }
+    const address = await retrieveAddress();
+    const signedMessage = await window.ethereum.request({
+      method: 'personal_sign',
+      params: [rawMessage, address],
+    });
+    return `SIGNED_MESSAGE@${signedMessage}`;
+  }
+}
+
 export function retrieveAddress() {
   return window.ethereum.request({ method: 'eth_accounts' })
     .then(address => address?.length && address[0] || null);
-}
-
-export function signInWithMetamask(rawMessage) {
-  return window.ethereum.request({
-    method: 'wallet_requestPermissions',
-    params: [{
-      eth_accounts: {},
-    }]
-  }).then(accounts => {
-    const account = accounts?.length && accounts[0];
-    if (account) {
-      return retrieveAddress();
-    } else {
-      throw new Error('No selected account');
-    }
-  }).then(address => 
-    window.ethereum.request({
-      method: 'personal_sign',
-      params: [rawMessage, address],
-    })
-  ).then(signedMessage => `SIGNED_MESSAGE@${signedMessage}`);
 }

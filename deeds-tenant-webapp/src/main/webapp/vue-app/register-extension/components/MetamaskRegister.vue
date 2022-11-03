@@ -22,11 +22,11 @@
   <div v-if="metamaskRegistrationEnabled" class="d-flex border-box-sizing mt-4">
     <v-btn
       v-if="!isMetamaskInstalled"
+      :href="metamaskInstallLinlk"
       :block="!isDeedTenant"
       :color="isDeedTenant && 'primary'"
       :large="isDeedTenant"
       :class="!isDeedTenant && 'rounded-lg'"
-      href="https://metamask.io/"
       target="_blank"
       rel="noreferrer"
       class="mx-auto white-background d-block max-width-fit"
@@ -106,9 +106,20 @@ export default {
     isDeedTenant() {
       return this.params?.isDeedTenant;
     },
+    isMobile() {
+      return this.$vuetify.breakpoint.mobile;
+    },
+    currentSiteLink() {
+      return `${window.location.host}${window.location.pathname}`;
+    },
+    metamaskInstallLinlk() {
+      return this.isMobile
+        && `https://metamask.app.link/dapp/${this.currentSiteLink}`
+        || 'https://metamask.io/';
+    },
   },
   created() {
-    this.isMetamaskInstalled = !this.disabled && window.ethereum && window.ethereum.isMetaMask;
+    this.isMetamaskInstalled = !this.disabled && this.$metamaskUtils.isMetamaskInstalled();
     if (this.isMetamaskInstalled) {
       this.retrieveAddress();
       window.ethereum.on('accountsChanged', () => this.retrieveAddress());
@@ -119,7 +130,7 @@ export default {
       if (this.disabled) {
         return;
       }
-      return this.$metamaskUtils.signInWithMetamask(this.rawMessage)
+      return this.$metamaskUtils.signInWithMetamask(this.rawMessage, this.isMobile)
         .then(password => this.password = password)
         .then(() => this.retrieveAddress())
         .then(() => this.$nextTick())
