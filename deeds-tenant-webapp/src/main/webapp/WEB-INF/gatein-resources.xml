@@ -51,6 +51,10 @@
     <depends>
       <module>commonVueComponents</module>
     </depends>
+    <depends>
+      <module>metamaskOnboarding</module>
+      <as>MetaMaskOnboarding</as>
+    </depends>
   </module>
 
   <module>
@@ -72,6 +76,10 @@
     </depends>
     <depends>
       <module>commonVueComponents</module>
+    </depends>
+    <depends>
+      <module>metamaskOnboarding</module>
+      <as>MetaMaskOnboarding</as>
     </depends>
   </module>
 
@@ -97,6 +105,10 @@
     </depends>
     <depends>
       <module>ethers</module>
+    </depends>
+    <depends>
+      <module>metamaskOnboarding</module>
+      <as>MetaMaskOnboarding</as>
     </depends>
   </module>
 
@@ -127,6 +139,19 @@
     <depends>
       <module>filedrop</module>
     </depends>
+  </module>
+
+  <module>
+    <name>metamaskOnboarding</name>
+    <as>MetaMaskOnboarding</as>
+    <script>
+      <adapter>
+        (function() {
+        <include>/js/metamask-onboarding.bundle.js</include>
+        return MetaMaskOnboarding;
+        })();
+      </adapter>
+    </script>
   </module>
 
   <module>
