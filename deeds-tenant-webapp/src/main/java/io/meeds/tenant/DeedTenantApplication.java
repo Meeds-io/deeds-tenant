@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.PropertySource;
 
 import io.meeds.tenant.integration.SpringContext;
 
@@ -33,6 +34,8 @@ import io.meeds.tenant.integration.SpringContext;
    }
 )
 @EnableCaching
+@PropertySource("classpath:tenant.properties")
+@PropertySource("classpath:application.properties")
 public class DeedTenantApplication extends SpringBootServletInitializer {
 
   @Override
