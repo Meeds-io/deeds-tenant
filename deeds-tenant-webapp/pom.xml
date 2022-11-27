@@ -172,9 +172,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.2</version>
         <configuration>
           <includeEmptyDirectories>false</includeEmptyDirectories>
           <packagingExcludes>**/*.less,**/less/**,vue-app/**</packagingExcludes>
+          <outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping>
         </configuration>
       </plugin>
       <plugin>

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 import io.meeds.deeds.constant.ObjectNotFoundException;
 import io.meeds.deeds.constant.TenantProvisioningStatus;
-import io.meeds.deeds.model.DeedTenant;
+import io.meeds.deeds.elasticsearch.model.DeedTenant;
 import io.meeds.deeds.service.TenantService;
 import io.meeds.tenant.integration.SpringIntegration;
 import io.meeds.tenant.integration.service.TenantServiceFacade;
