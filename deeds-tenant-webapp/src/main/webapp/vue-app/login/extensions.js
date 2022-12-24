@@ -16,9 +16,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-extensionRegistry.registerComponent('LoginHeader', 'login-header', {
+import * as metamaskUtils from '../js/MetamaskUtils.js';
+if (!Vue.prototype.$metamaskUtils) {
+  window.Object.defineProperty(Vue.prototype, '$metamaskUtils', {
+    value: metamaskUtils,
+  });
+}
+
+const extensionOptions = {
   id: 'metamask',
-  vueComponent: Vue.options.components['portal-login-metamask'],
-  isEnabled: params => params && params.params && params.params.metamaskEnabled,
+  key: 'metamask',
+  isEnabled: params => params?.metamaskEnabled,
+  image: '/deeds-tenant/images/metamask.svg',
   rank: 10,
-});
+};
+
+const isMobile = 'ontouchstart' in document.documentElement;
+const currentSiteLink = `${window.location.host}${window.location.pathname}`;
+
+if (!metamaskUtils.isMetamaskInstalled()) {
+  extensionOptions.url = isMobile
+        && `https://metamask.app.link/dapp/${currentSiteLink}`
+        || 'https://metamask.io/';
+} else {
+  extensionOptions.vueComponentName = 'portal-login-metamask';
+}
+
+extensionRegistry.registerExtension('LoginProvider', 'login-provider', extensionOptions);

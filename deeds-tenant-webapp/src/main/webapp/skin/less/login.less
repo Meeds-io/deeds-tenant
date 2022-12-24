@@ -1,29 +1,24 @@
+/*
+  This file is part of the Meeds project (https://meeds.io/).
+
+  Copyright (C) 2020 Meeds Association contact@meeds.io
+
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3 of the License, or (at your option) any later version.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program; if not, write to the Free Software Foundation,
+  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+*/
+@import (css) "/eXoSkin/skin/css/platform/portlets/extensions/login.css";
+
 @import "./variables.less";
-@import "./platform/portlets/extensions/login.less";
-
-body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main__wrap {
-  height: 100%;
-  max-height: 100%;
-  min-height: 100%;
-}
-
-#loginApplication {
-  display: none;
-
-  &.loaded {
-    display: flex;
-  }
-}
-
-.VuetifyApp .v-application .white-background {
-  background-color: #FFFFFF !important;
-}
-
-#mainAppArea .v-main__wrap {
-  display: flex;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
 
 .absolute-all-center {
   position: absolute !important;
@@ -40,49 +35,27 @@ body, html, .VuetifyApp, .v-application, .v-application--wrap, .v-main, .v-main_
   right: 0 !important;
 }
 
-.VuetifyApp .v-btn--outlined {
-  border: thin solid currentColor !important;
-}
-
-.login-button, .register-button {
-  width: 222px !important;
-  max-width: 100% !important;
-}
-
 .branding-logo-selector .v-input__control {
   display: none;
-}
-
-.v-input legend {
-  width: 0;
 }
 
 .max-width-fit {
   max-width: 100%;
 }
 
-.brandingImageContent {
-  bottom: 3%;
-  right: 3%;
-  position: fixed;
-
-  img.brandingImage {
-    width: 10vw;
-    max-width: 150px;
-  }
-}
-
 .login-preview {
   transform: ~"scale(0.7)";
 
-  .brandingImageContent {
+  .brandingLogo {
     bottom: 3px !important;
     right: 3px !important;
 
-    img.brandingImage {
+    img {
       width: auto !important;
       max-width: 60px !important;
       max-height: 60px !important;
     }
+
   }
+
 }

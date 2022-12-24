@@ -19,14 +19,14 @@
 
 -->
 <template>
-  <deed-login-template :params="params">
+  <portal-login-template :params="params">
     <template #title>
       {{ $t('deed.register.moveInTenant', {
         0: companyName
       }) }}
     </template>
     <deed-tenant-setup-main :params="params" />
-  </deed-login-template>
+  </portal-login-template>
 </template>
 <script>
 export default {

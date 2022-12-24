@@ -16,23 +16,14 @@
  */
 package io.meeds.tenant.metamask.web.filter;
 
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.EMAIL_REQUEST_PARAM;
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.ERROR_CODE_PARAM;
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.FULL_NAME_REQUEST_PARAM;
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_REGISTER_FORM;
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_REGISTER_USER;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_SIGNED_MESSAGE_PREFIX;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_TENANT_SETUP_FORM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.PASSWORD_REQUEST_PARAM;
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.SEPARATOR;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -46,7 +37,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
@@ -66,9 +56,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -77,15 +65,14 @@ import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
-import org.exoplatform.services.organization.idm.UserImpl;
 import org.exoplatform.services.resources.LocaleConfigService;
-import org.exoplatform.services.resources.ResourceBundleService;
 import org.exoplatform.services.resources.impl.LocaleConfigImpl;
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
 import org.exoplatform.web.filter.FilterDefinition;
+import org.exoplatform.web.security.security.RemindPasswordTokenService;
 
 import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
@@ -94,49 +81,50 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
 public class MetamaskSignInFilterTest {
 
   @Mock
-  private WebAppController        webAppController;
+  private WebAppController           webAppController;
 
   @Mock
-  private LocaleConfigService     localeConfigService;
+  private LocaleConfigService        localeConfigService;
 
   @Mock
-  private BrandingService         brandingService;
+  private RemindPasswordTokenService remindPasswordTokenService;
 
   @Mock
-  private JavascriptConfigService javascriptConfigService;
+  private BrandingService            brandingService;
 
   @Mock
-  private SkinService             skinService;
+  private JavascriptConfigService    javascriptConfigService;
 
   @Mock
-  private MetamaskLoginService    metamaskLoginService;
+  private SkinService                skinService;
 
   @Mock
-  private ControllerContext       controllerContext;
+  private MetamaskLoginService       metamaskLoginService;
 
   @Mock
-  private HttpServletRequest      request;
+  private ControllerContext          controllerContext;
 
   @Mock
-  private HttpServletResponse     response;
+  private HttpServletRequest         request;
 
   @Mock
-  private FilterChain             chain;
+  private HttpServletResponse        response;
 
   @Mock
-  private ServletContext          servletContext;
+  private FilterChain                chain;
 
   @Mock
-  private HttpSession             session;
+  private ServletContext             servletContext;
 
   @Mock
-  private RequestDispatcher       requestDispatcher;
+  private HttpSession                session;
 
-  private PortalContainer         container;
+  @Mock
+  private RequestDispatcher          requestDispatcher;
 
-  private MetamaskSignInFilter    filter;
+  private PortalContainer            container;
 
-  private JSONObject              forwardParameters;
+  private MetamaskSignInFilter       filter;
 
   @BeforeClass
   public static void setUpClass() throws Exception {
@@ -163,10 +151,10 @@ public class MetamaskSignInFilterTest {
     container = mock(PortalContainer.class);
     when(container.getPortalContext()).thenReturn(servletContext);
     when(servletContext.getRequestDispatcher(any())).thenReturn(requestDispatcher);
-    when(controllerContext.getRequest()).thenReturn(request);
     when(request.getContextPath()).thenReturn("/portal");
     when(request.getSession()).thenReturn(session);
     filter = spy(new MetamaskSignInFilter(container,
+                                          remindPasswordTokenService,
                                           webAppController,
                                           localeConfigService,
                                           brandingService,
@@ -175,21 +163,13 @@ public class MetamaskSignInFilterTest {
                                           metamaskLoginService));
     when(localeConfigService.getDefaultLocaleConfig()).thenReturn(new LocaleConfigImpl());
     when(javascriptConfigService.getJSConfig(any(), any())).thenReturn(new JSONObject());
-    when(filter.prepareDispatch(any(), any())).thenAnswer(new Answer<Boolean>() {
-      @Override
-      public Boolean answer(InvocationOnMock invocation) throws Throwable {
-        String errorCode = invocation.getArgument(1);
-        forwardParameters = new JSONObject();
-        filter.addRegisterFormParams(forwardParameters, controllerContext, errorCode);
-        return true;
-      }
-    });
   }
 
   @Test
   public void testFilterDefinition() {
     InitParams params = mock(InitParams.class);
     MetamaskSignInFilterDefinition filterDefinition = new MetamaskSignInFilterDefinition(container,
+                                                                                         remindPasswordTokenService,
                                                                                          webAppController,
                                                                                          localeConfigService,
                                                                                          brandingService,
@@ -259,59 +239,17 @@ public class MetamaskSignInFilterTest {
     filter.doFilter(request, response, chain);
     verify(chain, times(1)).doFilter(request, response);
     verifyNoInteractions(servletContext);
-    verify(filter, times(0)).forwardUserRegistrationForm(any(), any());
+    verify(response, never()).sendRedirect(any());
   }
 
   @Test
   public void testCannotDisplayRegisterFormWhenCredentialsNotValidated() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn("fakeUser");
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn("fakePassword");
     filter.doFilter(request, response, chain);
     verify(chain, times(1)).doFilter(request, response);
     verifyNoInteractions(servletContext);
-    verify(filter, times(0)).forwardUserRegistrationForm(any(), any());
-  }
-
-  @Test
-  public void testDenyRegisterFormWhenHasUnrecognizedCredentials() throws Exception {
-    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn("fakeUser");
-    when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + "fakePassword");
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(),
-                                                         eq("INVALID_CREDENTIALS"));
-    verify(servletContext, times(1)).getRequestDispatcher(METAMASK_REGISTER_FORM);
-    verifyNoInteractions(chain);
-    assertNotNull(forwardParameters);
-    assertTrue(forwardParameters.has(ERROR_CODE_PARAM));
-    assertEquals("INVALID_CREDENTIALS", forwardParameters.getString(ERROR_CODE_PARAM));
-  }
-
-  @Test
-  public void testDisplayRegisterFormWhenHasRecognizedCredentials() throws Exception {
-    String walletAddress = "fakeUser";
-    String rawMessageToSign = "rawMessage";
-    String signedMessage = "signedMessage";
-
-    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + signedMessage);
-    when(metamaskLoginService.getLoginMessage(any())).thenReturn(rawMessageToSign);
-    when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-
-    String compoundPassword = filter.getCompoundPassword(request);
-
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(),
-                                                         eq(null));
-    verify(servletContext, times(1)).getRequestDispatcher(METAMASK_REGISTER_FORM);
-    verifyNoInteractions(chain);
-    verify(servletContext, times(1)).getRequestDispatcher(METAMASK_REGISTER_FORM);
-    verify(session, times(1)).setAttribute(USERNAME_REQUEST_PARAM, walletAddress);
-    verify(session, times(1)).setAttribute(PASSWORD_REQUEST_PARAM, compoundPassword);
-    assertNotNull(forwardParameters);
-    assertEquals(walletAddress, forwardParameters.getString(USERNAME_REQUEST_PARAM));
-    assertFalse(forwardParameters.has(ERROR_CODE_PARAM));
+    verify(response, never()).sendRedirect(any());
   }
 
   @Test
@@ -328,9 +266,8 @@ public class MetamaskSignInFilterTest {
     String compoundPassword = filter.getCompoundPassword(request);
 
     filter.doFilter(request, response, chain);
-    verify(filter, times(0)).forwardUserRegistrationForm(any(), any());
-    verify(servletContext, times(0)).getRequestDispatcher(METAMASK_REGISTER_FORM);
-    verify(servletContext, times(0)).getRequestDispatcher(METAMASK_REGISTER_FORM);
+    verify(response, never()).sendRedirect(any());
+    verify(servletContext, never()).getRequestDispatcher(any());
     verify(chain, times(1)).doFilter(argThat(new ArgumentMatcher<ServletRequest>() {
       public boolean matches(ServletRequest argument) {
         return StringUtils.equals(walletAddress, argument.getParameter(USERNAME_REQUEST_PARAM))
@@ -347,160 +284,14 @@ public class MetamaskSignInFilterTest {
     String rawMessageToSign = "rawMessage";
     String signedMessage = "signedMessage";
 
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
     when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + signedMessage);
     when(metamaskLoginService.getLoginMessage(any())).thenReturn(rawMessageToSign);
 
-    String compoundPassword = filter.getCompoundPassword(request);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
     filter.doFilter(request, response, chain);
     verify(chain, times(1)).doFilter(request, response);
     verifyNoInteractions(servletContext);
-    verify(filter, times(0)).forwardUserRegistrationForm(any(), any());
-  }
-
-  @Test
-  public void testFailToRegisterWhenInvalidEmail() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
-    String walletAddress = "fakeUser";
-    String compoundPassword = "compoundPassword";
-
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
-    when(request.getParameter(EMAIL_REQUEST_PARAM)).thenReturn("invalidEmail");
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
-    ExoContainerContext.setCurrentContainer(container);
-
-    ResourceBundleService resourceBundleService = mock(ResourceBundleService.class);
-    ResourceBundle resourceBundle = mock(ResourceBundle.class);
-
-    when(container.getComponentInstanceOfType(ResourceBundleService.class)).thenReturn(resourceBundleService);
-    lenient().when(resourceBundleService.getResourceBundle(any(String[].class), any())).thenReturn(resourceBundle);
-
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("EmailAddressValidator.msg.Invalid-input"));
-    verifyNoInteractions(chain);
-  }
-
-  @Test
-  public void testFailToRegisterWhenInvalidPassword() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
-    String walletAddress = "fakeUser";
-    String email = "testmail@mail.test";
-    String compoundPassword = "compoundPassword";
-
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
-    when(request.getParameter(EMAIL_REQUEST_PARAM)).thenReturn(email);
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("REGISTRATION_NOT_ALLOWED"));
-    verifyNoInteractions(chain);
-  }
-
-  @Test
-  public void testFailToRegisterWhenInvalidPasswordWithGoodStructure() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
-    String walletAddress = "fakeUser";
-    String rawMessageToSign = "rawMessage";
-    String signedMessage = "signedMessage";
-    String email = "testmail@mail.test";
-    String compoundPassword = "fakeUser2" + SEPARATOR + rawMessageToSign + SEPARATOR + signedMessage;
-
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
-    when(request.getParameter(EMAIL_REQUEST_PARAM)).thenReturn(email);
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("REGISTRATION_NOT_ALLOWED"));
-    verifyNoInteractions(chain);
-  }
-
-  @Test
-  public void testFailToRegisterWhenInvalidPasswordWithGoodStructure2() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
-    String walletAddress = "fakeUser";
-    String rawMessageToSign = "rawMessage";
-    String signedMessage = "signedMessage";
-    String email = "testmail@mail.test";
-    String compoundPassword = walletAddress + SEPARATOR + "rawMessage2" + SEPARATOR + signedMessage;
-
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
-    when(request.getParameter(EMAIL_REQUEST_PARAM)).thenReturn(email);
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
-    lenient().when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
-
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("REGISTRATION_NOT_ALLOWED"));
-    verifyNoInteractions(chain);
-  }
-
-  @Test
-  public void testFailToRegisterWhenInvalidPasswordWithGoodStructure3() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
-    String walletAddress = "fakeUser";
-    String rawMessageToSign = "rawMessage";
-    String signedMessage = "signedMessage";
-    String email = "testmail@mail.test";
-    String compoundPassword = walletAddress + SEPARATOR + rawMessageToSign + SEPARATOR + "signedMessage2";
-
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
-    when(request.getParameter(EMAIL_REQUEST_PARAM)).thenReturn(email);
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
-    ExoContainerContext.setCurrentContainer(container);
-
-    lenient().when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
-
-    filter.doFilter(request, response, chain);
-    verify(filter, times(1)).forwardUserRegistrationForm(any(), eq("REGISTRATION_NOT_ALLOWED"));
-    verifyNoInteractions(chain);
-  }
-
-  @Test
-  public void testFailToRegister() throws Exception {
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-
-    String walletAddress = "fakeUser";
-    String fullName = "fullName";
-    String rawMessageToSign = "rawMessage";
-    String signedMessage = "signedMessage";
-    String email = "testmail@mail.test";
-    String compoundPassword = walletAddress + SEPARATOR + rawMessageToSign + SEPARATOR + signedMessage;
-
-    when(request.getParameter(METAMASK_REGISTER_USER)).thenReturn("true");
-    when(request.getParameter(EMAIL_REQUEST_PARAM)).thenReturn(email);
-    when(request.getParameter(FULL_NAME_REQUEST_PARAM)).thenReturn(fullName);
-    when(session.getAttribute(USERNAME_REQUEST_PARAM)).thenReturn(walletAddress);
-    when(session.getAttribute(PASSWORD_REQUEST_PARAM)).thenReturn(compoundPassword);
-
-    when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessageToSign, signedMessage)).thenReturn(true);
-    when(metamaskLoginService.registerUser(walletAddress, fullName, email)).thenReturn(new UserImpl(walletAddress.toLowerCase()));
-
-    filter.doFilter(request, response, chain);
-    verify(metamaskLoginService, times(1)).registerUser(walletAddress, fullName, email);
-    verify(filter, times(0)).forwardUserRegistrationForm(any(), any());
-    verify(chain, times(1)).doFilter(argThat(new ArgumentMatcher<ServletRequest>() {
-      public boolean matches(ServletRequest argument) {
-        return StringUtils.equals(walletAddress.toLowerCase(), argument.getParameter(USERNAME_REQUEST_PARAM))
-            && StringUtils.equals(compoundPassword, argument.getParameter(PASSWORD_REQUEST_PARAM))
-            && StringUtils.equals(email, argument.getParameter(EMAIL_REQUEST_PARAM))
-            && StringUtils.equals("/portal/login", ((HttpServletRequest) argument).getRequestURI());
-      }
-    }), any());
+    verify(response, never()).sendRedirect(any());
   }
 
 }

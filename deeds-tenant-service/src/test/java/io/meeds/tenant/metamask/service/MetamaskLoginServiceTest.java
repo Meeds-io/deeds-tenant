@@ -25,12 +25,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -39,17 +36,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -57,25 +50,18 @@ import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.portal.config.UserACL;
-import org.exoplatform.services.organization.Group;
 import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.MembershipHandler;
-import org.exoplatform.services.organization.MembershipType;
 import org.exoplatform.services.organization.MembershipTypeHandler;
 import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.services.organization.Query;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.services.organization.UserStatus;
-import org.exoplatform.services.organization.idm.UserImpl;
 import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.tenant.metamask.FakeTestException;
-import io.meeds.tenant.metamask.RegistrationException;
 import io.meeds.tenant.service.TenantManagerService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -124,9 +110,6 @@ public class MetamaskLoginServiceTest {
           tenantManagerService);
 
     when(organizationService.getUserHandler()).thenReturn(userHandler);
-    when(organizationService.getGroupHandler()).thenReturn(groupHandler);
-    when(organizationService.getMembershipTypeHandler()).thenReturn(membershipTypeHandler);
-    when(organizationService.getMembershipHandler()).thenReturn(membershipHandler);
     when(userAcl.getSuperUser()).thenReturn(SUPER_USER);
   }
 
@@ -282,141 +265,6 @@ public class MetamaskLoginServiceTest {
     token2 = metamaskLoginService.generateLoginMessage(session, true);
     assertNotEquals(token, token2);
     verify(session, times(1)).setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token2);
-  }
-
-  @Test
-  public void testRegisterUser() throws Exception { // NOSONAR
-    String walletAddress = "walletAddress";
-    String exitingUserWallet = "exitingUserWallet";
-    String existingEmail = "existingEmail";
-    String validEmail = "validEmail";
-
-    newService();
-    mockSecureRandomService();
-
-    when(userHandler.createUserInstance(any())).thenAnswer(new Answer<User>() {
-      @Override
-      public User answer(InvocationOnMock invocation) throws Throwable {
-        String username = invocation.getArgument(0, String.class);
-        return new UserImpl(username);
-      }
-    });
-
-    whenFindUserByName(exitingUserWallet).thenReturn(mock(User.class));
-
-    assertThrows("USERNAME_ALREADY_EXISTS", RegistrationException.class, () -> {
-      metamaskLoginService.registerUser(exitingUserWallet, null, null);
-    });
-
-    assertThrows("FULLNAME_MANDATORY", RegistrationException.class, () -> {
-      metamaskLoginService.registerUser(walletAddress, null, null);
-    });
-
-    @SuppressWarnings("unchecked")
-    ListAccess<User> existingEmailListAccess = mock(ListAccess.class);
-    when(existingEmailListAccess.getSize()).thenReturn(1);
-
-    when(userHandler.findUsersByQuery(argThat(new ArgumentMatcher<Query>() {
-      public boolean matches(Query query) {
-        return query != null && StringUtils.equals(existingEmail, query.getEmail());
-      }
-    }), eq(UserStatus.ANY))).thenReturn(existingEmailListAccess);
-
-    String fullName = "Test";
-    assertThrows("EMAIL_ALREADY_EXISTS", RegistrationException.class, () -> {
-      metamaskLoginService.registerUser(walletAddress, fullName, existingEmail);
-    });
-
-    when(userHandler.findUsersByQuery(argThat(new ArgumentMatcher<Query>() {
-      public boolean matches(Query query) {
-        return query != null && StringUtils.equals(existingEmail, query.getEmail());
-      }
-    }), eq(UserStatus.ANY))).thenThrow(new FakeTestException());
-
-    assertThrows("EMAIL_ALREADY_EXISTS", RegistrationException.class, () -> {
-      metamaskLoginService.registerUser(walletAddress, fullName, existingEmail);
-    });
-
-    User user = metamaskLoginService.registerUser(walletAddress, fullName, validEmail);
-
-    verify(userHandler, times(1)).createUser(argThat(new ArgumentMatcher<User>() {
-      public boolean matches(User user) {
-        return user != null
-            && StringUtils.equals(validEmail, user.getEmail())
-            && StringUtils.equals(walletAddress.toLowerCase(), user.getUserName())
-            && StringUtils.equals(fullName, StringUtils.trim(user.getDisplayName()))
-            && StringUtils.equals(fullName, user.getLastName())
-            && StringUtils.isBlank(user.getFirstName());
-      }
-    }), eq(true));
-    assertNotNull(user);
-    assertEquals(validEmail, user.getEmail());
-    assertEquals(walletAddress.toLowerCase(), user.getUserName());
-    assertEquals(fullName, StringUtils.trim(user.getDisplayName()));
-    assertEquals(fullName, user.getLastName());
-    assertTrue(StringUtils.isBlank(user.getFirstName()));
-
-    verify(tenantManagerService, times(0)).getTenantManagerDefaultRoles();
-    verifyNoInteractions(membershipHandler, membershipTypeHandler, groupHandler);
-
-    String firstName = "Test User";
-    String lastName = "LASTNAME";
-    String composedFullName = "Test User LASTNAME";
-
-    user = metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-
-    verify(userHandler, times(1)).createUser(argThat(new ArgumentMatcher<User>() {
-      public boolean matches(User user) {
-        return user != null
-            && StringUtils.equals(validEmail, user.getEmail())
-            && StringUtils.equals(walletAddress.toLowerCase(), user.getUserName())
-            && StringUtils.equals(composedFullName, StringUtils.trim(user.getDisplayName()))
-            && StringUtils.equals(lastName, user.getLastName())
-            && StringUtils.equals(firstName, user.getFirstName());
-      }
-    }), eq(true));
-    assertNotNull(user);
-    assertEquals(validEmail, user.getEmail());
-    assertEquals(walletAddress.toLowerCase(), user.getUserName());
-    assertEquals(composedFullName, StringUtils.trim(user.getDisplayName()));
-    assertEquals(lastName, user.getLastName());
-    assertEquals(firstName, user.getFirstName());
-
-    verify(tenantManagerService, times(0)).getTenantManagerDefaultRoles();
-    verifyNoInteractions(membershipHandler, membershipTypeHandler, groupHandler);
-
-    when(tenantManagerService.isTenantManager(walletAddress.toLowerCase())).thenReturn(true);
-    when(tenantManagerService.getTenantManagerDefaultRoles()).thenReturn(Collections.emptyList());
-    metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-    verifyNoInteractions(membershipHandler, membershipTypeHandler, groupHandler);
-
-    String role = "/platform/admin";
-    when(tenantManagerService.getTenantManagerDefaultRoles()).thenReturn(Arrays.asList(role));
-    metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-    verifyNoInteractions(membershipHandler);
-
-    Group group = mock(Group.class);
-    MembershipType membershipType = mock(MembershipType.class);
-
-    when(groupHandler.findGroupById(role)).thenReturn(group);
-    when(tenantManagerService.getTenantManagerDefaultRoles()).thenReturn(Arrays.asList(role));
-    metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-    verifyNoInteractions(membershipHandler);
-
-    when(membershipTypeHandler.findMembershipType("*")).thenReturn(membershipType);
-    user = metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-    verify(membershipHandler, times(1)).linkMembership(user, group, membershipType, true);
-
-    reset(membershipHandler);
-
-    role = "manager:/platform/admin";
-    when(tenantManagerService.getTenantManagerDefaultRoles()).thenReturn(Arrays.asList(role));
-    user = metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-    verifyNoInteractions(membershipHandler);
-
-    when(membershipTypeHandler.findMembershipType("manager")).thenReturn(membershipType);
-    user = metamaskLoginService.registerUser(walletAddress, composedFullName, validEmail);
-    verify(membershipHandler, times(1)).linkMembership(user, group, membershipType, true);
   }
 
   private void newService() {
