@@ -17,7 +17,9 @@
  */
 package io.meeds.tenant.metamask.web.filter;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.xml.InitParams;
@@ -26,7 +28,10 @@ import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
-import org.exoplatform.web.filter.*;
+import org.exoplatform.web.filter.Filter;
+import org.exoplatform.web.filter.FilterDefinition;
+import org.exoplatform.web.filter.FilterDefinitionPlugin;
+import org.exoplatform.web.security.security.RemindPasswordTokenService;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 import lombok.Getter;
@@ -41,6 +46,7 @@ public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
   private Filter filter;
 
   public MetamaskSignInFilterDefinition(PortalContainer container, // NOSONAR
+                                        RemindPasswordTokenService remindPasswordTokenService,
                                         WebAppController webAppController,
                                         LocaleConfigService localeConfigService,
                                         BrandingService brandingService,
@@ -50,6 +56,7 @@ public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
                                         InitParams params) {
     super(params);
     this.filter = new MetamaskSignInFilter(container,
+                                           remindPasswordTokenService,
                                            webAppController,
                                            localeConfigService,
                                            brandingService,

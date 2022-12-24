@@ -9,7 +9,6 @@ let config = {
   entry: {
     metamaskLoginExtension: './src/main/webapp/vue-app/login/main.js',
     metamaskRegisterExtension: './src/main/webapp/vue-app/register-extension/main.js',
-    metamaskRegisterForm: './src/main/webapp/vue-app/register-form/main.js',
     metamaskSetupForm: './src/main/webapp/vue-app/register-deed-setup/main.js',
   },
   plugins: [
