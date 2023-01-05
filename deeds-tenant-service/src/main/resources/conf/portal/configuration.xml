@@ -33,6 +33,7 @@
       </value-param>
       <values-param>
         <name>managerDefaultRoles</name>
+        <value>*:/platform/users</value>
         <value>*:/platform/administrators</value>
         <value>*:/platform/analytics</value>
         <value>*:/platform/rewarding</value>

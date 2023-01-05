@@ -32,24 +32,14 @@ import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.organization.Group;
-import org.exoplatform.services.organization.GroupHandler;
-import org.exoplatform.services.organization.MembershipHandler;
-import org.exoplatform.services.organization.MembershipType;
-import org.exoplatform.services.organization.MembershipTypeHandler;
 import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.services.organization.Query;
 import org.exoplatform.services.organization.User;
-import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.web.security.security.SecureRandomService;
 
-import io.meeds.tenant.metamask.RegistrationException;
 import io.meeds.tenant.service.TenantManagerService;
 
 public class MetamaskLoginService implements Startable {
@@ -129,11 +119,11 @@ public class MetamaskLoginService implements Startable {
   }
 
   /**
-   * @param walletAddress wallet address that attempts to register
-   * @return allowUserRegistration parameter value, else, it will checks whether
-   *           the Tenant Manager has been registered to the tenant or not. If
-   *           not regitered, allow to display the register form, else return
-   *           false.
+   * @param  walletAddress wallet address that attempts to register
+   * @return               allowUserRegistration parameter value, else, it will
+   *                       checks whether the Tenant Manager has been registered
+   *                       to the tenant or not. If not regitered, allow to
+   *                       display the register form, else return false.
    */
   public boolean isAllowUserRegistration(String walletAddress) {
     if (allowUserRegistration) {
@@ -144,17 +134,18 @@ public class MetamaskLoginService implements Startable {
   }
 
   /**
-   * @param walletAddress to check if it's of Tenant Manager
-   * @return true is wallet address is of the Tenant Manager else return false.
+   * @param  walletAddress to check if it's of Tenant Manager
+   * @return               true is wallet address is of the Tenant Manager else
+   *                       return false.
    */
   public boolean isTenantManager(String walletAddress) {
     return tenantManagerService.isTenantManager(walletAddress);
   }
 
   /**
-   * @param walletAddress wallet address
-   * @return true if secure root access is allowed and designated wallet is
-   *           allowed to access using root account
+   * @param  walletAddress wallet address
+   * @return               true if secure root access is allowed and designated
+   *                       wallet is allowed to access using root account
    */
   public boolean isSuperUser(String walletAddress) {
     return secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase());
@@ -163,8 +154,8 @@ public class MetamaskLoginService implements Startable {
   /**
    * Retrieves User name with associated wallet Address
    * 
-   * @param walletAddress Ethereum Wallet Address
-   * @return username
+   * @param  walletAddress Ethereum Wallet Address
+   * @return               username
    */
   public String getUserWithWalletAddress(String walletAddress) {
     if (secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase())) {
@@ -184,10 +175,11 @@ public class MetamaskLoginService implements Startable {
   /**
    * Validates signed message by a wallet using Metamask
    * 
-   * @param walletAddress wallet Address (wallet public key)
-   * @param rawMessage raw signed message
-   * @param signedMessage encrypted message
-   * @return true if the message has been decrypted successfully, else false
+   * @param  walletAddress wallet Address (wallet public key)
+   * @param  rawMessage    raw signed message
+   * @param  signedMessage encrypted message
+   * @return               true if the message has been decrypted successfully,
+   *                       else false
    */
   public boolean validateSignedMessage(String walletAddress, String rawMessage, String signedMessage) {
     if (StringUtils.isBlank(walletAddress) || StringUtils.isBlank(rawMessage) || StringUtils.isBlank(signedMessage)) {
@@ -224,10 +216,10 @@ public class MetamaskLoginService implements Startable {
    * alread exists in {@link HttpSession}, else the token already generated will
    * be returned
    * 
-   * @param session {@link HttpSession}
-   * @param renew boolean
-   * @return already existing token in {@link HttpSession} or a newly generated
-   *           one
+   * @param  session {@link HttpSession}
+   * @param  renew   boolean
+   * @return         already existing token in {@link HttpSession} or a newly
+   *                 generated one
    */
   public String generateLoginMessage(HttpSession session, boolean renew) {
     String token = getLoginMessage(session);
@@ -246,9 +238,9 @@ public class MetamaskLoginService implements Startable {
    * {@link HttpSession}. If a token already exists in session, it will be
    * returned else a newly generated token will be returned
    * 
-   * @param session {@link HttpSession}
-   * @return already existing token in {@link HttpSession} or a newly generated
-   *           one
+   * @param  session {@link HttpSession}
+   * @return         already existing token in {@link HttpSession} or a newly
+   *                 generated one
    */
   public String generateLoginMessage(HttpSession session) {
     return generateLoginMessage(session, false);
@@ -258,43 +250,11 @@ public class MetamaskLoginService implements Startable {
    * Retrieves Login Message to Sign with Metamask Generated and stored in HTTP
    * Session
    * 
-   * @param session {@link HttpSession} of current user
-   * @return Login Message
+   * @param  session {@link HttpSession} of current user
+   * @return         Login Message
    */
   public String getLoginMessage(HttpSession session) {
     return session == null ? null : (String) session.getAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME);
-  }
-
-  /**
-   * Register new User in platform based on Username, display name and email.
-   * 
-   * @param username {@link String}
-   * @param fullName {@link String}
-   * @param email {@link String} with already validated email format
-   * @return created {@link User}
-   * @throws RegistrationException when a registration error happens. The error
-   *           code will be added into exception message
-   */
-  public User registerUser(String username, String fullName, String email) throws RegistrationException {
-    UserHandler userHandler = organizationService.getUserHandler();
-    try {
-      username = StringUtils.lowerCase(username);
-      User user = userHandler.createUserInstance(username);
-      validateUsername(username);
-      validateAndSetFullName(user, fullName);
-      validateAndSetEmail(user, email);
-
-      userHandler.createUser(user, true);
-      if (tenantManagerService.isTenantManager(user.getUserName())) {
-        setTenantManagerRoles(user);
-      }
-      return user;
-    } catch (RegistrationException e) {
-      throw e;
-    } catch (Exception e) {
-      LOG.warn("Error regitering user", e);
-      throw new RegistrationException("REGISTRATION_ERROR");
-    }
   }
 
   /**
@@ -314,90 +274,6 @@ public class MetamaskLoginService implements Startable {
    */
   public long getDeedId() {
     return tenantManagerService.getNftId();
-  }
-
-  private void setTenantManagerRoles(User user) {
-    List<String> tenantManagerRoles = tenantManagerService.getTenantManagerDefaultRoles();
-    LOG.info("Tenant manager registered, setting its default memberships as manager.");
-    for (String role : tenantManagerRoles) {
-      if (StringUtils.isNotBlank(role)) {
-        LOG.info("Add Tenant manager membership {}.", role);
-        if (StringUtils.contains(role, ":")) {
-          String[] roleParts = StringUtils.split(role, ":");
-          String membershipTypeId = roleParts[0];
-          String groupId = roleParts[1];
-
-          addUserToGroup(user, groupId, membershipTypeId);
-        } else {
-          addUserToGroup(user, role, "*");
-        }
-      }
-    }
-  }
-
-  private void addUserToGroup(User user, String groupId, String membershipTypeId) {
-    GroupHandler groupHandler = organizationService.getGroupHandler();
-    MembershipHandler membershipHandler = organizationService.getMembershipHandler();
-    MembershipTypeHandler membershipTypeHandler = organizationService.getMembershipTypeHandler();
-    try {
-      Group group = groupHandler.findGroupById(groupId);
-      MembershipType membershipType = membershipTypeHandler.findMembershipType(membershipTypeId);
-      if (group != null && membershipType != null) {
-        membershipHandler.linkMembership(user, group, membershipType, true);
-      } else if (group == null) {
-        LOG.warn("Group with id {} wasn't found. Tenant manager membership {} will not be set.",
-                 groupId,
-                 membershipTypeId + ":" + groupId);
-      } else {
-        LOG.warn("Membership Type with id {} wasn't found. Tenant manager membership {} will not be set.",
-                 membershipTypeId,
-                 membershipTypeId + ":" + groupId);
-      }
-    } catch (Exception e) {
-      LOG.warn("Error while adding user {} to role {}:{}", user.getUserName(), membershipTypeId, groupId, e);
-    }
-  }
-
-  private void validateAndSetFullName(User user, String fullName) throws RegistrationException {
-    if (StringUtils.isBlank(fullName)) {
-      throw new RegistrationException("FULLNAME_MANDATORY");
-    } else if (StringUtils.contains(fullName, " ")) {
-      String[] fullNameParts = fullName.split(" ");
-      user.setFirstName(StringUtils.join(fullNameParts, " ", 0, fullNameParts.length - 1));
-      user.setLastName(fullNameParts[fullNameParts.length - 1]);
-    } else {
-      user.setLastName(fullName);
-      user.setFirstName("");
-    }
-  }
-
-  private void validateUsername(String username) throws Exception {
-    User existingUser = organizationService.getUserHandler().findUserByName(username);
-    if (existingUser != null) {
-      throw new RegistrationException("USERNAME_ALREADY_EXISTS");
-    }
-  }
-
-  private void validateAndSetEmail(User user, String email) throws Exception {
-    if (StringUtils.isNotBlank(email)) {
-      ListAccess<User> users;
-      int usersLength = 0;
-      try {
-        // Check if mail address is already used
-        Query query = new Query();
-        query.setEmail(email);
-
-        users = organizationService.getUserHandler().findUsersByQuery(query, UserStatus.ANY);
-        usersLength = users == null ? 0 : users.getSize();
-      } catch (RuntimeException e) {
-        LOG.debug("Error retrieving users list with email {}. Thus, we will consider the email as already used", email, e);
-        usersLength = 1;
-      }
-      if (usersLength > 0) {
-        throw new RegistrationException("EMAIL_ALREADY_EXISTS");
-      }
-      user.setEmail(email);
-    }
   }
 
   private String generateRandomToken() {

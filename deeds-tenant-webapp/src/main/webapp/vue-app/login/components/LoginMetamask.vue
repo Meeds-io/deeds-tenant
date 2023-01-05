@@ -19,41 +19,15 @@
 
 -->
 <template>
-  <div
-    v-if="metamaskEnabled"
-    class="border-box-sizing mt-4 d-flex">
-    <v-btn
-      v-if="!isMetamaskInstalled"
-      :href="metamaskInstallLinlk"
-      :block="!isDeedTenant"
-      :color="isDeedTenant && 'primary'"
-      :large="isDeedTenant"
-      :class="!isDeedTenant && 'rounded-lg'"
-      target="_blank"
-      rel="noreferrer"
-      class="mx-auto white-background d-block max-width-fit"
-      outlined>
-      <v-img
-        src="/deeds-tenant/images/metamask.svg"
-        max-height="25px"
-        max-width="25px" />
-      <span class="py-2 ms-2 text-truncate text-capitalize">{{ $t('portal.login.SigninWithMetamask') }}</span>
-    </v-btn>
-    <v-btn
-      v-else
-      :block="!isDeedTenant"
-      :color="isDeedTenant && 'primary'"
-      :large="isDeedTenant"
-      :class="!isDeedTenant && 'rounded-lg'"
-      class="mx-auto white-background d-block max-width-fit"
-      outlined
-      @click="signInWithMetamask()">
-      <v-img
-        src="/deeds-tenant/images/metamask.svg"
-        max-height="25px"
-        max-width="25px" />
-      <span class="py-2 ms-2 text-truncate">{{ $t('portal.login.SigninWithMetamask') }}</span>
-    </v-btn>
+  <div>
+    <component
+      :provider="provider"
+      :rememberme="rememberme"
+      :params="params"
+      :display-text="displayText"
+      :is="isMenu && 'portal-login-provider-menu-link' || 'portal-login-provider-link'"
+      :class="isMenu && 'portal-login-provider-menu-link' || 'portal-login-provider-link'"
+      @submit="signInWithMetamask()" />
     <form
       ref="metamaskLoginForm"
       action="/portal/login"
@@ -81,6 +55,10 @@
 <script>
 export default {
   props: {
+    provider: {
+      type: Object,
+      default: null,
+    },
     params: {
       type: Object,
       default: null,
@@ -89,52 +67,36 @@ export default {
       type: Boolean,
       default: false,
     },
+    displayText: {
+      type: Boolean,
+      default: false,
+    },
+    isMenu: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
-    isMetamaskInstalled: false,
     address: null,
     password: null,
   }),
   computed: {
-    metamaskEnabled() {
-      return this.params?.metamaskEnabled;
-    },
     rawMessage() {
       return this.params?.rawMessage;
     },
     initialUri() {
       return this.params?.initialUri;
     },
-    isDeedTenant() {
-      return this.params?.isDeedTenant;
-    },
-    disabled() {
-      return this.params?.disabled;
-    },
     isMobile() {
       return this.$vuetify.breakpoint.mobile;
     },
-    currentSiteLink() {
-      return `${window.location.host}${window.location.pathname}`;
-    },
-    metamaskInstallLinlk() {
-      return this.isMobile
-        && `https://metamask.app.link/dapp/${this.currentSiteLink}`
-        || 'https://metamask.io/';
-    },
   },
   created() {
-    this.isMetamaskInstalled = !this.disabled && this.$metamaskUtils.isMetamaskInstalled();
-    if (this.isMetamaskInstalled) {
-      this.retrieveAddress();
-      window.ethereum.on('accountsChanged', () => this.retrieveAddress());
-    }
+    this.retrieveAddress();
+    window.ethereum.on('accountsChanged', () => this.retrieveAddress());
   },
   methods: {
     signInWithMetamask() {
-      if (this.disabled) {
-        return;
-      }
       return this.$metamaskUtils.signInWithMetamask(this.rawMessage, this.isMobile)
         .then(password => this.password = password)
         .then(() => this.retrieveAddress())

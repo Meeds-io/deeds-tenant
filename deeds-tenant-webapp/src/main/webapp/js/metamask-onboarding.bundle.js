@@ -54,8 +54,6 @@ var MetaMaskOnboarding = (function () {
         }
     }
 
-    // NOTE: this list must be up-to-date with browsers listed in
-    // test/acceptance/useragentstrings.yml
     const BROWSER_ALIASES_MAP = {
       'Amazon Silk': 'amazon_silk',
       'Android Browser': 'android',
@@ -172,35 +170,16 @@ var MetaMaskOnboarding = (function () {
     };
 
     class Utils {
-      /**
-       * Get first matched item for a string
-       * @param {RegExp} regexp
-       * @param {String} ua
-       * @return {Array|{index: number, input: string}|*|boolean|string}
-       */
       static getFirstMatch(regexp, ua) {
         const match = ua.match(regexp);
         return (match && match.length > 0 && match[1]) || '';
       }
 
-      /**
-       * Get second matched item for a string
-       * @param regexp
-       * @param {String} ua
-       * @return {Array|{index: number, input: string}|*|boolean|string}
-       */
       static getSecondMatch(regexp, ua) {
         const match = ua.match(regexp);
         return (match && match.length > 1 && match[2]) || '';
       }
 
-      /**
-       * Match a regexp and return a constant or undefined
-       * @param {RegExp} regexp
-       * @param {String} ua
-       * @param {*} _const Any const that will be returned if regexp matches the string
-       * @return {*}
-       */
       static matchAndReturnConst(regexp, ua, _const) {
         if (regexp.test(ua)) {
           return _const;
@@ -224,26 +203,6 @@ var MetaMaskOnboarding = (function () {
         }
       }
 
-      /**
-       * Get macOS version name
-       *    10.5 - Leopard
-       *    10.6 - Snow Leopard
-       *    10.7 - Lion
-       *    10.8 - Mountain Lion
-       *    10.9 - Mavericks
-       *    10.10 - Yosemite
-       *    10.11 - El Capitan
-       *    10.12 - Sierra
-       *    10.13 - High Sierra
-       *    10.14 - Mojave
-       *    10.15 - Catalina
-       *
-       * @example
-       *   getMacOSVersionName("10.14") // 'Mojave'
-       *
-       * @param  {string} version
-       * @return {string} versionName
-       */
       static getMacOSVersionName(version) {
         const v = version.split('.').splice(0, 2).map(s => parseInt(s, 10) || 0);
         v.push(0);
@@ -264,30 +223,6 @@ var MetaMaskOnboarding = (function () {
         }
       }
 
-      /**
-       * Get Android version name
-       *    1.5 - Cupcake
-       *    1.6 - Donut
-       *    2.0 - Eclair
-       *    2.1 - Eclair
-       *    2.2 - Froyo
-       *    2.x - Gingerbread
-       *    3.x - Honeycomb
-       *    4.0 - Ice Cream Sandwich
-       *    4.1 - Jelly Bean
-       *    4.4 - KitKat
-       *    5.x - Lollipop
-       *    6.x - Marshmallow
-       *    7.x - Nougat
-       *    8.x - Oreo
-       *    9.x - Pie
-       *
-       * @example
-       *   getAndroidVersionName("7.0") // 'Nougat'
-       *
-       * @param  {string} version
-       * @return {string} versionName
-       */
       static getAndroidVersionName(version) {
         const v = version.split('.').splice(0, 2).map(s => parseInt(s, 10) || 0);
         v.push(0);
@@ -309,36 +244,10 @@ var MetaMaskOnboarding = (function () {
         return undefined;
       }
 
-      /**
-       * Get version precisions count
-       *
-       * @example
-       *   getVersionPrecision("1.10.3") // 3
-       *
-       * @param  {string} version
-       * @return {number}
-       */
       static getVersionPrecision(version) {
         return version.split('.').length;
       }
 
-      /**
-       * Calculate browser version weight
-       *
-       * @example
-       *   compareVersions('1.10.2.1',  '1.8.2.1.90')    // 1
-       *   compareVersions('1.010.2.1', '1.09.2.1.90');  // 1
-       *   compareVersions('1.10.2.1',  '1.10.2.1');     // 0
-       *   compareVersions('1.10.2.1',  '1.0800.2');     // -1
-       *   compareVersions('1.10.2.1',  '1.10',  true);  // 0
-       *
-       * @param {String} versionA versions versions to compare
-       * @param {String} versionB versions versions to compare
-       * @param {boolean} [isLoose] enable loose comparison
-       * @return {Number} comparison result: -1 when versionA is lower,
-       * 1 when versionA is bigger, 0 when both equal
-       */
-      /* eslint consistent-return: 1 */
       static compareVersions(versionA, versionB, isLoose = false) {
         // 1) get common precision for both versions, for example for "10.0" and "9" it should be 2
         const versionAPrecision = Utils.getVersionPrecision(versionA);
@@ -385,13 +294,6 @@ var MetaMaskOnboarding = (function () {
         return undefined;
       }
 
-      /**
-       * Array::map polyfill
-       *
-       * @param  {Array} arr
-       * @param  {Function} iterator
-       * @return {Array}
-       */
       static map(arr, iterator) {
         const result = [];
         let i;
@@ -404,13 +306,6 @@ var MetaMaskOnboarding = (function () {
         return result;
       }
 
-      /**
-       * Array::find polyfill
-       *
-       * @param  {Array} arr
-       * @param  {Function} predicate
-       * @return {Array}
-       */
       static find(arr, predicate) {
         let i;
         let l;
@@ -426,13 +321,6 @@ var MetaMaskOnboarding = (function () {
         return undefined;
       }
 
-      /**
-       * Object::assign polyfill
-       *
-       * @param  {Object} obj
-       * @param  {Object} ...objs
-       * @return {Object}
-       */
       static assign(obj, ...assigners) {
         const result = obj;
         let i;
@@ -452,57 +340,14 @@ var MetaMaskOnboarding = (function () {
         return obj;
       }
 
-      /**
-       * Get short version/alias for a browser name
-       *
-       * @example
-       *   getBrowserAlias('Microsoft Edge') // edge
-       *
-       * @param  {string} browserName
-       * @return {string}
-       */
       static getBrowserAlias(browserName) {
         return BROWSER_ALIASES_MAP[browserName];
       }
 
-      /**
-       * Get short version/alias for a browser name
-       *
-       * @example
-       *   getBrowserAlias('edge') // Microsoft Edge
-       *
-       * @param  {string} browserAlias
-       * @return {string}
-       */
       static getBrowserTypeByAlias(browserAlias) {
         return BROWSER_MAP[browserAlias] || '';
       }
     }
-
-    /**
-     * Browsers' descriptors
-     *
-     * The idea of descriptors is simple. You should know about them two simple things:
-     * 1. Every descriptor has a method or property called `test` and a `describe` method.
-     * 2. Order of descriptors is important.
-     *
-     * More details:
-     * 1. Method or property `test` serves as a way to detect whether the UA string
-     * matches some certain browser or not. The `describe` method helps to make a result
-     * object with params that show some browser-specific things: name, version, etc.
-     * 2. Order of descriptors is important because a Parser goes through them one by one
-     * in course. For example, if you insert Chrome's descriptor as the first one,
-     * more then a half of browsers will be described as Chrome, because they will pass
-     * the Chrome descriptor's test.
-     *
-     * Descriptor's `test` could be a property with an array of RegExps, where every RegExp
-     * will be applied to a UA string to test it whether it matches or not.
-     * If a descriptor has two or more regexps in the `test` array it tests them one by one
-     * with a logical sum operation. Parser stops if it has found any RegExp that matches the UA.
-     *
-     * Or `test` could be a method. In that case it gets a Parser instance and should
-     * return true/false to get the Parser know if this browser descriptor matches the UA or not.
-     */
 
     const commonVersionIdentifier = /version\/(\d+(\.?_?\d+)+)/i;
 
@@ -1722,22 +1567,7 @@ var MetaMaskOnboarding = (function () {
       },
     ];
 
-    /**
-     * The main class that arranges the whole parsing process.
-     */
     class Parser {
-      /**
-       * Create instance of Parser
-       *
-       * @param {String} UA User-Agent string
-       * @param {Boolean} [skipParsing=false] parser can skip parsing in purpose of performance
-       * improvements if you need to make a more particular parsing
-       * like {@link Parser#parseBrowser} or {@link Parser#parsePlatform}
-       *
-       * @throw {Error} in case of empty UA String
-       *
-       * @constructor
-       */
       constructor(UA, skipParsing = false) {
         if (UA === void (0) || UA === null || UA === '') {
           throw new Error("UserAgent parameter can't be empty");
@@ -1745,28 +1575,6 @@ var MetaMaskOnboarding = (function () {
 
         this._ua = UA;
 
-        /**
-         * @typedef ParsedResult
-         * @property {Object} browser
-         * @property {String|undefined} [browser.name]
-         * Browser name, like `"Chrome"` or `"Internet Explorer"`
-         * @property {String|undefined} [browser.version] Browser version as a String `"12.01.45334.10"`
-         * @property {Object} os
-         * @property {String|undefined} [os.name] OS name, like `"Windows"` or `"macOS"`
-         * @property {String|undefined} [os.version] OS version, like `"NT 5.1"` or `"10.11.1"`
-         * @property {String|undefined} [os.versionName] OS name, like `"XP"` or `"High Sierra"`
-         * @property {Object} platform
-         * @property {String|undefined} [platform.type]
-         * platform type, can be either `"desktop"`, `"tablet"` or `"mobile"`
-         * @property {String|undefined} [platform.vendor] Vendor of the device,
-         * like `"Apple"` or `"Samsung"`
-         * @property {String|undefined} [platform.model] Device model,
-         * like `"iPhone"` or `"Kindle Fire HD 7"`
-         * @property {Object} engine
-         * @property {String|undefined} [engine.name]
-         * Can be any of this: `WebKit`, `Blink`, `Gecko`, `Trident`, `Presto`, `EdgeHTML`
-         * @property {String|undefined} [engine.version] String version of the engine
-         */
         this.parsedResult = {};
 
         if (skipParsing !== true) {
@@ -1774,29 +1582,14 @@ var MetaMaskOnboarding = (function () {
         }
       }
 
-      /**
-       * Get UserAgent string of current Parser instance
-       * @return {String} User-Agent String of the current <Parser> object
-       *
-       * @public
-       */
       getUA() {
         return this._ua;
       }
 
-      /**
-       * Test a UA string for a regexp
-       * @param {RegExp} regex
-       * @return {Boolean}
-       */
       test(regex) {
         return regex.test(this._ua);
       }
 
-      /**
-       * Get parsed browser object
-       * @return {Object}
-       */
       parseBrowser() {
         this.parsedResult.browser = {};
 
@@ -1819,12 +1612,6 @@ var MetaMaskOnboarding = (function () {
         return this.parsedResult.browser;
       }
 
-      /**
-       * Get parsed browser object
-       * @return {Object}
-       *
-       * @public
-       */
       getBrowser() {
         if (this.parsedResult.browser) {
           return this.parsedResult.browser;
@@ -1833,12 +1620,6 @@ var MetaMaskOnboarding = (function () {
         return this.parseBrowser();
       }
 
-      /**
-       * Get browser's name
-       * @return {String} Browser's name or an empty string
-       *
-       * @public
-       */
       getBrowserName(toLowerCase) {
         if (toLowerCase) {
           return String(this.getBrowser().name).toLowerCase() || '';
@@ -1847,27 +1628,10 @@ var MetaMaskOnboarding = (function () {
       }
 
 
-      /**
-       * Get browser's version
-       * @return {String} version of browser
-       *
-       * @public
-       */
       getBrowserVersion() {
         return this.getBrowser().version;
       }
 
-      /**
-       * Get OS
-       * @return {Object}
-       *
-       * @example
-       * this.getOS();
-       * {
-       *   name: 'macOS',
-       *   version: '10.11.12'
-       * }
-       */
       getOS() {
         if (this.parsedResult.os) {
           return this.parsedResult.os;
@@ -1876,10 +1640,6 @@ var MetaMaskOnboarding = (function () {
         return this.parseOS();
       }
 
-      /**
-       * Parse OS and save it to this.parsedResult.os
-       * @return {*|{}}
-       */
       parseOS() {
         this.parsedResult.os = {};
 
@@ -1902,11 +1662,6 @@ var MetaMaskOnboarding = (function () {
         return this.parsedResult.os;
       }
 
-      /**
-       * Get OS name
-       * @param {Boolean} [toLowerCase] return lower-cased value
-       * @return {String} name of the OS — macOS, Windows, Linux, etc.
-       */
       getOSName(toLowerCase) {
         const { name } = this.getOS();
 
@@ -1917,18 +1672,10 @@ var MetaMaskOnboarding = (function () {
         return name || '';
       }
 
-      /**
-       * Get OS version
-       * @return {String} full version with dots ('10.11.12', '5.6', etc)
-       */
       getOSVersion() {
         return this.getOS().version;
       }
 
-      /**
-       * Get parsed platform
-       * @return {{}}
-       */
       getPlatform() {
         if (this.parsedResult.platform) {
           return this.parsedResult.platform;
@@ -1937,11 +1684,6 @@ var MetaMaskOnboarding = (function () {
         return this.parsePlatform();
       }
 
-      /**
-       * Get platform name
-       * @param {Boolean} [toLowerCase=false]
-       * @return {*}
-       */
       getPlatformType(toLowerCase = false) {
         const { type } = this.getPlatform();
 
@@ -1952,10 +1694,6 @@ var MetaMaskOnboarding = (function () {
         return type || '';
       }
 
-      /**
-       * Get parsed platform
-       * @return {{}}
-       */
       parsePlatform() {
         this.parsedResult.platform = {};
 
@@ -1978,10 +1716,6 @@ var MetaMaskOnboarding = (function () {
         return this.parsedResult.platform;
       }
 
-      /**
-       * Get parsed engine
-       * @return {{}}
-       */
       getEngine() {
         if (this.parsedResult.engine) {
           return this.parsedResult.engine;
@@ -1990,12 +1724,6 @@ var MetaMaskOnboarding = (function () {
         return this.parseEngine();
       }
 
-      /**
-       * Get engines's name
-       * @return {String} Engines's name or an empty string
-       *
-       * @public
-       */
       getEngineName(toLowerCase) {
         if (toLowerCase) {
           return String(this.getEngine().name).toLowerCase() || '';
@@ -2003,10 +1731,6 @@ var MetaMaskOnboarding = (function () {
         return this.getEngine().name || '';
       }
 
-      /**
-       * Get parsed platform
-       * @return {{}}
-       */
       parseEngine() {
         this.parsedResult.engine = {};
 
@@ -2029,9 +1753,6 @@ var MetaMaskOnboarding = (function () {
         return this.parsedResult.engine;
       }
 
-      /**
-       * Parse full information about the browser
-       */
       parse() {
         this.parseBrowser();
         this.parseOS();
@@ -2041,32 +1762,10 @@ var MetaMaskOnboarding = (function () {
         return this;
       }
 
-      /**
-       * Get parsed result
-       * @return {ParsedResult}
-       */
       getResult() {
         return Utils.assign({}, this.parsedResult);
       }
 
-      /**
-       * Check if parsed browser matches certain conditions
-       *
-       * @param {Object} checkTree It's one or two layered object,
-       * which can include a platform or an OS on the first layer
-       * and should have browsers specs on the bottom-laying layer
-       *
-       * @returns {Boolean|undefined} Whether the browser satisfies the set conditions or not.
-       * Returns `undefined` when the browser is no described in the checkTree object.
-       *
-       * @example
-       * const browser = Bowser.getParser(window.navigator.userAgent);
-       * if (browser.satisfies({chrome: '>118.01.1322' }))
-       * // or with os
-       * if (browser.satisfies({windows: { chrome: '>118.01.1322' } }))
-       * // or with platforms
-       * if (browser.satisfies({desktop: { chrome: '>118.01.1322' } }))
-       */
       satisfies(checkTree) {
         const platformsAndOSes = {};
         let platformsAndOSCounter = 0;
@@ -2123,12 +1822,6 @@ var MetaMaskOnboarding = (function () {
         return undefined;
       }
 
-      /**
-       * Check if the browser name equals the passed string
-       * @param browserName The string to compare with the browser name
-       * @param [includingAlias=false] The flag showing whether alias will be included into comparison
-       * @returns {boolean}
-       */
       isBrowser(browserName, includingAlias = false) {
         const defaultBrowserName = this.getBrowserName().toLowerCase();
         let browserNameLower = browserName.toLowerCase();
@@ -2188,21 +1881,10 @@ var MetaMaskOnboarding = (function () {
         return this.getEngineName(true) === String(engineName).toLowerCase();
       }
 
-      /**
-       * Is anything? Check if the browser is called "anything",
-       * the OS called "anything" or the platform called "anything"
-       * @param {String} anything
-       * @returns {Boolean}
-       */
       is(anything) {
         return this.isBrowser(anything) || this.isOS(anything) || this.isPlatform(anything);
       }
 
-      /**
-       * Check if any of the given values satisfies this.is(anything)
-       * @param {String[]} anythings
-       * @returns {Boolean}
-       */
       some(anythings = []) {
         return anythings.some(anything => this.is(anything));
       }
@@ -2215,31 +1897,7 @@ var MetaMaskOnboarding = (function () {
      * MIT License | (c) Denis Demchenko 2015-2019
      */
 
-    /**
-     * Bowser class.
-     * Keep it simple as much as it can be.
-     * It's supposed to work with collections of {@link Parser} instances
-     * rather then solve one-instance problems.
-     * All the one-instance stuff is located in Parser class.
-     *
-     * @class
-     * @classdesc Bowser is a static object, that provides an API to the Parsers
-     * @hideconstructor
-     */
     class Bowser {
-      /**
-       * Creates a {@link Parser} instance
-       *
-       * @param {String} UA UserAgent string
-       * @param {Boolean} [skipParsing=false] Will make the Parser postpone parsing until you ask it
-       * explicitly. Same as `skipParsing` for {@link Parser}.
-       * @returns {Parser}
-       * @throws {Error} when UA is not a String
-       *
-       * @example
-       * const parser = Bowser.getParser(window.navigator.userAgent);
-       * const result = parser.getResult();
-       */
       static getParser(UA, skipParsing = false) {
         if (typeof UA !== 'string') {
           throw new Error('UserAgent should be a string');
@@ -2247,15 +1905,6 @@ var MetaMaskOnboarding = (function () {
         return new Parser(UA, skipParsing);
       }
 
-      /**
-       * Creates a {@link Parser} instance and runs {@link Parser.getResult} immediately
-       *
-       * @param UA
-       * @return {ParsedResult}
-       *
-       * @example
-       * const result = Bowser.parse(window.navigator.userAgent);
-       */
       static parse(UA) {
         return (new Parser(UA)).getResult();
       }
@@ -2293,7 +1942,7 @@ var MetaMaskOnboarding = (function () {
     var REGISTRATION_IN_PROGRESS = 'REGISTRATION_IN_PROGRESS';
     // forwarder iframe id
     var FORWARDER_ID = 'FORWARDER_ID';
-    var Onboarding = /** @class */ (function () {
+    var Onboarding = (function () {
         function Onboarding(_a) {
             var _b = _a === void 0 ? {} : _a, _c = _b.forwarderOrigin, forwarderOrigin = _c === void 0 ? 'https://fwd.metamask.io' : _c, _d = _b.forwarderMode, forwarderMode = _d === void 0 ? Onboarding.FORWARDER_MODE.INJECT : _d;
             this.forwarderOrigin = forwarderOrigin;
@@ -2381,20 +2030,11 @@ var MetaMaskOnboarding = (function () {
                 });
             });
         };
-        /**
-         * Starts onboarding by opening the MetaMask download page and the Onboarding forwarder
-         */
         Onboarding.prototype.startOnboarding = function () {
             sessionStorage.setItem(REGISTRATION_IN_PROGRESS, 'true');
             this._openDownloadPage();
             this._openForwarder();
         };
-        /**
-         * Stops onboarding registration, including removing the injected forwarder (if any)
-         *
-         * Typically this function is not necessary, but it can be useful for cases where
-         * onboarding completes before the forwarder has registered.
-         */
         Onboarding.prototype.stopOnboarding = function () {
             if (sessionStorage.getItem(REGISTRATION_IN_PROGRESS) === 'true') {
                 if (this.forwarderMode === Onboarding.FORWARDER_MODE.INJECT) {
@@ -2415,9 +2055,6 @@ var MetaMaskOnboarding = (function () {
         Onboarding.prototype._openDownloadPage = function () {
             window.open(this.downloadUrl, '_blank');
         };
-        /**
-         * Checks whether the MetaMask extension is installed
-         */
         Onboarding.isMetaMaskInstalled = function () {
             return Boolean(window.ethereum && window.ethereum.isMetaMask);
         };

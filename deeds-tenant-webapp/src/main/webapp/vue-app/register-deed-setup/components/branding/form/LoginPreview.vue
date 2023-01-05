@@ -23,8 +23,8 @@
     :style="brandingStyle"
     class="pb-8 login-preview">
     <v-card-title class="grey justify-center white--text">{{ $t('deed.setup.loginPagePreview') }}</v-card-title>
-    <deed-login-main :params="previewParams" />
-    <deed-login-branding-image :params="previewParams" />
+    <portal-login-main :params="previewParams" />
+    <portal-login-branding-image :params="previewParams" />
   </v-card>
 </template>
 <script>

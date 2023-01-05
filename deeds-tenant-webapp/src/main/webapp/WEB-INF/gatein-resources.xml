@@ -33,6 +33,7 @@
 
   <module>
     <name>metamaskLoginExtension</name>
+    <load-group>login-extensions</load-group>
     <script>
       <path>/js/metamaskLoginExtension.js</path>
     </script>
@@ -59,6 +60,7 @@
 
   <module>
     <name>metamaskRegisterExtension</name>
+    <load-group>register-extensions</load-group>
     <script>
       <path>/js/metamaskRegisterExtension.js</path>
     </script>
@@ -84,35 +86,6 @@
   </module>
 
   <module>
-    <name>metamaskRegisterForm</name>
-    <script>
-      <path>/js/metamaskRegisterForm.js</path>
-    </script>
-    <depends>
-      <module>vue</module>
-    </depends>
-    <depends>
-      <module>vuetify</module>
-    </depends>
-    <depends>
-      <module>eXoVueI18n</module>
-    </depends>
-    <depends>
-      <module>extensionRegistry</module>
-    </depends>
-    <depends>
-      <module>commonVueComponents</module>
-    </depends>
-    <depends>
-      <module>ethers</module>
-    </depends>
-    <depends>
-      <module>metamaskOnboarding</module>
-      <as>MetaMaskOnboarding</as>
-    </depends>
-  </module>
-
-  <module>
     <name>metamaskSetupForm</name>
     <script>
       <path>/js/metamaskSetupForm.js</path>
@@ -128,6 +101,9 @@
     </depends>
     <depends>
       <module>extensionRegistry</module>
+    </depends>
+    <depends>
+      <module>loginCommon</module>
     </depends>
     <depends>
       <module>commonVueComponents</module>
