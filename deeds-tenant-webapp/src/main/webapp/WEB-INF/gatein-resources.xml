@@ -112,9 +112,6 @@
       <module>jquery</module>
       <as>$</as>
     </depends>
-    <depends>
-      <module>filedrop</module>
-    </depends>
   </module>
 
   <module>
