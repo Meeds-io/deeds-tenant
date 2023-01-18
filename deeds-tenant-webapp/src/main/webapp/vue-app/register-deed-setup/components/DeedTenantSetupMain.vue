@@ -112,7 +112,7 @@ export default {
     },
     resetSettings() {
       this.resetting = true;
-      this.$refs.brandingForm.reset()
+      this.$refs.brandingForm.init()
         .finally(() => this.resetting = false);
     },
   },

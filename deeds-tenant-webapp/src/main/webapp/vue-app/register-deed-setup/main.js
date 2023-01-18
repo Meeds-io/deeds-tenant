@@ -18,12 +18,6 @@
  */
 import './initComponents.js';
 
-import * as brandingService from './js/brandingService.js';
-
-window.Object.defineProperty(Vue.prototype, '$brandingService', {
-  value: brandingService,
-});
-
 // get overrided components if exists
 if (extensionRegistry) {
   const components = extensionRegistry.loadComponents('MetamaskTenantSetup');
@@ -39,11 +33,12 @@ const lang = window.eXo && eXo.env.portal.language || 'en';
 
 const appId = 'metamaskTenantSetupApplication';
 
-//should expose the locale ressources as REST API 
 const urls = [
   `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.Login-${lang}.json`,
+  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portal.login-${lang}.json`,
+  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.Portlets-${lang}.json`,
   `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.Branding-${lang}.json`,
-  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portal.login-${lang}.json`
+  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.GeneralSettings-${lang}.json`,
 ];
 
 export function init(params) {

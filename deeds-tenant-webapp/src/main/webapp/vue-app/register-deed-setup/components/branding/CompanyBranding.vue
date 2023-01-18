@@ -21,162 +21,88 @@
 <template>
   <v-row class="mx-auto mx-lg-8 mt-8">
     <v-col
-      sm="12"
-      md="7"
-      lg="6"
+      cols="12"
       class="pa-0">
       <h4>
         {{ `2. ${$t('deed.register.tenantSetupStepDescription')}` }}
       </h4>
-      <v-card flat>
-        <v-alert
-          v-if="errorMessage"
-          type="error"
-          class="position-static elevation-0"
-          dismissible>
-          {{ errorMessage }}
-        </v-alert>
-        <h4 class="font-weight-bold mb-0 mt-8">
-          {{ $t('deed.setup.companyNameLabel') }}
-        </h4>
-        <v-card max-width="350px" flat>
-          <v-text-field
-            id="companyName"
-            v-model="companyName"
-            :placeholder="$t('deed.setup.companyNamePlaceholder')"
-            class="setup-company-name border-box-sizing"
-            name="companyName"
-            type="text"
-            autofocus="autofocus"
-            aria-required="true"
-            required="required"
-            outlined
-            dense />
-        </v-card>
-        <h4 class="font-weight-bold mb-0 mt-4">
-          {{ $t('deed.setup.companyLogoLabel') }}
-        </h4>
-        <h6 class="text-subtitle grey--text">
-          {{ $t('deed.setup.companyLogoSubtitle') }}
-        </h6>
-        <deed-tenant-setup-company-logo
-          ref="companyLogo"
-          v-model="logoUploadId"
-          :branding="branding"
-          @logo-src="logoSrc = $event"
-          @error="errorMessage = $event" />
-        <h4 class="font-weight-bold mb-0 mt-8">
-          {{ $t('themeColors.label') }}
-        </h4>
-        <v-row class="colorsBlock">
-          <v-col cols="6">
-            <deed-tenant-setup-color-picker
-              v-model="primaryColor"
-              :label="$t('themeColors.primaryColor.label')" />
-          </v-col>
-          <v-col cols="6">
-            <deed-tenant-setup-color-picker
-              v-model="secondaryColor"
-              :label="$t('themeColors.secondaryColor.label')" />
-          </v-col>
-        </v-row>
-      </v-card>
-    </v-col>
-    <v-col
-      md="5"
-      lg="6"
-      class="px-0 d-none d-sm-flex">
-      <deed-tenant-setup-login-preview
-        :params="params"
-        :company-name="companyName"
-        :company-logo="logoSrc"
-        :primary-color="primaryColor"
-        :secondary-color="secondaryColor" />
+      <portal-general-settings-branding-site
+        ref="brandingSettings"
+        :branding="branding"
+        @validity-check="validBranding = $event"
+        @changed="changed = $event" />
+
+      <portal-general-settings-branding-login
+        ref="loginSettings"
+        :branding="branding"
+        @validity-check="validLogin = $event"
+        @changed="changed = $event" />
     </v-col>
   </v-row>
 </template>
 <script>
 export default {
-  props: {
-    params: {
-      type: Object,
-      default: null,
-    },
-  },
-  data(){
-    return {
-      branding: null,
-      companyName: null,
-      primaryColor: null,
-      secondaryColor: null,
-      errorMessage: null,
-      logoSrc: null,
-      logoUploadId: null,
-    };
-  },
+  data: () => ({
+    branding: null,
+    errorMessage: null,
+    loading: false,
+    changed: false,
+    validBranding: false,
+    validLogin: false,
+  }),
   computed: {
-    defaultCompanyName() {
-      return this.branding?.companyName;
-    },
-    defaultPrimaryColor() {
-      return this.branding?.themeColors?.primaryColor;
-    },
-    defaultSecondaryColor() {
-      return this.branding?.themeColors?.secondaryColor;
-    },
-    isValidForm() {
-      return this.companyName?.length && this.primaryColor?.length && this.secondaryColor?.length;
+    validForm() {
+      return this.changed && this.validBranding;
     },
   },
   watch: {
-    logoSrc() {
-      this.errorMessage = null;
+    errorMessage() {
+      if (this.errorMessage) {
+        this.$root.$emit('alert-message', this.$t(this.errorMessage), 'error');
+      } else {
+        this.$root.$emit('close-alert-message');
+      }
     },
-    isValidForm() {
-      this.$emit('validity-check', this.isValidForm);
+    validForm() {
+      this.$emit('validity-check', this.validForm);
+    },
+    loading() {
+      if (this.loading) {
+        document.dispatchEvent(new CustomEvent('displayTopBarLoading'));
+      } else {
+        document.dispatchEvent(new CustomEvent('hideTopBarLoading'));
+      }
     },
   },
-  created() {
-    this.reset().finally(() => this.$root.$applicationLoaded());
+  mounted() {
+    this.init()
+      .finally(() => this.$root.$applicationLoaded());
   },
   methods: {
-    save() {
-      const branding = Object.assign({}, this.branding);
-      Object.assign(branding, {
-        companyName: this.companyName,
-        themeColors: {
-          primaryColor: this.primaryColor,
-          secondaryColor: this.secondaryColor,
-          tertiaryColor: this.secondaryColor,
-        },
-        logo: {
-          uploadId: this.logoUploadId,
-        },
-      });
-      this.errorMessage = null;
-      return this.$brandingService.updateBrandingInformation(branding)
-        .catch(e => {
-          this.errorMessage = String(e);
-          throw e;
-        });
-    },
-    reset() {
+    init() {
+      this.loading = true;
       return this.$brandingService.getBrandingInformation()
-        .then(data => {
-          this.branding = data;
-          return this.$nextTick();
-        })
-        .then(() => {
-          this.$forceUpdate();
-          this.resetDefaultValues();
-        });
+        .then(data => this.branding = data)
+        .then(() => this.$nextTick())
+        .then(() => this.$refs.brandingSettings.init())
+        .then(() => this.$refs.loginSettings.init())
+        .then(() => this.$nextTick())
+        .finally(() => this.loading = false);
     },
-    resetDefaultValues() {
-      this.$refs.companyLogo.resetLogo();
-      this.companyName = this.defaultCompanyName;
-      this.primaryColor = this.defaultPrimaryColor;
-      this.secondaryColor = this.defaultSecondaryColor;
+    save() {
+      this.errorMessage = null;
+
+      const branding = Object.assign({}, this.branding);
+      this.$refs.brandingSettings.preSave(branding);
+      this.$refs.loginSettings.preSave(branding);
+
+      this.loading = true;
+      return this.$brandingService.updateBrandingInformation(branding)
+        .then(() => this.init())
+        .then(() => this.$root.$emit('alert-message', this.$t('generalSettings.savedSuccessfully'), 'success'))
+        .catch(e => this.errorMessage = String(e))
+        .finally(() => this.loading = false);
     },
-  }
+  },
 };
 </script>
