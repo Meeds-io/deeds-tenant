@@ -19,17 +19,11 @@
 import DeedTenantSetup from './components/DeedTenantSetup.vue';
 import DeedTenantSetupMain from './components/DeedTenantSetupMain.vue';
 import CompanyBranding from './components/branding/CompanyBranding.vue';
-import ColorPicker from './components/branding/form/ColorPicker.vue';
-import LoginPreview from './components/branding/form/LoginPreview.vue';
-import CompanyLogo from './components/branding/form/CompanyLogo.vue';
 
 const components = {
   'deed-tenant-setup': DeedTenantSetup,
   'deed-tenant-setup-main': DeedTenantSetupMain,
   'deed-tenant-setup-branding': CompanyBranding,
-  'deed-tenant-setup-color-picker': ColorPicker,
-  'deed-tenant-setup-company-logo': CompanyLogo,
-  'deed-tenant-setup-login-preview': LoginPreview,
 };
 
 for (const key in components) {

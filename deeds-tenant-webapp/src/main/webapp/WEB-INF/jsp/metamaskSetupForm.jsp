@@ -104,14 +104,19 @@
        theme: { disable: true },
      };
      eXo.developing = <%=org.exoplatform.commons.utils.PropertyManager.isDevelopping()%>;
-     require(['PORTLET/social-portlet/Login', 'SHARED/metamaskLoginExtension']);
-     <%=inlineScripts%>;
+     require(['PORTLET/social-portlet/Login', 'PORTLET/social-portlet/GeneralSettings', 'SHARED/metamaskLoginExtension'], () => {
+       <%=inlineScripts%>;
+     });
    });
   </script>
 </head>
 <body>
   <div class="VuetifyApp">
     <div id="metamaskTenantSetupApplication"></div>
+  </div>
+  <div id="UIPortalApplication" class="position-absolute">
+  </div>
+  <div id="MiddleToolBarChildren" class="position-absolute">
   </div>
 </body>
 </html>
