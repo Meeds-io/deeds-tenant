@@ -42,7 +42,7 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <addon.exo.wallet.version>2.5.x-meed-SNAPSHOT</addon.exo.wallet.version>
+    <addon.exo.wallet.version>2.5.x-meedsv2-SNAPSHOT</addon.exo.wallet.version>
     <addon.meeds.deeds-dapp.version>1.0.x-whitepaper-SNAPSHOT</addon.meeds.deeds-dapp.version>
 
     <!-- Sonar properties -->
