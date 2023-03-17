@@ -58,6 +58,8 @@ public class TenantManagerService implements Startable {
       DeedTenantHost deedTenantHost = retrieveDeedTenant();
       if (deedTenantHost == null) {
         throw unreadyConfigurationException(null);
+      } else {
+        initMetaverseIntegration();
       }
     }
   }
@@ -114,6 +116,11 @@ public class TenantManagerService implements Startable {
   @SpringIntegration
   private DeedTenantHost retrieveDeedTenant() {// NOSONAR
     return getTenantServiceFacade().getDeedTenant(getNftId());
+  }
+
+  @SpringIntegration
+  private void initMetaverseIntegration() {
+    getTenantServiceFacade().initMetaverseIntegration();
   }
 
   private String getParamValue(InitParams params, String paramName) {

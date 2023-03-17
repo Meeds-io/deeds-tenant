@@ -46,6 +46,9 @@ public class DeedTenantApplication extends SpringBootServletInitializer {
     // Avoid creating Deed Tenants Indexes in Deed Tenant Elasticsearch
     // When the ES is misconfigured
     System.setProperty("meeds.elasticsearch.autoCreateIndex", "false");
+    // Disable ListenerService until verifying whether the tenant is included in
+    // WoM or not
+    System.setProperty("meeds.listenerService.enabled", "false");
     // Share ServletContext with Kernel based Services to integrate with Spring
     // Beans
     SpringContext.setServletContext(servletContext);

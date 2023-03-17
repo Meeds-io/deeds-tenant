@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import io.meeds.deeds.constant.ObjectNotFoundException;
 import io.meeds.deeds.constant.TenantProvisioningStatus;
 import io.meeds.deeds.elasticsearch.model.DeedTenant;
+import io.meeds.deeds.service.ListenerService;
 import io.meeds.deeds.service.TenantService;
 import io.meeds.tenant.integration.SpringIntegration;
 import io.meeds.tenant.integration.service.TenantServiceFacade;
@@ -30,7 +31,10 @@ import io.meeds.tenant.model.DeedTenantHost;
 public class TenantServiceFacadeImpl implements TenantServiceFacade {
 
   @Autowired
-  private TenantService tenantService;
+  private TenantService   tenantService;
+
+  @Autowired
+  private ListenerService listenerService;
 
   @Override
   public DeedTenantHost getDeedTenant(long nftId) {
@@ -63,4 +67,8 @@ public class TenantServiceFacadeImpl implements TenantServiceFacade {
     return tenantService.isDeedManager(address, nftId);
   }
 
+  @Override
+  public void initMetaverseIntegration() {
+    listenerService.enable();
+  }
 }
