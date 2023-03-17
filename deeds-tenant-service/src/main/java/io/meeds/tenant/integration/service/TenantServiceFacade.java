@@ -23,4 +23,6 @@ public interface TenantServiceFacade {
 
   boolean isTenantManager(String address, long nftId);
 
+  void initMetaverseIntegration();
+
 }
