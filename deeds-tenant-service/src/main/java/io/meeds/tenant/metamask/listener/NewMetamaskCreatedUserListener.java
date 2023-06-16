@@ -16,14 +16,11 @@
  */
 package io.meeds.tenant.metamask.listener;
 
-import static org.exoplatform.wallet.utils.WalletUtils.NEW_ADDRESS_ASSOCIATED_EVENT;
-
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.web3j.crypto.WalletUtils;
 
-import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.Group;
@@ -54,18 +51,14 @@ public class NewMetamaskCreatedUserListener extends UserEventListener {
 
   private TenantManagerService tenantManagerService;
 
-  private ListenerService      listenerService;
-
   public NewMetamaskCreatedUserListener(IdentityManager identityManager,
                                         OrganizationService organizationService,
                                         WalletAccountService walletAccountService,
-                                        TenantManagerService tenantManagerService,
-                                        ListenerService listenerService) {
+                                        TenantManagerService tenantManagerService) {
     this.organizationService = organizationService;
     this.walletAccountService = walletAccountService;
     this.tenantManagerService = tenantManagerService;
     this.identityManager = identityManager;
-    this.listenerService = listenerService;
   }
 
   @Override
@@ -80,10 +73,7 @@ public class NewMetamaskCreatedUserListener extends UserEventListener {
           + "The used Metamask address will not be associated to current user account.", address, wallet.getTechnicalId());
       return;
     }
-    wallet = createUserWalletByAddress(address);
-    if (wallet != null) {
-      listenerService.broadcast(NEW_ADDRESS_ASSOCIATED_EVENT, wallet.clone(), address);
-    }
+    createUserWalletByAddress(address);
     if (isTenantManager(address)) {
       setTenantManagerRoles(user);
     }

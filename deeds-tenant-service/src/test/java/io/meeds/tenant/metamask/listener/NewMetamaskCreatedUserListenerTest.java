@@ -18,9 +18,6 @@ package io.meeds.tenant.metamask.listener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,7 +27,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.impl.UserImpl;
@@ -39,7 +35,6 @@ import org.exoplatform.social.core.manager.IdentityManager;
 import org.exoplatform.wallet.model.Wallet;
 import org.exoplatform.wallet.model.WalletProvider;
 import org.exoplatform.wallet.service.WalletAccountService;
-import org.exoplatform.wallet.utils.WalletUtils;
 
 import io.meeds.tenant.service.TenantManagerService;
 
@@ -58,17 +53,13 @@ public class NewMetamaskCreatedUserListenerTest {
   @Mock
   WalletAccountService walletAccountService;
 
-  @Mock
-  ListenerService      listenerService;
-
   @Test
   public void testNewMetamaskCreatedUserListener() throws Exception {
     String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
     NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(identityManager,
                                                                                  organizationService,
                                                                                  walletAccountService,
-                                                                                 tenantManagerService,
-                                                                                 listenerService);
+                                                                                 tenantManagerService);
 
     User user = new UserImpl("not an address");
     listener.postSave(user, true);
@@ -94,11 +85,9 @@ public class NewMetamaskCreatedUserListenerTest {
     when(walletAccountService.saveWallet(any(Wallet.class),
                                          anyBoolean())).thenAnswer(invocation -> invocation.getArgument(0, Wallet.class));
     when(identityManager.getOrCreateUserIdentity(username)).thenReturn(userIdentity);
-    doNothing().when(listenerService).broadcast(anyString(), any(), any());
 
     listener.postSave(user, true);
     verify(walletAccountService, times(1)).saveWallet(any(Wallet.class), anyBoolean());
-    verify(listenerService, times(1)).broadcast(eq(WalletUtils.NEW_ADDRESS_ASSOCIATED_EVENT), any(Wallet.class), eq(username));
   }
 
 }
