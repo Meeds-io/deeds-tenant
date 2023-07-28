@@ -31,6 +31,31 @@
     <css-path>/css/login.css</css-path>
   </portlet-skin>
 
+  <portlet>
+    <name>WoMIntegration</name>
+    <module>
+      <script>
+        <minify>false</minify>
+        <path>/js/womIntegration.js</path>
+      </script>
+      <depends>
+        <module>vue</module>
+      </depends>
+      <depends>
+        <module>vuetify</module>
+      </depends>
+      <depends>
+        <module>eXoVueI18n</module>
+      </depends>
+      <depends>
+        <module>extensionRegistry</module>
+      </depends>
+      <depends>
+        <module>commonVueComponents</module>
+      </depends>
+    </module>
+  </portlet>
+
   <module>
     <name>metamaskLoginExtension</name>
     <load-group>login-extensions</load-group>
