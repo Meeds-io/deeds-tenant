@@ -13,18 +13,29 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.configuration;
+package io.meeds.tenant.model;
 
-import org.exoplatform.container.ExtendedPropertyConfigurator;
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.xml.InitParams;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public class TenantKernelPropertyConfigurator extends ExtendedPropertyConfigurator {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class DeedTenantHub {
 
-  public TenantKernelPropertyConfigurator(TenantKernelProfileService tenantProfileService,
-                                    ConfigurationManager confManager,
-                                    InitParams params) {
-    super(tenantProfileService.isDeedTenant() ? params : new InitParams(), confManager);
+  private long   nftId;
+
+  private short  city = -1;
+
+  private short  type = -1;
+
+  private String managerAddress;
+
+  public DeedTenantHub(long nftId, short city, short type) {
+    this.nftId = nftId;
+    this.city = city;
+    this.type = type;
   }
 
 }

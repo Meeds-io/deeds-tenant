@@ -20,7 +20,7 @@
   <v-app>
     <v-main>
       <v-card class="pa-4" flat>
-        <wom-integration-connection />
+        <wom-integration-connection-summary />
         <wom-integration-uem-rewards />
       </v-card>
     </v-main>

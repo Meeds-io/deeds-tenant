@@ -1,4 +1,5 @@
 <!--
+
   This file is part of the Meeds project (https://meeds.io/).
 
   Copyright (C) 2023 Meeds Association contact@meeds.io
@@ -15,17 +16,23 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this program; if not, write to the Free Software Foundation,
   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 -->
 <template>
-  <v-list-item two-line>
-    <v-list-item-content>
-      <v-list-item-title>{{ $t('wom.connectToWoM') }}</v-list-item-title>
-      <v-list-item-subtitle>{{ $t('wom.connectToWoMSummary') }}</v-list-item-subtitle>
-    </v-list-item-content>
-    <v-list-item-action>
-      <v-btn class="btn primary">{{ $t('wom.connect') }}</v-btn>
-    </v-list-item-action>
-  </v-list-item>
+  <div>
+    <v-list-item three-line>
+      <v-list-item-content>
+        <v-list-item-title>{{ $t('wom.connectToWoM') }}</v-list-item-title>
+        <v-list-item-subtitle v-sanitized-html="$t('wom.connectToWoMSummary1')" />
+        <v-list-item-subtitle v-sanitized-html="connectToWoMSummary2" />
+      </v-list-item-content>
+      <v-list-item-action>
+        <v-btn class="btn primary" @click="$refs.connectionDrawer.open()">{{ $t('wom.connect') }}</v-btn>
+      </v-list-item-action>
+    </v-list-item>
+    <wom-integration-connection-drawer
+      ref="connectionDrawer" />
+  </div>
 </template>
 <script>
 export default {
@@ -33,5 +40,13 @@ export default {
     connected: false,
     loading: true,
   }),
+  computed: {
+    connectToWoMSummary2() {
+      return this.$t('wom.connectToWoMSummary2', {
+        0: '<a href="https://www.meeds.io/whitepaper" target="_blank">',
+        1: '</a>',
+      });
+    },
+  },
 };
 </script>
