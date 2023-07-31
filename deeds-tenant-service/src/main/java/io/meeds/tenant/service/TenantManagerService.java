@@ -16,101 +16,125 @@
  */
 package io.meeds.tenant.service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-import org.exoplatform.commons.exception.ObjectNotFoundException;
+import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.model.DeedTenantHost;
-
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import lombok.Setter;
+import io.meeds.tenant.model.DeedTenantConfiguration;
+import io.meeds.tenant.model.DeedTenantHub;
+import io.meeds.tenant.rest.client.TenantServiceConsumer;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-@Service
 public class TenantManagerService {
 
-  @Autowired
-  private BlockchainService blockchainService;
+  public static final int       MAX_START_TENTATIVES        = 5;
 
-  @Getter
-  @Setter
-  @Value("${meeds.tenantManagement.nftId:-1}")
-  private long            nftId;
+  public static final String    MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
 
-  @Getter
-  private List<String>    tenantManagerDefaultRoles = Arrays.asList("*:/platform/users",
-                                                                    "*:/platform/administrators",
-                                                                    "*:/platform/analytics",
-                                                                    "*:/platform/rewarding");
+  public static final String    NFT_ID_PARAM                = "nftId";
 
-  @PostConstruct
-  public void start() throws ObjectNotFoundException {
-    if (isTenant()) {
-      DeedTenantHost deedTenantHost = retrieveDeedTenant();
-      if (deedTenantHost == null) {
-        throw new IllegalStateException("Can't get Deed Tenant from WoM Server");
-      }
-    }
+  private WalletAccountService  walletAccountService;
+
+  private TenantServiceConsumer tenantServiceConsumer;
+
+  private String                nftId;
+
+  private List<String>          tenantManagerDefaultRoles   = new ArrayList<>();
+
+  private DeedTenantHub         currentDeedTenantHost;
+
+  public TenantManagerService(WalletAccountService walletAccountService,
+                              TenantServiceConsumer tenantServiceConsumer,
+                              InitParams params) {
+    this.tenantServiceConsumer = tenantServiceConsumer;
+    this.walletAccountService = walletAccountService;
+    this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
+    this.nftId = getParamValue(params, NFT_ID_PARAM);
+  }
+
+  public List<String> getTenantManagerDefaultRoles() {
+    return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
   public boolean isTenantManager(String address) {
     if (isTenant() && StringUtils.isNotBlank(address)) {
-      DeedTenantHost deedTenantHost = DeedTenantHost.getInstance();
-      if (deedTenantHost == null || StringUtils.isBlank(deedTenantHost.getManagerAddress())) {
-        boolean isTenantManager = isTenantManager(address, nftId);
-        if (isTenantManager && deedTenantHost != null) {
-          deedTenantHost.setManagerAddress(address);
+      if (currentDeedTenantHost == null) {
+        currentDeedTenantHost = tenantServiceConsumer.getDeedTenant(getNftId());
+        if (currentDeedTenantHost == null) {
+          return false;
+        }
+      }
+      if (StringUtils.isBlank(currentDeedTenantHost.getManagerAddress())) {
+        boolean isTenantManager = tenantServiceConsumer.isDeedManager(address, getNftId());
+        if (isTenantManager) {
+          currentDeedTenantHost.setManagerAddress(address);
         }
         return isTenantManager;
       } else {
-        return StringUtils.equalsIgnoreCase(address, deedTenantHost.getManagerAddress());
+        return StringUtils.equalsIgnoreCase(address, currentDeedTenantHost.getManagerAddress());
       }
     } else {
       return false;
     }
   }
 
+  public boolean isTenantManager(String address, long nftId) {
+    if (StringUtils.isNotBlank(address)) {
+      return tenantServiceConsumer.isDeedManager(address, nftId);
+    } else {
+      return false;
+    }
+  }
+
+  public DeedTenantHub getDeedTenant(long nftId) {
+    return tenantServiceConsumer.getDeedTenant(nftId);
+  }
+
+  public DeedTenantHub getDeedTenantHub() {
+    if (currentDeedTenantHost != null) {
+      return currentDeedTenantHost;
+    } else if (isTenant()) {
+      currentDeedTenantHost = tenantServiceConsumer.getDeedTenant(getNftId());
+      return currentDeedTenantHost;
+    } else {
+      return null;
+    }
+  }
+
   public boolean isTenant() {
-    return nftId > -1;
+    return getNftId() > -1;
   }
 
-  /**
-   * Checks if address is the provisioning manager of the DEED
-   * 
-   * @param  nftId   DEED NFT identifier
-   * @param  address Wallet or Contract Ethereum address
-   * @return         true if address is the provisioning manager of the DEED
-   *                 Tenant
-   */
-  private boolean isTenantManager(String address, long nftId) {
-    return blockchainService.isDeedProvisioningManager(address, nftId);
+  public long getNftId() {
+    return StringUtils.isBlank(nftId) ? -1 : Long.parseLong(nftId);
   }
 
-  /**
-   * Retrieve Deed Tenant information from blockchain
-   * 
-   * @param nftId DEED NFT id in the blockchain
-   * @return {@link DeedTenantHost}
-   * @throws ObjectNotFoundException when Deed NFT id is not recognized on
-   *           blockchain
-   */
-  private DeedTenantHost retrieveDeedTenant() throws ObjectNotFoundException {// NOSONAR
-    if (nftId >= 0 && DeedTenantHost.getInstance() == null) {
-      short cityIndex = blockchainService.getDeedCityIndex(nftId);
-      short cardType = blockchainService.getDeedCardType(nftId);
-      boolean provisioned = blockchainService.isDeedStarted(nftId);
-      return DeedTenantHost.setInstance(nftId, cityIndex, cardType, provisioned, null, null);
+  public DeedTenantConfiguration getDeedTenantConfiguration() {
+    DeedTenantConfiguration deedTenantConfiguration = new DeedTenantConfiguration();
+    deedTenantConfiguration.setToken(tenantServiceConsumer.generateToken());
+    deedTenantConfiguration.setAdminWallet(walletAccountService.getAdminWallet().getAddress());
+    return deedTenantConfiguration;
+  }
+
+  private String getParamValue(InitParams params, String paramName) {
+    if (params != null && params.containsKey(paramName)) {
+      return params.getValueParam(paramName).getValue();
     }
     return null;
+  }
+
+  private List<String> getParamValues(InitParams params, String paramName) {
+    if (params != null && params.containsKey(paramName)) {
+      return params.getValuesParam(paramName).getValues();
+    }
+    return Collections.emptyList();
   }
 
 }
