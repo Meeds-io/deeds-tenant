@@ -18,14 +18,30 @@
  */
 import WoMIntegration from './components/WoMIntegration.vue';
 
-import WoMConnection from './components/connection/WoMConnection.vue';
+import WoMConnectionSummary from './components/connection/WoMConnectionSummary.vue';
+import WoMConnectionDrawer from './components/connection/WoMConnectionDrawer.vue';
+import DeedManagerSelector from './components/connection/DeedManagerSelector.vue';
+import MetamaskButton from './components/connection/MetamaskButton.vue';
+import AddressIcon from './components/connection/AddressIcon.vue';
+import Address from './components/connection/Address.vue';
+import DeedSelector from './components/connection/DeedSelector.vue';
+import DeedChip from './components/connection/DeedChip.vue';
+import RewardingReceiverSelector from './components/connection/RewardingReceiverSelector.vue';
 
 import UEMRewards from './components/rewards/UEMRewards.vue';
 import UEMRewardItem from './components/rewards/UEMRewardItem.vue';
 
 const components = {
   'wom-integration': WoMIntegration,
-  'wom-integration-connection': WoMConnection,
+  'wom-integration-connection-summary': WoMConnectionSummary,
+  'wom-integration-connection-drawer': WoMConnectionDrawer,
+  'wom-integration-deed-manager-selector': DeedManagerSelector,
+  'wom-integration-rewarding-receiver': RewardingReceiverSelector,
+  'wom-integration-metamask-button': MetamaskButton,
+  'wom-integration-address': Address,
+  'wom-integration-address-icon': AddressIcon,
+  'wom-integration-deed-selector': DeedSelector,
+  'wom-integration-deed-chip': DeedChip,
   'wom-integration-uem-rewards': UEMRewards,
   'wom-integration-uem-reward-item': UEMRewardItem,
 };
