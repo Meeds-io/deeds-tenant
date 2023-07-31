@@ -53,6 +53,14 @@
       <depends>
         <module>commonVueComponents</module>
       </depends>
+      <depends>
+        <module>metamaskOnboarding</module>
+        <as>MetaMaskOnboarding</as>
+      </depends>
+      <depends>
+        <module>Jdenticon</module>
+        <as>jdenticon</as>
+      </depends>
     </module>
   </portlet>
 
