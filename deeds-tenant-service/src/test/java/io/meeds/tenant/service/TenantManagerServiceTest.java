@@ -21,7 +21,6 @@ import static io.meeds.tenant.service.TenantManagerService.NFT_ID_PARAM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -30,7 +29,6 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -41,64 +39,35 @@ import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.integration.service.TenantServiceFacade;
-import io.meeds.tenant.model.DeedTenantHost;
+import io.meeds.tenant.model.DeedTenantHub;
+import io.meeds.tenant.rest.client.TenantServiceConsumer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TenantManagerServiceTest {
 
   protected static final Log LOG = ExoLogger.getLogger(TenantManagerServiceTest.class);
 
-  TenantManagerService       tenantManagerService;
+  @Mock
+  TenantServiceConsumer      tenantServiceConsumer;
 
   @Mock
-  TenantServiceFacade        tenantServiceFacade;
+  WalletAccountService       walletAccountService;
 
-  @Before
-  public void teardown() throws Exception {
-    DeedTenantHost.clear();
-  }
-
-  @Test
-  public void testStart() throws Exception {
-    tenantManagerService = newTenantManagerService(null);
-    tenantManagerService.start();
-    assertNull(DeedTenantHost.getInstance());
-
-    String nftId = "3";
-
-    InitParams params = mock(InitParams.class);
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-
-    tenantManagerService = newTenantManagerService(params);
-    assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
-    assertNull(DeedTenantHost.getInstance());
-
-    tenantManagerService.tenantServiceFacade = tenantServiceFacade;
-    assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
-
-    when(tenantServiceFacade.getDeedTenant(tenantManagerService.getNftId())).thenAnswer(invocation -> {
-      return DeedTenantHost.setInstance(tenantManagerService.getNftId(), (short) 0, (short) 0, false, null, null);
-    });
-    tenantManagerService.start();
-    assertNotNull(DeedTenantHost.getInstance());
-  }
+  TenantManagerService       tenantManagerService;
 
   @Test
   public void testIsTenantManager() throws Exception {
     String nftId = "2";
     String walletAddress = "0xb82f8457fcf644803f4d74f677905f1d410cd395";
 
-    tenantManagerService = newTenantManagerService(null);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, null);
     assertFalse(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
     InitParams params = mock(InitParams.class);
-    tenantManagerService = newTenantManagerService(params);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, params);
     assertFalse(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
@@ -106,32 +75,35 @@ public class TenantManagerServiceTest {
     ValueParam nftIdValue = new ValueParam();
     nftIdValue.setValue(nftId);
     when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-    tenantManagerService = newTenantManagerService(params);
+
+    when(tenantServiceConsumer.getDeedTenant(Long.parseLong(nftId))).thenReturn(new DeedTenantHub(Long.parseLong(nftId),
+                                                                                                  (short) 1,
+                                                                                                  (short) 2));
+
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, params);
     assertTrue(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
-    tenantManagerService.tenantServiceFacade = tenantServiceFacade;
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
-    DeedTenantHost.setInstance(2l, (short) 0, (short) 0, false, "anotherWalletAddress", "managerWalletAddress");
-    tenantManagerService = newTenantManagerService(params);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, params);
     assertTrue(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
-    DeedTenantHost.setInstance(2l, (short) 0, (short) 0, false, walletAddress, "managerWalletAddress");
-    tenantManagerService = newTenantManagerService(params);
+    when(tenantServiceConsumer.isDeedManager(walletAddress, Long.parseLong(nftId))).thenReturn(true);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, params);
     assertTrue(tenantManagerService.isTenant());
     assertTrue(tenantManagerService.isTenantManager(walletAddress));
   }
 
   @Test
   public void testGetTenantManagerDefaultRoles() {
-    tenantManagerService = newTenantManagerService(null);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, null);
     List<String> tenantManagerDefaultRoles = tenantManagerService.getTenantManagerDefaultRoles();
     assertNotNull(tenantManagerDefaultRoles);
     assertEquals(0, tenantManagerDefaultRoles.size());
 
     InitParams params = mock(InitParams.class);
-    tenantManagerService = newTenantManagerService(params);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, params);
     tenantManagerDefaultRoles = tenantManagerService.getTenantManagerDefaultRoles();
     assertNotNull(tenantManagerDefaultRoles);
     assertEquals(0, tenantManagerDefaultRoles.size());
@@ -142,7 +114,7 @@ public class TenantManagerServiceTest {
     ValuesParam managerDefaultRolesValues = new ValuesParam();
     managerDefaultRolesValues.setValues(Arrays.asList(adminRole, rewardingRole));
     when(params.getValuesParam(MANAGER_DEFAULT_ROLES_PARAM)).thenReturn(managerDefaultRolesValues);
-    tenantManagerService = newTenantManagerService(params);
+    tenantManagerService = new TenantManagerService(walletAccountService, tenantServiceConsumer, params);
     tenantManagerDefaultRoles = tenantManagerService.getTenantManagerDefaultRoles();
     assertNotNull(tenantManagerDefaultRoles);
     assertEquals(adminRole, tenantManagerDefaultRoles.get(0));
@@ -150,14 +122,6 @@ public class TenantManagerServiceTest {
 
     List<String> tenantManagerDefaultRolesConstant = tenantManagerDefaultRoles;
     assertThrows(UnsupportedOperationException.class, () -> tenantManagerDefaultRolesConstant.add("test"));
-  }
-
-  private TenantManagerService newTenantManagerService(InitParams params) {
-    return new TenantManagerService(params) {
-      protected TenantServiceFacade getTenantServiceFacade() {
-        return TenantManagerServiceTest.this.tenantServiceFacade;
-      }
-    };
   }
 
 }

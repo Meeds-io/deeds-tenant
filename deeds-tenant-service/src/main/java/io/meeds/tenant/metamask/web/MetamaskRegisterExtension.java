@@ -30,6 +30,7 @@ import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.register.RegisterHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
+import io.meeds.tenant.service.TenantManagerService;
 
 /**
  * An extension to submit parameters to Register UI
@@ -41,8 +42,9 @@ public class MetamaskRegisterExtension extends MetamaskLoginExtension {
   private static final List<String> EXTENSION_NAMES               = Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
                                                                                   LoginHandler.LOGIN_EXTENSION_NAME);
 
-  public MetamaskRegisterExtension(MetamaskLoginService metamaskLoginService) {
-    super(metamaskLoginService);
+  public MetamaskRegisterExtension(TenantManagerService tenantManagerService,
+                                   MetamaskLoginService metamaskLoginService) {
+    super(tenantManagerService, metamaskLoginService);
   }
 
   @Override
@@ -61,7 +63,7 @@ public class MetamaskRegisterExtension extends MetamaskLoginExtension {
         HttpSession httpSession = controllerContext.getRequest().getSession(true);
         params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
 
-        addDeedTenantParameters(httpSession, params, true);
+        addDeedTenantParameters(httpSession, params);
       }
     }
     return params;

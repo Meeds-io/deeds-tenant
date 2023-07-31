@@ -19,7 +19,9 @@ package io.meeds.tenant.metamask.web;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Map;
@@ -37,6 +39,7 @@ import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
+import io.meeds.tenant.service.TenantManagerService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MetamaskLoginExtensionTest {
@@ -44,12 +47,15 @@ public class MetamaskLoginExtensionTest {
   @Mock
   private MetamaskLoginService   metamaskLoginService;
 
+  @Mock
+  private TenantManagerService   tenantManagerService;
+
   private MetamaskLoginExtension metamaskLoginExtension;
 
   @Before
   public void setUp() {
     reset(metamaskLoginService);
-    metamaskLoginExtension = new MetamaskLoginExtension(metamaskLoginService);
+    metamaskLoginExtension = new MetamaskLoginExtension(tenantManagerService, metamaskLoginService);
   }
 
   @Test

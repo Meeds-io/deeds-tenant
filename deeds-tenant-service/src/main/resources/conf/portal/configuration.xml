@@ -24,6 +24,10 @@
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
 
   <component>
+    <type>io.meeds.tenant.rest.TenantManagerRest</type>
+  </component>
+
+  <component>
     <type>io.meeds.tenant.service.TenantManagerService</type>
     <init-params>
       <value-param>
@@ -39,6 +43,10 @@
         <value>*:/platform/rewarding</value>
       </values-param>
     </init-params>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.rest.client.TenantServiceConsumer</type>
   </component>
 
   <component>

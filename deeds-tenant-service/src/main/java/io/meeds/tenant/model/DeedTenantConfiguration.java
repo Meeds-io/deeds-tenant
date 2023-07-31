@@ -1,6 +1,8 @@
-/*
+/**
  * This file is part of the Meeds project (https://meeds.io/).
- * Copyright (C) 2020 - 2022 Meeds Association contact@meeds.io
+ *
+ * Copyright (C) 2020 - 2023 Meeds Association contact@meeds.io
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -13,16 +15,19 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.integration.service;
+package io.meeds.tenant.model;
 
-import io.meeds.tenant.model.DeedTenantHost;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public interface TenantServiceFacade {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class DeedTenantConfiguration {
 
-  DeedTenantHost getDeedTenant(long nftId);
+  private String token;
 
-  boolean isTenantManager(String address, long nftId);
-
-  void initMetaverseIntegration();
+  private String adminWallet;
 
 }

@@ -21,73 +21,90 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.picocontainer.Startable;
 
 import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.integration.SpringContext;
-import io.meeds.tenant.integration.SpringIntegration;
-import io.meeds.tenant.integration.service.TenantServiceFacade;
-import io.meeds.tenant.model.DeedTenantHost;
+import io.meeds.tenant.model.DeedTenantConfiguration;
+import io.meeds.tenant.model.DeedTenantHub;
+import io.meeds.tenant.rest.client.TenantServiceConsumer;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-public class TenantManagerService implements Startable {
+public class TenantManagerService {
 
-  public static final int         MAX_START_TENTATIVES        = 5;
+  public static final int       MAX_START_TENTATIVES        = 5;
 
-  public static final String      MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
+  public static final String    MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
 
-  public static final String      NFT_ID_PARAM                = "nftId";
+  public static final String    NFT_ID_PARAM                = "nftId";
 
-  protected TenantServiceFacade tenantServiceFacade;
+  private WalletAccountService  walletAccountService;
 
-  private String                  nftId;
+  private TenantServiceConsumer tenantServiceConsumer;
 
-  private List<String>            tenantManagerDefaultRoles   = new ArrayList<>();
+  private String                nftId;
 
-  public TenantManagerService(InitParams params) {
+  private List<String>          tenantManagerDefaultRoles   = new ArrayList<>();
+
+  private DeedTenantHub         currentDeedTenantHost;
+
+  public TenantManagerService(WalletAccountService walletAccountService,
+                              TenantServiceConsumer tenantServiceConsumer,
+                              InitParams params) {
+    this.tenantServiceConsumer = tenantServiceConsumer;
+    this.walletAccountService = walletAccountService;
     this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
     this.nftId = getParamValue(params, NFT_ID_PARAM);
-  }
-
-  @Override
-  public void start() {
-    if (isTenant()) {
-      DeedTenantHost deedTenantHost = retrieveDeedTenant();
-      if (deedTenantHost == null) {
-        throw unreadyConfigurationException(null);
-      } else {
-        initMetaverseIntegration();
-      }
-    }
-  }
-
-  @Override
-  public void stop() {
-    // Nothing to stop for now
   }
 
   public List<String> getTenantManagerDefaultRoles() {
     return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
-  @SpringIntegration
   public boolean isTenantManager(String address) {
     if (isTenant() && StringUtils.isNotBlank(address)) {
-      DeedTenantHost deedTenantHost = DeedTenantHost.getInstance();
-      if (deedTenantHost == null || StringUtils.isBlank(deedTenantHost.getManagerAddress())) {
-        boolean isTenantManager = getTenantServiceFacade().isTenantManager(address, getNftId());
-        if (isTenantManager && deedTenantHost != null) {
-          deedTenantHost.setManagerAddress(address);
+      if (currentDeedTenantHost == null) {
+        currentDeedTenantHost = tenantServiceConsumer.getDeedTenant(getNftId());
+        if (currentDeedTenantHost == null) {
+          return false;
+        }
+      }
+      if (StringUtils.isBlank(currentDeedTenantHost.getManagerAddress())) {
+        boolean isTenantManager = tenantServiceConsumer.isDeedManager(address, getNftId());
+        if (isTenantManager) {
+          currentDeedTenantHost.setManagerAddress(address);
         }
         return isTenantManager;
       } else {
-        return StringUtils.equalsIgnoreCase(address, deedTenantHost.getManagerAddress());
+        return StringUtils.equalsIgnoreCase(address, currentDeedTenantHost.getManagerAddress());
       }
     } else {
       return false;
+    }
+  }
+
+  public boolean isTenantManager(String address, long nftId) {
+    if (StringUtils.isNotBlank(address)) {
+      return tenantServiceConsumer.isDeedManager(address, nftId);
+    } else {
+      return false;
+    }
+  }
+
+  public DeedTenantHub getDeedTenant(long nftId) {
+    return tenantServiceConsumer.getDeedTenant(nftId);
+  }
+
+  public DeedTenantHub getDeedTenantHub() {
+    if (currentDeedTenantHost != null) {
+      return currentDeedTenantHost;
+    } else if (isTenant()) {
+      currentDeedTenantHost = tenantServiceConsumer.getDeedTenant(getNftId());
+      return currentDeedTenantHost;
+    } else {
+      return null;
     }
   }
 
@@ -99,28 +116,11 @@ public class TenantManagerService implements Startable {
     return StringUtils.isBlank(nftId) ? -1 : Long.parseLong(nftId);
   }
 
-  protected TenantServiceFacade getTenantServiceFacade() {
-    if (tenantServiceFacade == null) {
-      try {
-        tenantServiceFacade = SpringContext.getSpringBean(TenantServiceFacade.class);
-      } catch (Exception e) {
-        throw unreadyConfigurationException(e);
-      }
-    }
-    if (tenantServiceFacade == null) {
-      throw unreadyConfigurationException(null);
-    }
-    return tenantServiceFacade;
-  }
-
-  @SpringIntegration
-  private DeedTenantHost retrieveDeedTenant() {// NOSONAR
-    return getTenantServiceFacade().getDeedTenant(getNftId());
-  }
-
-  @SpringIntegration
-  private void initMetaverseIntegration() {
-    getTenantServiceFacade().initMetaverseIntegration();
+  public DeedTenantConfiguration getDeedTenantConfiguration() {
+    DeedTenantConfiguration deedTenantConfiguration = new DeedTenantConfiguration();
+    deedTenantConfiguration.setToken(tenantServiceConsumer.generateToken());
+    deedTenantConfiguration.setAdminWallet(walletAccountService.getAdminWallet().getAddress());
+    return deedTenantConfiguration;
   }
 
   private String getParamValue(InitParams params, String paramName) {
@@ -135,10 +135,6 @@ public class TenantManagerService implements Startable {
       return params.getValuesParam(paramName).getValues();
     }
     return Collections.emptyList();
-  }
-
-  private IllegalStateException unreadyConfigurationException(Exception e) {
-    return new IllegalStateException("Can't Reach TenantService from Spring context, the Deed Tenant must shutdown until the correct configuration is set. (Deed Tenants ES configuration)", e);
   }
 
 }
