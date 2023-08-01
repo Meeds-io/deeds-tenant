@@ -19,33 +19,60 @@
 
 -->
 <template>
-  <div>
-    <v-list-item three-line>
-      <v-list-item-content>
-        <v-list-item-title>{{ $t('wom.connectToWoM') }}</v-list-item-title>
-        <v-list-item-subtitle v-sanitized-html="$t('wom.connectToWoMSummary1')" />
-        <v-list-item-subtitle v-sanitized-html="connectToWoMSummary2" />
-      </v-list-item-content>
-      <v-list-item-action>
-        <v-btn class="btn primary" @click="$refs.connectionDrawer.open()">{{ $t('wom.connect') }}</v-btn>
-      </v-list-item-action>
-    </v-list-item>
+  <v-card
+    :loading="loading"
+    min-height="200"
+    flat>
+    <template v-if="!loading">
+      <wom-integration-hub-card
+        v-if="connected"
+        :hub="hub"
+        class="mx-auto"
+        @edit="$refs.connectionDrawer.open()" />
+      <v-list-item
+        v-else
+        three-line>
+        <v-list-item-content>
+          <v-list-item-title>{{ $t('wom.connectToWoM') }}</v-list-item-title>
+          <v-list-item-subtitle v-sanitized-html="$t('wom.connectToWoMSummary1')" />
+          <v-list-item-subtitle v-sanitized-html="connectToWoMSummary2" />
+        </v-list-item-content>
+        <v-list-item-action>
+          <v-btn class="btn primary" @click="$refs.connectionDrawer.open()">{{ $t('wom.connect') }}</v-btn>
+        </v-list-item-action>
+      </v-list-item>
+    </template>
     <wom-integration-connection-drawer
       ref="connectionDrawer" />
-  </div>
+  </v-card>
 </template>
 <script>
 export default {
   data: () => ({
-    connected: false,
+    hub: null,
     loading: true,
   }),
   computed: {
+    connected() {
+      return !!this.hub?.address && this.hub.deedId >= 0;
+    },
     connectToWoMSummary2() {
       return this.$t('wom.connectToWoMSummary2', {
         0: '<a href="https://www.meeds.io/whitepaper" target="_blank">',
         1: '</a>',
       });
+    },
+  },
+  created() {
+    this.$root.$on('wom-connection-success', this.refresh);
+    this.refresh();
+  },
+  methods: {
+    refresh() {
+      this.loading = true;
+      return this.$tenantService.getHubStatus()
+        .then(hub => this.hub = hub)
+        .finally(() => this.loading = false);
     },
   },
 };

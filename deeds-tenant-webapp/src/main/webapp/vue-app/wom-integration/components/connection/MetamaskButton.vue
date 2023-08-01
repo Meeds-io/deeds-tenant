@@ -89,7 +89,7 @@ export default {
   methods: {
     signInWithMetamask() {
       return this.$metamaskUtils.signInWithMetamask(this.message, this.isMobile)
-        .then(signature => this.signature = signature)
+        .then(signature => this.signature = signature.replace('SIGNED_MESSAGE@', ''))
         .then(() => this.$metamaskUtils.retrieveAddress())
         .then(address => this.address = address)
         .catch(console.debug);// eslint-disable-line no-console
