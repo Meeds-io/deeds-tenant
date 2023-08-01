@@ -27,6 +27,9 @@ import Address from './components/connection/Address.vue';
 import DeedSelector from './components/connection/DeedSelector.vue';
 import DeedChip from './components/connection/DeedChip.vue';
 import RewardingReceiverSelector from './components/connection/RewardingReceiverSelector.vue';
+import ColorPicker from './components/connection/ColorPicker.vue';
+import ColorPickerDrawer from './components/connection/ColorPickerDrawer.vue';
+import HubCard from './components/connection/HubCard.vue';
 
 import UEMRewards from './components/rewards/UEMRewards.vue';
 import UEMRewardItem from './components/rewards/UEMRewardItem.vue';
@@ -41,7 +44,10 @@ const components = {
   'wom-integration-address': Address,
   'wom-integration-address-icon': AddressIcon,
   'wom-integration-deed-selector': DeedSelector,
+  'wom-integration-color-picker': ColorPicker,
+  'wom-integration-color-picker-drawer': ColorPickerDrawer,
   'wom-integration-deed-chip': DeedChip,
+  'wom-integration-hub-card': HubCard,
   'wom-integration-uem-rewards': UEMRewards,
   'wom-integration-uem-reward-item': UEMRewardItem,
 };

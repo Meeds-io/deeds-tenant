@@ -30,11 +30,6 @@
   <component>
     <type>io.meeds.tenant.service.TenantManagerService</type>
     <init-params>
-      <value-param>
-        <name>nftId</name>
-        <description>Dedicated NFT for current Installation</description>
-        <value>${meeds.tenantManagement.nftId:}</value>
-      </value-param>
       <values-param>
         <name>managerDefaultRoles</name>
         <value>*:/platform/users</value>
@@ -74,6 +69,25 @@
       </value-param>
     </init-params>
   </component>
+
+  <component>
+    <type>io.meeds.tenant.plugin.WalletHubIdentityProvider</type>
+  </component>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.social.core.manager.IdentityManager</target-component>
+    <component-plugin>
+      <name>WalletAdminIdentityProvider plugin</name>
+      <set-method>registerIdentityProviders</set-method>
+      <type>org.exoplatform.social.core.identity.IdentityProviderPlugin</type>
+      <init-params>
+        <values-param>
+          <name>providers</name>
+          <value>io.meeds.tenant.plugin.WalletHubIdentityProvider</value>
+        </values-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
 
   <external-component-plugins>
     <target-component>org.exoplatform.services.security.Authenticator</target-component>
