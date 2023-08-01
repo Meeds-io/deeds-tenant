@@ -13,8 +13,8 @@
     <div v-else>
       <div v-sanitized-html="signMessageTitle" class="mb-4"></div>
       <wom-integration-metamask-button
-        :message="signMessage"
-        :disabled="!token"
+        :message="rawMessage"
+        :disabled="!rawMessage"
         :address.sync="address"
         :signature.sync="signature" />
     </div>
@@ -23,7 +23,7 @@
 <script>
 export default {
   props: {
-    token: {
+    rawMessage: {
       type: String,
       default: null,
     },
@@ -38,11 +38,6 @@ export default {
         0: '<a href="https://www.meeds.io/marketplace" target="_blank">',
         1: '</a>',
       });
-    },
-    signMessage() {
-      return this.$t('wom.signMessage', {
-        0: this.token,
-      }).replace(/\\n/g, '\n');
     },
   },
   watch: {
