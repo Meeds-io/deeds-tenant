@@ -24,16 +24,18 @@
     min-height="200"
     flat>
     <template v-if="!loading">
-      <wom-integration-hub-card
-        v-if="connected"
-        :hub="hub"
-        class="mx-auto"
-        @edit="$refs.connectionDrawer.open()" />
+      <template v-if="connected">
+        <v-list-item-title class="text-subtitle-1 font-weight-bold">{{ $t('wom.connectedDeedToWoM') }}</v-list-item-title>
+        <wom-integration-hub-card
+          :hub="hub"
+          class="mx-auto"
+          @edit="$refs.connectionDrawer.open()" />
+      </template>
       <v-list-item
         v-else
         three-line>
         <v-list-item-content>
-          <v-list-item-title>{{ $t('wom.connectToWoM') }}</v-list-item-title>
+          <v-list-item-title class="text-subtitle-1 font-weight-bold">{{ $t('wom.connectToWoM') }}</v-list-item-title>
           <v-list-item-subtitle v-sanitized-html="$t('wom.connectToWoMSummary1')" />
           <v-list-item-subtitle v-sanitized-html="connectToWoMSummary2" />
         </v-list-item-content>
