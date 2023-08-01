@@ -2,7 +2,7 @@
   <v-card flat>
     <v-list-item two-line>
       <v-list-item-content>
-        <v-list-item-title>{{ $t('wom.UEMRewards') }}</v-list-item-title>
+        <v-list-item-title class="text-subtitle-1 font-weight-bold">{{ $t('wom.UEMRewards') }}</v-list-item-title>
         <v-list-item-subtitle>{{ $t('wom.UEMRewardsSummary') }}</v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>
