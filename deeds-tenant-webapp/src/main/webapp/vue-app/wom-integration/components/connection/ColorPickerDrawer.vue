@@ -29,14 +29,15 @@
       {{ $t('wom.colorDrawerTitle') }}
     </template>
     <template #content>
-      <div class="mx-auto position-relative" flat>
+      <div class="d-flex position-relative" flat>
         <v-color-picker
           v-model="color"
           :swatches="swatches"
           dot-size="25"
           width="340"
           mode="hexa"
-          show-swatches />
+          show-swatches
+          class="mx-auto mt-8" />
       </div>
     </template>
     <template #footer>

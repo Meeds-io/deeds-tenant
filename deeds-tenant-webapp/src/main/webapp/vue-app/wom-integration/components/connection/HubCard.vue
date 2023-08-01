@@ -90,7 +90,7 @@
               width="25px"
               height="25px" />
             <div class="text-light-color font-weight-normal">
-              {{ hubUsersCount }}
+              {{ hubUsersCount }} {{ $t('wom.users') }}
             </div>
           </div>
           <div class="d-flex align-center justify-center ms-10">
