@@ -58,3 +58,7 @@ export function retrieveAddress() {
   return window.ethereum.request({ method: 'eth_accounts' })
     .then(address => address?.length && address[0] || null);
 }
+
+export function isAddress(address) {
+  return window.ethers.utils.isAddress(address);
+}

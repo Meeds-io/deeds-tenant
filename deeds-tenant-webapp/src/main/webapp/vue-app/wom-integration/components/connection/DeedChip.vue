@@ -28,10 +28,6 @@ export default {
       default: null,
     },
   },
-  data: () => ({
-    cities: ['TANIT', 'RESHEF', 'ASHTARTE', 'MELQART', 'ESHMUN', 'KUSHOR', 'HAMMON'],
-    cardTypes: ['COMMON', 'UNCOMMON', 'RARE', 'LEGENDARY'],
-  }),
   computed: {
     deedId() {
       return this.deed?.nftId;
@@ -43,10 +39,10 @@ export default {
       return this.deed?.type;
     },
     city() {
-      return this.cities[this.cityIndex];
+      return this.$root.cities[this.cityIndex];
     },
     cardType() {
-      return this.cardTypes[this.cardTypeIndex];
+      return this.$root.cardTypes[this.cardTypeIndex];
     },
     cardImage() {
       return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city.toLowerCase()}-${this.cardType.toLowerCase()}.png`;
