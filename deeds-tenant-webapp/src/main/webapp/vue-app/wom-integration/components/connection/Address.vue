@@ -3,7 +3,7 @@
     <wom-integration-address-icon
       :address="address"
       class="me-2 ms-n2" />
-    <span class="me-2 dark-grey-color">
+    <span :title="address" class="me-2 dark-grey-color">
       {{ addressPreview }}
     </span>
     <v-btn

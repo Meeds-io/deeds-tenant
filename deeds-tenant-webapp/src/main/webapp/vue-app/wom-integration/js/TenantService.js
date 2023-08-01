@@ -29,6 +29,19 @@ export function getConfiguration() {
   });
 }
 
+export function getHubStatus() {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/status`, {
+    method: 'GET',
+    credentials: 'include',
+  }).then((resp) => {
+    if (resp?.ok) {
+      return resp.json();
+    } else {
+      throw new Error(resp.status);
+    }
+  });
+}
+
 export function isTenantManager(address, nftId) {
   return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/manager?address=${address}&nftId=${nftId}`, {
     method: 'GET',
@@ -52,6 +65,28 @@ export function getDeedTenant(nftId) {
       return resp.json();
     } else {
       throw new Error(resp.status);
+    }
+  });
+}
+
+export function connectToWoM(request) {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/connect`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request),
+  }).then((resp) => {
+    if (!resp?.ok) {
+      if (resp.status === 503) {
+        return resp.text()
+          .then(error => {
+            throw new Error(error.split(':')[0]);
+          });
+      } else {
+        throw new Error('wom.errorResponse');
+      }
     }
   });
 }

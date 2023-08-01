@@ -29,6 +29,10 @@ export function init() {
   exoi18n.loadLanguageAsync(lang, urls)
     .then(i18n => {
       Vue.createApp({
+        data: () => ({
+          cities: ['TANIT', 'RESHEF', 'ASHTARTE', 'MELQART', 'ESHMUN', 'KUSHOR', 'HAMMON'],
+          cardTypes: ['COMMON', 'UNCOMMON', 'RARE', 'LEGENDARY'],
+        }),
         template: `<wom-integration id="${appId}" />`,
         i18n,
         vuetify: Vue.prototype.vuetifyOptions,
