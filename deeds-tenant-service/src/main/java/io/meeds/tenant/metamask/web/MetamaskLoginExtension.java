@@ -32,7 +32,6 @@ import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.login.UIParamsExtension;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.model.DeedTenantNft;
 import io.meeds.tenant.service.TenantManagerService;
 
 /**
@@ -71,13 +70,13 @@ public class MetamaskLoginExtension implements UIParamsExtension {
 
   protected void addDeedTenantParameters(HttpSession httpSession, Map<String, Object> params) {
     if (metamaskLoginService.isDeedTenant()) {
-      params.put("nftId", metamaskLoginService.getDeedId());
+      long deedId = metamaskLoginService.getDeedId();
+      params.put("nftId", deedId);
       params.put("isDeedTenant", true);
 
-      DeedTenantNft deedTenant = tenantManagerService.getDeedTenantHub();
-      if (deedTenant != null) {
-        params.put("cityIndex", deedTenant.getCity());
-        params.put("cardTypeIndex", deedTenant.getType());
+      if (deedId > -1) {
+        params.put("cityIndex", tenantManagerService.getDeedCity());
+        params.put("cardTypeIndex", tenantManagerService.getDeedType());
         String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
         if (StringUtils.isNotBlank(walletAddress)
             && metamaskLoginService.isTenantManager(walletAddress)) {

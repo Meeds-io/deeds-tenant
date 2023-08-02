@@ -24,30 +24,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class WomConnectionRequest {
-
-  private long   deedId = -1;
-
-  private String deedManagerAddress;
-
-  private String hubAddress;
-
-  private String hubName;
-
-  private String hubDescription;
-
-  private String hubUrl;
-
-  private String hubLogoUrl;
-
-  private String color;
-
-  private String earnerAddress;
-
-  private String signedMessage;
-
-  private String rawMessage;
+public class HubConfiguration {
 
   private String token;
+
+  private String adminWallet;
 
 }
