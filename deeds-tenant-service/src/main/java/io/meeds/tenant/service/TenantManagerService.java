@@ -16,6 +16,20 @@
  */
 package io.meeds.tenant.service;
 
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.ADDRESS;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.COLOR;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_CITY;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_ID;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_MANAGER_ADDRESS;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_TYPE;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DESCRIPTION;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.EARNER_ADDRESS;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.IDENTITY_REMOTE_ID;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.LOGO_URL;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.NAME;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.URL;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.WALLET;
 import static org.exoplatform.wallet.utils.WalletUtils.toJsonString;
 
 import java.time.LocalDate;
@@ -48,12 +62,12 @@ import org.exoplatform.wallet.reward.service.RewardReportService;
 import org.exoplatform.wallet.reward.service.RewardSettingsService;
 import org.exoplatform.wallet.service.WalletAccountService;
 
+import io.meeds.deeds.model.Hub;
+import io.meeds.deeds.model.WomConnectionRequest;
+import io.meeds.deeds.model.WomDisconnectionRequest;
 import io.meeds.tenant.constant.WomConnectionException;
-import io.meeds.tenant.model.DeedTenantConfiguration;
-import io.meeds.tenant.model.DeedTenantNft;
-import io.meeds.tenant.model.HubStatus;
-import io.meeds.tenant.model.WomConnectionRequest;
-import io.meeds.tenant.plugin.WalletHubIdentityProvider;
+import io.meeds.tenant.model.HubConfiguration;
+import io.meeds.tenant.model.HubReward;
 import io.meeds.tenant.rest.client.TenantServiceConsumer;
 
 /**
@@ -81,7 +95,7 @@ public class TenantManagerService {
 
   private List<String>          tenantManagerDefaultRoles   = new ArrayList<>();
 
-  private DeedTenantNft         currentDeedTenantHost;
+  private Identity              hubIdentity                 = null;
 
   public TenantManagerService(IdentityManager identityManager,
                               WalletAccountService walletAccountService,
@@ -103,29 +117,47 @@ public class TenantManagerService {
     return Collections.unmodifiableList(tenantManagerDefaultRoles);
   }
 
-  public boolean isTenantManager(String address) {
-    if (isTenant() && StringUtils.isNotBlank(address)) {
-      if (currentDeedTenantHost == null) {
-        currentDeedTenantHost = tenantServiceConsumer.getDeedTenant(getNftId());
-        if (currentDeedTenantHost == null) {
-          return false;
-        }
-      }
-      if (StringUtils.isBlank(currentDeedTenantHost.getManagerAddress())) {
-        boolean isTenantManager = tenantServiceConsumer.isDeedManager(address, getNftId());
-        if (isTenantManager) {
-          currentDeedTenantHost.setManagerAddress(address);
-        }
-        return isTenantManager;
-      } else {
-        return StringUtils.equalsIgnoreCase(address, currentDeedTenantHost.getManagerAddress());
-      }
+  public boolean isTenant() {
+    return getDeedId() > -1;
+  }
+
+  public long getDeedId() {
+    String deedId = getHubProfileAttribute(DEED_ID);
+    return StringUtils.isBlank(deedId) ? -1 : Long.parseLong(deedId);
+  }
+
+  public short getDeedCity() {
+    if (isTenant()) {
+      String city = getHubProfileAttribute(DEED_CITY);
+      return StringUtils.isBlank(city) ? -1 : Short.parseShort(city);
     } else {
-      return false;
+      return -1;
     }
   }
 
-  public boolean isTenantManager(String address, long nftId) {
+  public short getDeedType() {
+    if (isTenant()) {
+      String type = getHubProfileAttribute(DEED_TYPE);
+      return StringUtils.isBlank(type) ? -1 : Short.parseShort(type);
+    } else {
+      return -1;
+    }
+  }
+
+  public String getDeedManager() {
+    if (isTenant()) {
+      return getHubProfileAttribute(DEED_MANAGER_ADDRESS);
+    } else {
+      return null;
+    }
+  }
+
+  public boolean isTenantManager(String address) {
+    return StringUtils.isNotBlank(address)
+        && StringUtils.equalsIgnoreCase(getDeedManager(), address);
+  }
+
+  public boolean isTenantManager(String address, long nftId) throws WomConnectionException {
     if (StringUtils.isNotBlank(address)) {
       return tenantServiceConsumer.isDeedManager(address, nftId);
     } else {
@@ -133,87 +165,71 @@ public class TenantManagerService {
     }
   }
 
-  public DeedTenantNft getDeedTenant(long nftId) {
-    return tenantServiceConsumer.getDeedTenant(nftId);
+  public Hub getHub(long nftId) throws WomConnectionException {
+    return tenantServiceConsumer.getHub(nftId);
   }
 
-  public DeedTenantNft getDeedTenantHub() {
-    if (currentDeedTenantHost != null) {
-      return currentDeedTenantHost;
-    } else if (isTenant()) {
-      currentDeedTenantHost = tenantServiceConsumer.getDeedTenant(getNftId());
-      return currentDeedTenantHost;
-    } else {
+  public Hub getHub() {
+    Profile hubProfile = getHubProfile();
+    if (!isTenant() || hubProfile == null) {
       return null;
     }
+    String deedId = (String) hubProfile.getProperty(DEED_ID);
+    String city = (String) hubProfile.getProperty(DEED_CITY);
+    String type = (String) hubProfile.getProperty(DEED_TYPE);
+    String address = (String) hubProfile.getProperty(ADDRESS);
+    String name = (String) hubProfile.getProperty(NAME);
+    String description = (String) hubProfile.getProperty(DESCRIPTION);
+    String url = (String) hubProfile.getProperty(URL);
+    String logoUrl = (String) hubProfile.getProperty(LOGO_URL);
+    String color = (String) hubProfile.getProperty(COLOR);
+    String earnerAddress = (String) hubProfile.getProperty(EARNER_ADDRESS);
+    String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
+
+    HubReward hub = new HubReward(Long.parseLong(deedId),
+                                  Short.parseShort(city),
+                                  Short.parseShort(type),
+                                  address,
+                                  name,
+                                  description,
+                                  url,
+                                  logoUrl,
+                                  color,
+                                  deedManagerAddress,
+                                  earnerAddress);
+    computeRewardingInfo(hub);
+    computeUsersCount(hub);
+    return hub;
   }
 
-  public boolean isTenant() {
-    return getNftId() > -1;
-  }
-
-  public long getNftId() {
-    Identity hubIdentity = getHubIdentity();
-    if (hubIdentity == null || hubIdentity.getProfile() == null) {
-      return -1;
-    }
-    Profile hubProfile = hubIdentity.getProfile();
-    String deedId = (String) hubProfile.getProperty(WalletHubIdentityProvider.DEED_ID);
-    String address = (String) hubProfile.getProperty(WalletHubIdentityProvider.ADDRESS);
-    return StringUtils.isBlank(deedId) || StringUtils.isBlank(address) ? -1 : Long.parseLong(deedId);
-  }
-
-  public DeedTenantConfiguration getDeedTenantConfiguration() {
-    DeedTenantConfiguration deedTenantConfiguration = new DeedTenantConfiguration();
+  public HubConfiguration getDeedTenantConfiguration() throws WomConnectionException {
+    HubConfiguration deedTenantConfiguration = new HubConfiguration();
     deedTenantConfiguration.setToken(tenantServiceConsumer.generateToken());
     deedTenantConfiguration.setAdminWallet(walletAccountService.getAdminWallet().getAddress());
     return deedTenantConfiguration;
   }
 
-  public HubStatus getHubStatus() {
-    Identity hubIdentity = getHubIdentity();
-    if (hubIdentity == null || hubIdentity.getProfile() == null) {
-      return null;
+  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomConnectionException {
+    try {
+      String hubAddress = createHubAddress(null);
+      connectionRequest.setHubAddress(hubAddress);
+      tenantServiceConsumer.connectToWoM(connectionRequest);
+      return hubAddress;
+    } finally {
+      refreshHubIdentity();
     }
-    Profile hubProfile = hubIdentity.getProfile();
-    String deedId = (String) hubProfile.getProperty(WalletHubIdentityProvider.DEED_ID);
-    if (StringUtils.isBlank(deedId)) {
-      return null;
-    }
-    String city = (String) hubProfile.getProperty(WalletHubIdentityProvider.CITY);
-    String type = (String) hubProfile.getProperty(WalletHubIdentityProvider.TYPE);
-    String address = (String) hubProfile.getProperty(WalletHubIdentityProvider.ADDRESS);
-    String name = (String) hubProfile.getProperty(WalletHubIdentityProvider.NAME);
-    String description = (String) hubProfile.getProperty(WalletHubIdentityProvider.DESCRIPTION);
-    String url = (String) hubProfile.getProperty(WalletHubIdentityProvider.URL);
-    String logoUrl = (String) hubProfile.getProperty(WalletHubIdentityProvider.LOGO_URL);
-    String color = (String) hubProfile.getProperty(WalletHubIdentityProvider.COLOR);
-    String earnerAddress = (String) hubProfile.getProperty(WalletHubIdentityProvider.EARNER_ADDRESS);
-    String deedManagerAddress = (String) hubProfile.getProperty(WalletHubIdentityProvider.MANAGER_ADDRESS);
-
-    HubStatus hubStatus = new HubStatus(Long.parseLong(deedId),
-                                        Short.parseShort(city),
-                                        Short.parseShort(type),
-                                        address,
-                                        name,
-                                        description,
-                                        url,
-                                        logoUrl,
-                                        color,
-                                        deedManagerAddress,
-                                        earnerAddress);
-    computeRewardingInfo(hubStatus);
-    computeUsersCount(hubStatus);
-    return hubStatus;
   }
 
-  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomConnectionException {
-    String hubAddress = createHubAddress(null);
-    connectionRequest.setHubAddress(hubAddress);
-    tenantServiceConsumer.connectToWoM(connectionRequest);
-    populateHubProfile(connectionRequest);
-    currentDeedTenantHost = null;
-    return hubAddress;
+  public void disconnectFromWoM(WomDisconnectionRequest disconnectionRequest) throws WomConnectionException {
+    if (!isTenant()) {
+      throw new WomConnectionException("wom.alreadyDisconnected");
+    }
+    try {
+      disconnectionRequest.setHubAddress(getHubAddress());
+      tenantServiceConsumer.disconnectFromWoM(disconnectionRequest);
+    } finally {
+      refreshHubIdentity();
+    }
   }
 
   private String createHubAddress(String hubPrivateKey) {
@@ -224,52 +240,98 @@ public class TenantManagerService {
 
     ECKeyPair ecKeyPair = generateWalletKeys(hubPrivateKey);
     try {
-      Identity hubIdentity = getHubIdentity();
-      return saveHubWallet(hubIdentity, ecKeyPair);
+      Identity identity = identityManager.getOrCreateIdentity(IDENTITY_PROVIDER_NAME, IDENTITY_REMOTE_ID);
+      return saveHubWallet(identity, ecKeyPair);
     } catch (CipherException e) {
       throw new IllegalStateException("Error creating new Hub wallet", e);
     }
   }
 
   private String getHubAddress() {
-    Identity hubIdentity = getHubIdentity();
-    if (hubIdentity == null) {
-      throw new IllegalStateException("Can't find identity of hub");
-    }
-    return (String) hubIdentity.getProfile().getProperty(WalletHubIdentityProvider.ADDRESS);
+    return getHubProfileAttribute(ADDRESS);
   }
 
   private Identity getHubIdentity() {
-    return identityManager.getOrCreateIdentity(WalletHubIdentityProvider.PROVIDER_NAME, WalletHubIdentityProvider.ID);
+    if (this.hubIdentity == null) {
+      this.hubIdentity = identityManager.getOrCreateIdentity(IDENTITY_PROVIDER_NAME, IDENTITY_REMOTE_ID);
+      if (this.hubIdentity != null) {
+        populateProfile(this.hubIdentity.getProfile());
+      }
+    }
+    return this.hubIdentity;
+  }
+
+  private Profile getHubProfile() {
+    Identity identity = getHubIdentity();
+    return identity == null ? null : identity.getProfile();
   }
 
   private String saveHubWallet(Identity hubIdentity, ECKeyPair ecKeyPair) throws CipherException {
+    if (hubIdentity == null) {
+      return null;
+    }
     WalletFile hubWalletFile = org.web3j.crypto.Wallet.createStandard(walletAccountService.getAdminAccountPassword(), ecKeyPair);
 
     Profile hubProfile = hubIdentity.getProfile();
-    hubProfile.setProperty(WalletHubIdentityProvider.WALLET, toJsonString(hubWalletFile));
-    hubProfile.setProperty(WalletHubIdentityProvider.ADDRESS, hubWalletFile.getAddress());
+    hubProfile.setProperty(WALLET, toJsonString(hubWalletFile));
+    hubProfile.setProperty(ADDRESS, hubWalletFile.getAddress());
     identityManager.updateProfile(hubProfile);
 
     return hubWalletFile.getAddress();
   }
 
-  private void populateHubProfile(WomConnectionRequest connectionRequest) {
-    Identity hubIdentity = getHubIdentity();
-    Profile hubProfile = hubIdentity.getProfile();
-    hubProfile.setProperty(WalletHubIdentityProvider.NAME, connectionRequest.getHubName());
-    hubProfile.setProperty(WalletHubIdentityProvider.DESCRIPTION, connectionRequest.getHubDescription());
-    hubProfile.setProperty(WalletHubIdentityProvider.URL, connectionRequest.getHubUrl());
-    hubProfile.setProperty(WalletHubIdentityProvider.LOGO_URL, connectionRequest.getHubLogoUrl());
-    hubProfile.setProperty(WalletHubIdentityProvider.COLOR, connectionRequest.getColor());
-    hubProfile.setProperty(WalletHubIdentityProvider.EARNER_ADDRESS, connectionRequest.getEarnerAddress());
-    hubProfile.setProperty(WalletHubIdentityProvider.MANAGER_ADDRESS, connectionRequest.getDeedManagerAddress());
+  private void refreshHubIdentity() {
+    // Force Retrieve Hub profile again
+    hubIdentity = null;
+  }
 
-    DeedTenantNft deedTenantNft = getDeedTenant(connectionRequest.getDeedId());
-    hubProfile.setProperty(WalletHubIdentityProvider.DEED_ID, String.valueOf(deedTenantNft.getNftId()));
-    hubProfile.setProperty(WalletHubIdentityProvider.CITY, String.valueOf(deedTenantNft.getCity()));
-    hubProfile.setProperty(WalletHubIdentityProvider.TYPE, String.valueOf(deedTenantNft.getType()));
+  private String getHubProfileAttribute(String attributeName) {
+    Profile hubProfile = getHubProfile();
+    return hubProfile == null ? null : (String) hubProfile.getProperty(attributeName);
+  }
+
+  private void populateProfile(Profile hubProfile) {
+    try {
+      String hubAddress = (String) hubProfile.getProperty(ADDRESS);
+      Hub hub = tenantServiceConsumer.getHub(hubAddress);
+      if (hub != null) {
+        populateProfile(hubProfile, hub);
+      } else {
+        clearHubProperties(hubProfile);
+      }
+    } catch (WomConnectionException e) {
+      LOG.warn("Error communicating with WoM Server, couldn't retrieve Hub remote status", e);
+    }
+  }
+
+  private void populateProfile(Profile hubProfile, Hub hub) {
+    hubProfile.setProperty(DEED_ID, String.valueOf(hub.getDeedId()));
+    hubProfile.setProperty(DEED_CITY, String.valueOf(hub.getCity()));
+    hubProfile.setProperty(DEED_TYPE, String.valueOf(hub.getType()));
+    hubProfile.setProperty(NAME, hub.getName());
+    hubProfile.setProperty(DESCRIPTION, hub.getDescription());
+    hubProfile.setProperty(URL, hub.getUrl());
+    hubProfile.setProperty(LOGO_URL, hub.getLogoUrl());
+    hubProfile.setProperty(COLOR, hub.getColor());
+    hubProfile.setProperty(EARNER_ADDRESS, hub.getEarnerAddress());
+    hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
     identityManager.updateProfile(hubProfile);
+  }
+
+  private void clearHubProperties(Profile hubProfile) {
+    if (hubProfile.getIdentity() != null && StringUtils.isNotBlank(hubProfile.getIdentity().getId())) {
+      hubProfile.removeProperty(DEED_ID);
+      hubProfile.removeProperty(DEED_CITY);
+      hubProfile.removeProperty(DEED_TYPE);
+      hubProfile.removeProperty(NAME);
+      hubProfile.removeProperty(DESCRIPTION);
+      hubProfile.removeProperty(URL);
+      hubProfile.removeProperty(LOGO_URL);
+      hubProfile.removeProperty(COLOR);
+      hubProfile.removeProperty(EARNER_ADDRESS);
+      hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
+      identityManager.updateProfile(hubProfile);
+    }
   }
 
   private ECKeyPair generateWalletKeys(String hubPrivateKey) {
@@ -296,7 +358,7 @@ public class TenantManagerService {
     return Collections.emptyList();
   }
 
-  private void computeRewardingInfo(HubStatus hubStatus) {
+  private void computeRewardingInfo(HubReward hubStatus) {
     try {
       RewardSettings settings = rewardSettingsService.getSettings();
       hubStatus.setRewardsPeriod(settings.getPeriodType());
@@ -318,7 +380,7 @@ public class TenantManagerService {
     }
   }
 
-  private void computeUsersCount(HubStatus hubStatus) {
+  private void computeUsersCount(HubReward hubStatus) {
     try {
       hubStatus.setUsersCount(organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize());
     } catch (Exception e) {

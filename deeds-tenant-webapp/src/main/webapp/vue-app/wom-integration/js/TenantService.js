@@ -16,26 +16,20 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-export function getConfiguration() {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/configuration`, {
+export function getHub(nftId) {
+  const formData = new FormData();
+  if (nftId) {
+    formData.append('nftId', nftId);
+  }
+  const params = new URLSearchParams(formData).toString();
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant?${params}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
     if (resp?.ok) {
       return resp.json();
-    } else {
-      throw new Error(resp.status);
-    }
-  });
-}
-
-export function getHubStatus() {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/status`, {
-    method: 'GET',
-    credentials: 'include',
-  }).then((resp) => {
-    if (resp?.ok) {
-      return resp.json();
+    } else if (resp?.status === 404) {
+      return null;
     } else {
       throw new Error(resp.status);
     }
@@ -50,19 +44,6 @@ export function isTenantManager(address, nftId) {
     if (resp?.ok) {
       return resp.text()
         .then(data => data === 'true');
-    } else {
-      throw new Error(resp.status);
-    }
-  });
-}
-
-export function getDeedTenant(nftId) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant?nftId=${nftId}`, {
-    method: 'GET',
-    credentials: 'include',
-  }).then((resp) => {
-    if (resp?.ok) {
-      return resp.json();
     } else {
       throw new Error(resp.status);
     }
@@ -87,6 +68,41 @@ export function connectToWoM(request) {
       } else {
         throw new Error('wom.errorResponse');
       }
+    }
+  });
+}
+
+export function disconnectFromWoM(request) {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/disconnect`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(request),
+  }).then((resp) => {
+    if (!resp?.ok) {
+      if (resp.status === 503) {
+        return resp.text()
+          .then(error => {
+            throw new Error(error.split(':')[0]);
+          });
+      } else {
+        throw new Error('wom.errorResponse');
+      }
+    }
+  });
+}
+
+export function getConfiguration() {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/configuration`, {
+    method: 'GET',
+    credentials: 'include',
+  }).then((resp) => {
+    if (resp?.ok) {
+      return resp.json();
+    } else {
+      throw new Error(resp.status);
     }
   });
 }

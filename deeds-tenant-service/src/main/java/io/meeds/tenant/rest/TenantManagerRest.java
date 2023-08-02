@@ -28,15 +28,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
+import io.meeds.deeds.model.Hub;
+import io.meeds.deeds.model.WomConnectionRequest;
+import io.meeds.deeds.model.WomDisconnectionRequest;
 import io.meeds.tenant.constant.WomConnectionException;
-import io.meeds.tenant.model.DeedTenantConfiguration;
-import io.meeds.tenant.model.DeedTenantNft;
-import io.meeds.tenant.model.HubStatus;
-import io.meeds.tenant.model.WomConnectionRequest;
+import io.meeds.tenant.model.HubConfiguration;
 import io.meeds.tenant.service.TenantManagerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,38 +59,33 @@ public class TenantManagerRest implements ResourceContainer {
   }
 
   @GET
-  @Path("status")
-  @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed("rewarding")
-  @Operation(summary = "Retrieves Deed NFT properties", method = "GET")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", description = "Request fulfilled"),
-  })
-  public Response getHubStatus() {
-    HubStatus hubStatus = tenantManagerService.getHubStatus();
-    return Response.ok(hubStatus).build();
-  }
-
-  @GET
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed("rewarding")
   @Operation(summary = "Retrieves Deed NFT properties", method = "GET")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Request fulfilled"),
       @ApiResponse(responseCode = "404", description = "Not found"),
+      @ApiResponse(responseCode = "503", description = "Service unavailable"),
   })
-  public Response getDeedTenant(
-                                @Parameter(description = "Deed NFT identifier", required = true)
-                                @QueryParam("nftId")
-                                long nftId) {
-    DeedTenantNft deedTenant = tenantManagerService.getDeedTenant(nftId);
-    if (deedTenant == null) {
+  public Response getHub(
+                         @Parameter(description = "Deed NFT identifier", required = false)
+                         @QueryParam("nftId")
+                         String nftId) {
+    Hub hub;
+    if (StringUtils.isBlank(nftId)) {
+      hub = tenantManagerService.getHub();
+    } else {
+      try {
+        hub = tenantManagerService.getHub(Long.parseLong(nftId));
+      } catch (WomConnectionException e) {
+        LOG.debug("Error connecting to WoM Server", e);
+        return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+      }
+    }
+    if (hub == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(new DeedTenantNft(deedTenant.getNftId(),
-                                         deedTenant.getCity(),
-                                         deedTenant.getType()))
-                   .build();
+    return Response.ok(hub).build();
   }
 
   @GET
@@ -98,11 +95,17 @@ public class TenantManagerRest implements ResourceContainer {
   @Operation(summary = "Retrieves Deed NFT properties", method = "GET")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Request fulfilled"),
+      @ApiResponse(responseCode = "503", description = "Service unavailable"),
   })
   public Response getDeedTenantConfiguration() {
-    DeedTenantConfiguration deedTenantConfiguration = tenantManagerService.getDeedTenantConfiguration();
-    return Response.ok(deedTenantConfiguration)
-                   .build();
+    try {
+      HubConfiguration deedTenantConfiguration = tenantManagerService.getDeedTenantConfiguration();
+      return Response.ok(deedTenantConfiguration)
+                     .build();
+    } catch (WomConnectionException e) {
+      LOG.debug("Error connecting to WoM Server", e);
+      return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+    }
   }
 
   @GET
@@ -112,6 +115,7 @@ public class TenantManagerRest implements ResourceContainer {
   @Operation(summary = "Checks whether a wallet is the provisioning manager of a Deed or not", method = "GET")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "Request fulfilled"),
+      @ApiResponse(responseCode = "503", description = "Service unavailable"),
   })
   public Response isTenantManager(
                                   @Parameter(description = "Wallet address", required = true)
@@ -120,10 +124,14 @@ public class TenantManagerRest implements ResourceContainer {
                                   @Parameter(description = "Deed NFT identifier", required = true)
                                   @QueryParam("nftId")
                                   long nftId) {
-
-    boolean isTenantManager = tenantManagerService.isTenantManager(address, nftId);
-    return Response.ok(String.valueOf(isTenantManager))
-                   .build();
+    try {
+      boolean isTenantManager = tenantManagerService.isTenantManager(address, nftId);
+      return Response.ok(String.valueOf(isTenantManager))
+                     .build();
+    } catch (WomConnectionException e) {
+      LOG.debug("Error connecting to WoM Server", e);
+      return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+    }
   }
 
   @POST
@@ -157,6 +165,37 @@ public class TenantManagerRest implements ResourceContainer {
       return Response.noContent().build();
     } catch (WomConnectionException e) {
       LOG.debug("Error connecting to WoM Server", e);
+      return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
+    }
+  }
+
+  @POST
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("disconnect")
+  @RolesAllowed("rewarding")
+  @Operation(summary = "Disconnect current Hub from the WoM", method = "POST")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "Request fulfilled"),
+      @ApiResponse(responseCode = "400", description = "Bad request"),
+      @ApiResponse(responseCode = "503", description = "Service Unavailable"),
+  })
+  public Response disconnectFromWoM(
+                                    @Parameter(description = "WoM disconnection request data", required = true)
+                                    WomDisconnectionRequest disconnectionRequest) {
+    if (disconnectionRequest == null) {
+      return Response.status(Status.BAD_REQUEST).entity("wom.emptyConnectionRequest").build();
+    } else if (disconnectionRequest.getDeedManagerAddress() == null) {
+      return Response.status(Status.BAD_REQUEST).entity("wom.emptyDeedManagerAddress").build();
+    } else if (disconnectionRequest.getSignedMessage() == null) {
+      return Response.status(Status.BAD_REQUEST).entity("wom.emptySignedMessage").build();
+    } else if (disconnectionRequest.getToken() == null) {
+      return Response.status(Status.BAD_REQUEST).entity("wom.emptyTokenForSignedMessage").build();
+    }
+    try {
+      tenantManagerService.disconnectFromWoM(disconnectionRequest);
+      return Response.noContent().build();
+    } catch (WomConnectionException e) {
+      LOG.debug("Error disconnecting to WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
     }
   }
