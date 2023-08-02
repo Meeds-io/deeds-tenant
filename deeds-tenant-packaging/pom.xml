@@ -29,6 +29,11 @@
   <name>Meeds - Deeds Tenant Addon - Packaging</name>
   <dependencies>
     <dependency>
+      <groupId>io.meeds.deeds-dapp</groupId>
+      <artifactId>deeds-dapp-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>deeds-tenant-service</artifactId>
       <scope>provided</scope>

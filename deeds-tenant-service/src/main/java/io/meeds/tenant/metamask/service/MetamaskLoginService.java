@@ -269,7 +269,7 @@ public class MetamaskLoginService implements Startable {
    * @return DEED NFT identifier
    */
   public long getDeedId() {
-    return tenantManagerService.getNftId();
+    return tenantManagerService.getDeedId();
   }
 
   private String generateRandomToken() {

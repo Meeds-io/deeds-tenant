@@ -25,12 +25,31 @@
     max-height="270px"
     class="overflow-hidden position-relative z-index-two rounded-lg d-flex flex-column"
     flat>
-    <v-btn
-      class="position-absolute z-index-two r-0"
-      icon
-      @click.prevent.stop="$emit('edit')">
-      <v-icon color="primary">fa-edit</v-icon>
-    </v-btn>
+    <v-card-actions class="position-absolute z-index-two r-0">
+      <v-btn
+        :title="$t('wom.editHubTooltip')"
+        icon
+        class="px-0 ms-0 me-1 elevation-1 white"
+        @click.prevent.stop="$emit('edit')">
+        <v-icon
+          size="22"
+          color="primary"
+          class="ml-1">
+          fa-edit
+        </v-icon>
+      </v-btn>
+      <v-btn
+        :title="$t('wom.disconnectHubTooltip')"
+        icon
+        class="mx-0 px-0 elevation-1 white"
+        @click.prevent.stop="$emit('disconnect')">
+        <v-icon
+          size="22"
+          color="error">
+          fa-power-off
+        </v-icon>
+      </v-btn>
+    </v-card-actions>
     <v-card
       class="d-flex position-absolute z-index-zero ms-n4"
       height="100%"
@@ -48,7 +67,7 @@
       rounded="lg"
       flat />
     <v-card
-      class="flex-grow-1 opacity-8"
+      class="d-flex flex-column flex-grow-1 opacity-8"
       tile
       flat>
       <v-card
@@ -63,7 +82,9 @@
           width="90%"
           contain />
       </v-card>
-      <div class="d-flex flex-column pt-2 px-4 pb-4 position-relative z-index-one">
+      <div
+        :style="hubStyleTop"
+        class="d-flex flex-column flex-grow-1 pt-2 px-4 pb-4 position-relative z-index-one">
         <div class="ms-10 ps-15">
           <div
             :title="hubName"
@@ -149,7 +170,10 @@ export default {
       return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city.toLowerCase()}-${this.cardType.toLowerCase()}.png`;
     },
     hubStyle() {
-      return `border: 1px solid ${this.hub?.color || 'grey'} !important;`;
+      return `border: 1px solid ${this.hub?.color || '#707070'} !important;`;
+    },
+    hubStyleTop() {
+      return `border-top: 1px solid ${this.hub?.color || '#707070'} !important;`;
     },
     hubUsersCount() {
       return new Intl.NumberFormat(eXo.env.portal.language, {
