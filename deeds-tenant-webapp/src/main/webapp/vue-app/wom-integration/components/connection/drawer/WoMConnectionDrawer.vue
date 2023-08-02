@@ -24,7 +24,6 @@
     :confirm-close="confirmClose"
     :confirm-close-labels="confirmCloseLabels"
     class="WoMConnectionDrawer"
-    eager
     @opened="init"
     @closed="reset">
     <template slot="title">
@@ -67,6 +66,7 @@
           <v-slide-y-transition>
             <wom-integration-deed-selector
               v-show="stepper === 2"
+              :value="hubDeedId"
               :address="deedManagerAddress"
               :deed-id.sync="deedId"
               class="px-6" />
@@ -192,6 +192,12 @@
 </template>
 <script>
 export default {
+  props: {
+    hub: {
+      type: Object,
+      default: null,
+    },
+  },
   data: () => ({
     drawer: false,
     loading: false,
@@ -232,9 +238,12 @@ export default {
       };
     },
     rawMessage() {
-      return this.token && this.$t('wom.signMessage', {
+      return this.token && this.$t('wom.signConnectMessage', {
         0: this.token,
       }).replace(/\\n/g, '\n') || null;
+    },
+    hubDeedId() {
+      return this.hub?.deedId;
     },
     rules() {
       return {
@@ -276,6 +285,7 @@ export default {
   },
   methods: {
     open() {
+      this.reset();
       this.$refs.drawer.open();
     },
     init() {
@@ -290,16 +300,18 @@ export default {
         .finally(() => this.loading = false);
     },
     reset() {
+      this.deedId = null;
+      this.earnerAddress = this.hub?.earnerAddress || null;
+      this.hubName = this.hub?.name || null;
+      this.hubDescription = this.hub?.description || null;
+      this.hubUrl = this.hub?.url || null;
+      this.hubLogoUrl = this.hub?.logoUrl || null;
+      this.hubColor = this.hub?.color || '#707070';
+
+      this.validateEmpty = false;
       this.deedManagerAddress = null;
       this.signedMessage = null;
-      this.deedId = null;
       this.token = null;
-      this.earnerAddress = null;
-      this.hubName = null;
-      this.hubDescription = null;
-      this.hubUrl = null;
-      this.hubLogoUrl = null;
-      this.validateEmpty = false;
 
       this.$refs?.managerSelector?.reset();
     },
@@ -344,7 +356,11 @@ export default {
         .then(() => {
           this.connecting = false;
           this.close();
-          this.$root.$emit('alert-message-html-confeti', this.$t('wom.connectedToWoMSuccessfully'), 'success');
+          if (this.hub) {
+            this.$root.$emit('alert-message', this.$t('wom.hubDetailsModifiedSuccessfully'), 'success');
+          } else {
+            this.$root.$emit('alert-message-html-confeti', this.$t('wom.connectedToWoMSuccessfully'), 'success');
+          }
           this.$root.$emit('wom-connection-success');
         })
         .catch(e => {

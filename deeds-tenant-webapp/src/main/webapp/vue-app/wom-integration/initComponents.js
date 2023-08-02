@@ -19,17 +19,22 @@
 import WoMIntegration from './components/WoMIntegration.vue';
 
 import WoMConnectionSummary from './components/connection/WoMConnectionSummary.vue';
-import WoMConnectionDrawer from './components/connection/WoMConnectionDrawer.vue';
-import DeedManagerSelector from './components/connection/DeedManagerSelector.vue';
-import MetamaskButton from './components/connection/MetamaskButton.vue';
-import AddressIcon from './components/connection/AddressIcon.vue';
-import Address from './components/connection/Address.vue';
-import DeedSelector from './components/connection/DeedSelector.vue';
-import DeedChip from './components/connection/DeedChip.vue';
-import RewardingReceiverSelector from './components/connection/RewardingReceiverSelector.vue';
-import ColorPicker from './components/connection/ColorPicker.vue';
-import ColorPickerDrawer from './components/connection/ColorPickerDrawer.vue';
-import HubCard from './components/connection/HubCard.vue';
+
+import DeedChip from './components/connection/common/DeedChip.vue';
+import AddressIcon from './components/connection/common/AddressIcon.vue';
+import Address from './components/connection/common/Address.vue';
+
+import MetamaskButton from './components/connection/form/MetamaskButton.vue';
+import DeedManagerSelector from './components/connection/form/DeedManagerSelector.vue';
+import DeedSelector from './components/connection/form/DeedSelector.vue';
+import RewardingReceiverSelector from './components/connection/form/RewardingReceiverSelector.vue';
+import ColorPicker from './components/connection/form/ColorPicker.vue';
+
+import WoMConnectionDrawer from './components/connection/drawer/WoMConnectionDrawer.vue';
+import WoMDisconnectionDrawer from './components/connection/drawer/WoMDisconnectionDrawer.vue';
+import ColorPickerDrawer from './components/connection/drawer/ColorPickerDrawer.vue';
+
+import HubCard from './components/connection/view/HubCard.vue';
 
 import UEMRewards from './components/rewards/UEMRewards.vue';
 import UEMRewardItem from './components/rewards/UEMRewardItem.vue';
@@ -38,6 +43,7 @@ const components = {
   'wom-integration': WoMIntegration,
   'wom-integration-connection-summary': WoMConnectionSummary,
   'wom-integration-connection-drawer': WoMConnectionDrawer,
+  'wom-integration-disconnection-drawer': WoMDisconnectionDrawer,
   'wom-integration-deed-manager-selector': DeedManagerSelector,
   'wom-integration-rewarding-receiver': RewardingReceiverSelector,
   'wom-integration-metamask-button': MetamaskButton,
