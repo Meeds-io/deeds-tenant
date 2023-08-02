@@ -32,16 +32,22 @@
   <dependencies>
     <!-- Provided artifacts in Server Shared library, used for compilation only -->
     <dependency>
+      <groupId>io.meeds.deeds-dapp</groupId>
+      <artifactId>deeds-dapp-api</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.exoplatform.social</groupId>
       <artifactId>social-component-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.addons.wallet</groupId>
       <artifactId>wallet-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.meeds.deeds-dapp</groupId>
-      <artifactId>deeds-dapp-contract</artifactId>
     </dependency>
 
     <dependency>

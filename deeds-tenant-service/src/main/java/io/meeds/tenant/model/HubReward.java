@@ -19,36 +19,17 @@ package io.meeds.tenant.model;
 
 import org.exoplatform.wallet.model.reward.RewardPeriodType;
 
+import io.meeds.deeds.model.Hub;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class HubStatus {
-
-  private long             deedId = -1;
-
-  private short            city;
-
-  private short            type;
-
-  private String           address;
-
-  private String           name;
-
-  private String           description;
-
-  private String           url;
-
-  private String           logoUrl;
-
-  private String           color;
-
-  private String           deedManagerAddress;
-
-  private String           earnerAddress;
+public class HubReward extends Hub {
 
   private double           rewardsAmount;
 
@@ -56,7 +37,24 @@ public class HubStatus {
 
   private long             usersCount;
 
-  public HubStatus(long deedId, // NOSONAR
+  public HubReward(long deedId, // NOSONAR
+                   short city,
+                   short type) {
+    super(deedId,
+          city,
+          type,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null);
+  }
+
+  public HubReward(long deedId, // NOSONAR
                    short city,
                    short type,
                    String address,
@@ -67,20 +65,18 @@ public class HubStatus {
                    String color,
                    String deedManagerAddress,
                    String earnerAddress) {
-    this(deedId,
-         city,
-         type,
-         address,
-         name,
-         description,
-         url,
-         logoUrl,
-         color,
-         deedManagerAddress,
-         earnerAddress,
-         0,
-         null,
-         0);
+    super(deedId,
+          city,
+          type,
+          address,
+          name,
+          description,
+          url,
+          logoUrl,
+          color,
+          deedManagerAddress,
+          earnerAddress,
+          null);
   }
 
 }
