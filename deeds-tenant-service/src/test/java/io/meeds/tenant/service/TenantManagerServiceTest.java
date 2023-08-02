@@ -45,7 +45,6 @@ import org.exoplatform.wallet.reward.service.RewardReportService;
 import org.exoplatform.wallet.reward.service.RewardSettingsService;
 import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.model.DeedTenantNft;
 import io.meeds.tenant.plugin.WalletHubIdentityProvider;
 import io.meeds.tenant.rest.client.TenantServiceConsumer;
 
@@ -84,32 +83,22 @@ public class TenantManagerServiceTest {
     assertFalse(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = newTenantManagerService(params);
-    assertFalse(tenantManagerService.isTenant());
-    assertFalse(tenantManagerService.isTenantManager(walletAddress));
-
     Identity hubIdentity = mock(Identity.class);
     Profile hubProfile = mock(Profile.class);
     when(hubIdentity.getProfile()).thenReturn(hubProfile);
     when(hubProfile.getProperty(WalletHubIdentityProvider.DEED_ID)).thenReturn(nftId);
     when(hubProfile.getProperty(WalletHubIdentityProvider.ADDRESS)).thenReturn(hubAddress);
-    when(identityManager.getOrCreateIdentity(WalletHubIdentityProvider.PROVIDER_NAME, WalletHubIdentityProvider.ID)).thenReturn(hubIdentity);
-    when(tenantServiceConsumer.getDeedTenant(Long.parseLong(nftId))).thenReturn(new DeedTenantNft(Long.parseLong(nftId),
-                                                                                                  (short) 1,
-                                                                                                  (short) 2));
+    when(identityManager.getOrCreateIdentity(WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME,
+                                             WalletHubIdentityProvider.IDENTITY_REMOTE_ID)).thenReturn(hubIdentity);
 
-    tenantManagerService = newTenantManagerService(params);
     assertTrue(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
-    tenantManagerService = newTenantManagerService(params);
     assertTrue(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
-    when(tenantServiceConsumer.isDeedManager(walletAddress, Long.parseLong(nftId))).thenReturn(true);
-    tenantManagerService = newTenantManagerService(params);
+    when(hubProfile.getProperty(WalletHubIdentityProvider.DEED_MANAGER_ADDRESS)).thenReturn(walletAddress);
     assertTrue(tenantManagerService.isTenant());
     assertTrue(tenantManagerService.isTenantManager(walletAddress));
   }

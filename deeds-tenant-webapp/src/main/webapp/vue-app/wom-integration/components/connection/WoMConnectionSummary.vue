@@ -29,7 +29,8 @@
         <wom-integration-hub-card
           :hub="hub"
           class="mx-auto"
-          @edit="$refs.connectionDrawer.open()" />
+          @edit="$refs.connectionDrawer.open()"
+          @disconnect="$refs.disconnectionDrawer.open()" />
       </template>
       <v-list-item
         v-else
@@ -45,7 +46,10 @@
       </v-list-item>
     </template>
     <wom-integration-connection-drawer
-      ref="connectionDrawer" />
+      ref="connectionDrawer"
+      :hub="hub" />
+    <wom-integration-disconnection-drawer
+      ref="disconnectionDrawer" />
   </v-card>
 </template>
 <script>
@@ -67,12 +71,13 @@ export default {
   },
   created() {
     this.$root.$on('wom-connection-success', this.refresh);
+    this.$root.$on('wom-disconnection-success', this.refresh);
     this.refresh();
   },
   methods: {
     refresh() {
       this.loading = true;
-      return this.$tenantService.getHubStatus()
+      return this.$tenantService.getHub()
         .then(hub => this.hub = hub)
         .finally(() => this.loading = false);
     },
