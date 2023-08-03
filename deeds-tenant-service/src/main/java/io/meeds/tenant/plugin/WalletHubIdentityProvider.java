@@ -30,6 +30,8 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
   public static final String ADDRESS                = "HUB_ADDRESS";
 
+  public static final String JOIN_DATE              = "HUB_JOIN_DATE";
+
   public static final String WALLET                 = "HUB_WALLET";
 
   public static final String NAME                   = "HUB_NAME";

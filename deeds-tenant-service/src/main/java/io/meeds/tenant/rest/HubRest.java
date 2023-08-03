@@ -34,12 +34,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
+import io.meeds.deeds.constant.WomException;
 import io.meeds.deeds.model.Hub;
 import io.meeds.deeds.model.WomConnectionRequest;
 import io.meeds.deeds.model.WomDisconnectionRequest;
-import io.meeds.tenant.constant.WomConnectionException;
-import io.meeds.tenant.model.HubConfiguration;
-import io.meeds.tenant.service.TenantManagerService;
+import io.meeds.tenant.service.HubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,14 +47,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Path("/deed/tenant")
 @Tag(name = "/deed/tenant", description = "An endpoint to manage current Hub as a WoM member")
-public class TenantManagerRest implements ResourceContainer {
+public class HubRest implements ResourceContainer {
 
-  private static final Log     LOG = ExoLogger.getLogger(TenantManagerRest.class);
+  private static final Log LOG = ExoLogger.getLogger(HubRest.class);
 
-  private TenantManagerService tenantManagerService;
+  private HubService       hubService;
 
-  public TenantManagerRest(TenantManagerService tenantManagerService) {
-    this.tenantManagerService = tenantManagerService;
+  public HubRest(HubService hubService) {
+    this.hubService = hubService;
   }
 
   @GET
@@ -73,11 +72,11 @@ public class TenantManagerRest implements ResourceContainer {
                          String nftId) {
     Hub hub;
     if (StringUtils.isBlank(nftId)) {
-      hub = tenantManagerService.getHub();
+      hub = hubService.getHub();
     } else {
       try {
-        hub = tenantManagerService.getHub(Long.parseLong(nftId));
-      } catch (WomConnectionException e) {
+        hub = hubService.getHub(Long.parseLong(nftId));
+      } catch (WomException e) {
         LOG.debug("Error connecting to WoM Server", e);
         return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
       }
@@ -97,12 +96,10 @@ public class TenantManagerRest implements ResourceContainer {
       @ApiResponse(responseCode = "200", description = "Request fulfilled"),
       @ApiResponse(responseCode = "503", description = "Service unavailable"),
   })
-  public Response getDeedTenantConfiguration() {
+  public Response getConfiguration() {
     try {
-      HubConfiguration deedTenantConfiguration = tenantManagerService.getDeedTenantConfiguration();
-      return Response.ok(deedTenantConfiguration)
-                     .build();
-    } catch (WomConnectionException e) {
+      return Response.ok(hubService.getConfiguration()).build();
+    } catch (WomException e) {
       LOG.debug("Error connecting to WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
     }
@@ -117,18 +114,17 @@ public class TenantManagerRest implements ResourceContainer {
       @ApiResponse(responseCode = "200", description = "Request fulfilled"),
       @ApiResponse(responseCode = "503", description = "Service unavailable"),
   })
-  public Response isTenantManager(
-                                  @Parameter(description = "Wallet address", required = true)
-                                  @QueryParam("address")
-                                  String address,
-                                  @Parameter(description = "Deed NFT identifier", required = true)
-                                  @QueryParam("nftId")
-                                  long nftId) {
+  public Response isDeedManager(
+                                @Parameter(description = "Wallet address", required = true)
+                                @QueryParam("address")
+                                String address,
+                                @Parameter(description = "Deed NFT identifier", required = true)
+                                @QueryParam("nftId")
+                                long nftId) {
     try {
-      boolean isTenantManager = tenantManagerService.isTenantManager(address, nftId);
-      return Response.ok(String.valueOf(isTenantManager))
-                     .build();
-    } catch (WomConnectionException e) {
+      boolean isTenantManager = hubService.isDeedManager(address, nftId);
+      return Response.ok(String.valueOf(isTenantManager)).build();
+    } catch (WomException e) {
       LOG.debug("Error connecting to WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
     }
@@ -161,9 +157,9 @@ public class TenantManagerRest implements ResourceContainer {
       return Response.status(Status.BAD_REQUEST).entity("wom.emptyTokenForSignedMessage").build();
     }
     try {
-      tenantManagerService.connectToWoM(connectionRequest);
+      hubService.connectToWoM(connectionRequest);
       return Response.noContent().build();
-    } catch (WomConnectionException e) {
+    } catch (WomException e) {
       LOG.debug("Error connecting to WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
     }
@@ -192,9 +188,9 @@ public class TenantManagerRest implements ResourceContainer {
       return Response.status(Status.BAD_REQUEST).entity("wom.emptyTokenForSignedMessage").build();
     }
     try {
-      tenantManagerService.disconnectFromWoM(disconnectionRequest);
+      hubService.disconnectFromWoM(disconnectionRequest);
       return Response.noContent().build();
-    } catch (WomConnectionException e) {
+    } catch (WomException e) {
       LOG.debug("Error disconnecting to WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
     }
