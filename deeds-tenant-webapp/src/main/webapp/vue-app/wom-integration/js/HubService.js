@@ -31,7 +31,7 @@ export function getHub(nftId) {
     } else if (resp?.status === 404) {
       return null;
     } else {
-      throw new Error(resp.status);
+      handleResponseError(resp);
     }
   });
 }
@@ -45,7 +45,7 @@ export function isTenantManager(address, nftId) {
       return resp.text()
         .then(data => data === 'true');
     } else {
-      throw new Error(resp.status);
+      handleResponseError(resp);
     }
   });
 }
@@ -60,14 +60,7 @@ export function connectToWoM(request) {
     body: JSON.stringify(request),
   }).then((resp) => {
     if (!resp?.ok) {
-      if (resp.status === 503) {
-        return resp.text()
-          .then(error => {
-            throw new Error(error.split(':')[0]);
-          });
-      } else {
-        throw new Error('wom.errorResponse');
-      }
+      return handleResponseError(resp);
     }
   });
 }
@@ -82,14 +75,7 @@ export function disconnectFromWoM(request) {
     body: JSON.stringify(request),
   }).then((resp) => {
     if (!resp?.ok) {
-      if (resp.status === 503) {
-        return resp.text()
-          .then(error => {
-            throw new Error(error.split(':')[0]);
-          });
-      } else {
-        throw new Error('wom.errorResponse');
-      }
+      handleResponseError(resp);
     }
   });
 }
@@ -102,7 +88,24 @@ export function getConfiguration() {
     if (resp?.ok) {
       return resp.json();
     } else {
-      throw new Error(resp.status);
+      handleResponseError(resp);
     }
   });
+}
+
+function handleResponseError(resp) {
+  if (resp.status === 503 || resp.status === 400 || resp.status === 401) {
+    return resp.text()
+      .then(error => {
+        let messageKey = null;
+        try {
+          messageKey = JSON.parse(error).messageKey.split(':')[0];
+        } catch (e) {
+          messageKey = error.split(':')[0];
+        }
+        throw new Error(messageKey.split(':')[0]);
+      });
+  } else {
+    throw new Error('wom.errorResponse');
+  }
 }

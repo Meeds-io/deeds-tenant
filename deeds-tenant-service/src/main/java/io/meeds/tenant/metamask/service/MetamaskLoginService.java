@@ -45,6 +45,7 @@ import org.exoplatform.services.organization.UserHandler;
 import io.meeds.common.ContainerTransactional;
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
+import io.meeds.tenant.service.HubService;
 import io.meeds.tenant.service.TenantManagerService;
 
 import jakarta.annotation.PostConstruct;
@@ -76,6 +77,9 @@ public class MetamaskLoginService {
 
   @Autowired
   private AccountSetupService    accountSetupService;
+
+  @Autowired
+  private HubService             hubService;
 
   @Setter
   @Value("${meeds.login.metamask.secureRootAccessWithMetamask:true}")
@@ -244,9 +248,9 @@ public class MetamaskLoginService {
   /**
    * @return true if current instance if the one of a Tenant Management
    */
-  public boolean isDeedTenant() {
+  public boolean isDeedHub() {
     try {
-      return tenantManagerService.isTenant();
+      return hubService.isDeedHub();
     } catch (Exception e) {
       LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
       return false;
@@ -257,7 +261,7 @@ public class MetamaskLoginService {
    * @return DEED NFT identifier
    */
   public long getDeedId() {
-    return tenantManagerService.getDeedId();
+    return hubService.getDeedId();
   }
 
   private String generateRandomToken() {

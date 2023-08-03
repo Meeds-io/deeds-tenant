@@ -292,7 +292,7 @@ export default {
       this.stepper = 1;
 
       this.loading = true;
-      this.$tenantService.getConfiguration()
+      this.$hubService.getConfiguration()
         .then(configuration => {
           this.token = configuration.token;
           this.earnerAddress = configuration.adminWallet;
@@ -340,7 +340,7 @@ export default {
       }
 
       this.connecting = true;
-      this.$tenantService.connectToWoM({
+      this.$hubService.connectToWoM({
         deedId: this.deedId,
         deedManagerAddress: this.deedManagerAddress,
         hubName: this.hubName,

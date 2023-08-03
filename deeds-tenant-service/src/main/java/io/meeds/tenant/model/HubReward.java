@@ -17,6 +17,8 @@
  */
 package io.meeds.tenant.model;
 
+import java.time.Instant;
+
 import org.exoplatform.wallet.model.reward.RewardPeriodType;
 
 import io.meeds.deeds.model.Hub;
@@ -64,7 +66,8 @@ public class HubReward extends Hub {
                    String logoUrl,
                    String color,
                    String deedManagerAddress,
-                   String earnerAddress) {
+                   String earnerAddress,
+                   Instant joinDate) {
     super(deedId,
           city,
           type,
@@ -76,7 +79,7 @@ public class HubReward extends Hub {
           color,
           deedManagerAddress,
           earnerAddress,
-          null);
+          joinDate);
   }
 
 }

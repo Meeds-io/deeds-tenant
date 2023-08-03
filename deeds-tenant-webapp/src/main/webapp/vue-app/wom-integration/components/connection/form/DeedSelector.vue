@@ -91,9 +91,9 @@ export default {
     checkDeedId() {
       this.loading = true;
       this.lastCheckedDeedId = this.deedId;
-      this.$tenantService.isTenantManager(this.address, this.deedId)
+      this.$hubService.isTenantManager(this.address, this.deedId)
         .then(isManager => this.isManager = isManager)
-        .then(() => this.isManager && this.$tenantService.getHub(this.deedId))
+        .then(() => this.isManager && this.$hubService.getHub(this.deedId))
         .then(deed => this.deed = deed || null)
         .catch(() => this.isManager = false)
         .finally(() => this.loading = false);

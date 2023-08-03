@@ -136,7 +136,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
                                                                     EXTERNAL_REGISTRATION_TOKEN);
 
             String path = servletContext.getContextPath() + "/external-registration?token=" + tokenId;
-            if (metamaskLoginService.isDeedTenant() && metamaskLoginService.isTenantManager(walletAddress)) {
+            if (metamaskLoginService.isDeedHub() && metamaskLoginService.isTenantManager(walletAddress)) {
               path += "&" + INITIAL_URI_REQUEST_PARAM + "=/portal/tenantSetup";
             }
             response.sendRedirect(path);
@@ -202,7 +202,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     String walletAddress = request.getRemoteUser();
     return StringUtils.isNotBlank(walletAddress)
         && StringUtils.equals(request.getRequestURI(), request.getContextPath() + "/tenantSetup")
-        && metamaskLoginService.isDeedTenant()
+        && metamaskLoginService.isDeedHub()
         && metamaskLoginService.isTenantManager(walletAddress);
   }
 
