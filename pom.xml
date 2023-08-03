@@ -42,7 +42,13 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
+<<<<<<< HEAD
     <addon.meeds.deeds-dapp.version>1.2.x-whitepaper-SNAPSHOT</addon.meeds.deeds-dapp.version>
+=======
+    <addon.exo.wallet.version>2.5.x-whitepaper-SNAPSHOT</addon.exo.wallet.version>
+    <addon.exo.gamification.version>2.5.x-whitepaper-SNAPSHOT</addon.exo.gamification.version>
+    <addon.meeds.deeds-dapp.version>1.1.x-whitepaper-SNAPSHOT</addon.meeds.deeds-dapp.version>
+>>>>>>> c154b5c (feat: Send Reward Reports to WoM - MEED-2392 - Meeds-io/MIPs#58)
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
@@ -58,6 +64,40 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+<<<<<<< HEAD
+=======
+      <dependency>
+        <groupId>org.exoplatform.addons.wallet</groupId>
+        <artifactId>wallet</artifactId>
+        <version>${addon.exo.wallet.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.addons.gamification</groupId>
+        <artifactId>gamification</artifactId>
+        <version>${addon.exo.gamification.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!--
+        FIXME: Workaround for https://github.com/Meeds-io/meeds/issues/346
+        (Dependency conflict with eXo)
+      -->
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-core</artifactId>
+        <version>${org.apache.lucene.version}</version>
+        <scope>compile</scope>
+        <exclusions>
+          <exclusion>
+            <artifactId>*</artifactId>
+            <groupId>*</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+>>>>>>> c154b5c (feat: Send Reward Reports to WoM - MEED-2392 - Meeds-io/MIPs#58)
 
       <!-- Current project artifacts -->
       <dependency>
