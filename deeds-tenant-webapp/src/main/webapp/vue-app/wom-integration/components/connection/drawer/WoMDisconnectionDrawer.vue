@@ -101,7 +101,7 @@ export default {
     },
     init() {
       this.loading = true;
-      this.$tenantService.getConfiguration()
+      this.$hubService.getConfiguration()
         .then(configuration => this.token = configuration.token)
         .finally(() => this.loading = false);
     },
@@ -119,7 +119,7 @@ export default {
     },
     disconnect() {
       this.disconnecting = true;
-      this.$tenantService.disconnectFromWoM({
+      this.$hubService.disconnectFromWoM({
         deedManagerAddress: this.deedManagerAddress,
         signedMessage: this.signedMessage,
         rawMessage: this.rawMessage,

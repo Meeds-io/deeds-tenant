@@ -18,10 +18,8 @@ package io.meeds.tenant.service;
 
 import static io.meeds.tenant.service.TenantManagerService.MANAGER_DEFAULT_ROLES_PARAM;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,15 +36,8 @@ import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.social.core.identity.model.Identity;
-import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
-import org.exoplatform.wallet.reward.service.RewardReportService;
-import org.exoplatform.wallet.reward.service.RewardSettingsService;
 import org.exoplatform.wallet.service.WalletAccountService;
-
-import io.meeds.tenant.plugin.WalletHubIdentityProvider;
-import io.meeds.tenant.rest.client.TenantServiceConsumer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TenantManagerServiceTest {
@@ -54,54 +45,18 @@ public class TenantManagerServiceTest {
   protected static final Log LOG = ExoLogger.getLogger(TenantManagerServiceTest.class);
 
   @Mock
-  TenantServiceConsumer      tenantServiceConsumer;
-
-  @Mock
-  WalletAccountService       walletAccountService;
-
-  @Mock
-  IdentityManager            identityManager;
+  HubService                 hubService;
 
   @Mock
   OrganizationService        organizationService;
 
   @Mock
-  RewardSettingsService      rewardSettingsService;
+  IdentityManager            identityManager;
 
   @Mock
-  RewardReportService        rewardReportService;
+  WalletAccountService       walletAccountService;
 
   TenantManagerService       tenantManagerService;
-
-  @Test
-  public void testIsTenantManager() throws Exception {
-    String nftId = "2";
-    String hubAddress = "0xa82f8457fcf644803f4d74f677905f1d410cd395";
-    String walletAddress = "0xb82f8457fcf644803f4d74f677905f1d410cd395";
-
-    tenantManagerService = newTenantManagerService(null);
-    assertFalse(tenantManagerService.isTenant());
-    assertFalse(tenantManagerService.isTenantManager(walletAddress));
-
-    Identity hubIdentity = mock(Identity.class);
-    Profile hubProfile = mock(Profile.class);
-    when(hubIdentity.getProfile()).thenReturn(hubProfile);
-    when(hubProfile.getProperty(WalletHubIdentityProvider.DEED_ID)).thenReturn(nftId);
-    when(hubProfile.getProperty(WalletHubIdentityProvider.ADDRESS)).thenReturn(hubAddress);
-    when(identityManager.getOrCreateIdentity(WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME,
-                                             WalletHubIdentityProvider.IDENTITY_REMOTE_ID)).thenReturn(hubIdentity);
-
-    assertTrue(tenantManagerService.isTenant());
-    assertFalse(tenantManagerService.isTenantManager(walletAddress));
-    assertFalse(tenantManagerService.isTenantManager(walletAddress));
-
-    assertTrue(tenantManagerService.isTenant());
-    assertFalse(tenantManagerService.isTenantManager(walletAddress));
-
-    when(hubProfile.getProperty(WalletHubIdentityProvider.DEED_MANAGER_ADDRESS)).thenReturn(walletAddress);
-    assertTrue(tenantManagerService.isTenant());
-    assertTrue(tenantManagerService.isTenantManager(walletAddress));
-  }
 
   @Test
   public void testGetTenantManagerDefaultRoles() {
@@ -133,12 +88,10 @@ public class TenantManagerServiceTest {
   }
 
   private TenantManagerService newTenantManagerService(InitParams params) {
-    return new TenantManagerService(identityManager,
-                                    walletAccountService,
-                                    rewardSettingsService,
-                                    rewardReportService,
+    return new TenantManagerService(hubService,
                                     organizationService,
-                                    tenantServiceConsumer,
+                                    identityManager,
+                                    walletAccountService,
                                     params);
   }
 

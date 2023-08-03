@@ -17,12 +17,13 @@
  */
 package io.meeds.tenant.rest.client;
 
-import java.io.ByteArrayInputStream;
+import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
+import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 import javax.ws.rs.core.MediaType;
 
@@ -31,6 +32,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -42,20 +45,26 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HTTP;
+import org.springframework.stereotype.Component;
 
-import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
-import org.exoplatform.ws.frameworks.json.impl.JsonException;
-import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
-import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
-import org.exoplatform.ws.frameworks.json.impl.ObjectBuilder;
-import org.exoplatform.ws.frameworks.json.value.JsonValue;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
+import io.meeds.deeds.constant.WomException;
 import io.meeds.deeds.model.Hub;
+import io.meeds.deeds.model.HubRewardReportRequest;
 import io.meeds.deeds.model.WomConnectionRequest;
 import io.meeds.deeds.model.WomDisconnectionRequest;
-import io.meeds.tenant.constant.WomConnectionException;
+import io.meeds.deeds.model.WomErrorMessage;
 
-public class TenantServiceConsumer {
+@Component
+public class WoMServiceClient {
+
+  private static final Log    LOG                       = ExoLogger.getLogger(WoMServiceClient.class);
+
+  private static final String WOM_CONNECT_URI           = "/api/hubs";
+
+  private static final String WOM_DISCONNECT_URI        = "/api/hubs";
 
   private static final String HUB_TENANT_BY_ADDRESS_URI = "/api/hubs/{hubAddress}";
 
@@ -63,11 +72,9 @@ public class TenantServiceConsumer {
 
   private static final String HUB_MANAGER_CHEK_URI      = "/api/hubs/manager?nftId={nftId}&address={address}";
 
-  private static final String WOM_CONNECT_URI           = "/api/hubs/connect";
-
-  private static final String WOM_DISCONNECT_URI        = "/api/hubs/disconnect";
-
   private static final String TOKEN_GENERATION_URI      = "/api/hubs/token";
+
+  private static final String WOM_REWARD_REPORT_URI     = "/api/hub/reports";
 
   private static final int    MAX_POOL_CONNECTIONS      = Integer.parseInt(System.getProperty("meeds.http.clientPool.max", "5"));
 
@@ -75,35 +82,45 @@ public class TenantServiceConsumer {
 
   private HttpClient          client;
 
-  public boolean isDeedManager(String address, long nftId) throws WomConnectionException {
+  public boolean isDeedManager(String address, long nftId) throws WomException {
     String responseText = processGet(getIsHubManagerUri(address, nftId));
     return StringUtils.equals("true", responseText);
   }
 
-  public Hub getHub(long nftId) throws WomConnectionException {
+  public Hub getHub(long nftId) throws WomException {
     String responseText = processGet(getDeedHubTenantUri(nftId));
     return fromJsonString(responseText, Hub.class);
   }
 
-  public Hub getHub(String hubAddress) throws WomConnectionException {
+  public Hub getHub(String hubAddress) throws WomException {
     String responseText = processGet(getDeedHubTenantUri(hubAddress));
     return fromJsonString(responseText, Hub.class);
   }
 
-  public String generateToken() throws WomConnectionException {
+  public String generateToken() throws WomException {
     return processGet(getTokenGenerationUri());
   }
 
-  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomConnectionException {
+  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomException {
     return processPost(getWoMConnectionUri(), toJsonString(connectionRequest));
   }
 
-  public String disconnectFromWoM(WomDisconnectionRequest disconnectionRequest) throws WomConnectionException {
-    return processPost(getWoMDisonnectionUri(), toJsonString(disconnectionRequest));
+  public String sendReportToWoM(HubRewardReportRequest hubRewardReportRequest) throws WomException {
+    return processPost(getWoMRewardReportUri(), toJsonString(hubRewardReportRequest));
+  }
+
+  public String disconnectFromWoM(WomDisconnectionRequest disconnectionRequest) throws WomException {
+    return processDelete(getWoMDisonnectionUri(), toJsonString(disconnectionRequest));
   }
 
   private URI getWoMConnectionUri() {
     String uri = WOM_URL + WOM_CONNECT_URI;
+    return URI.create(uri.replace("//", "/")
+                         .replace(":/", "://"));
+  }
+
+  private URI getWoMRewardReportUri() {
+    String uri = WOM_URL + WOM_REWARD_REPORT_URI;
     return URI.create(uri.replace("//", "/")
                          .replace(":/", "://"));
   }
@@ -142,31 +159,46 @@ public class TenantServiceConsumer {
                          .replace(":/", "://"));
   }
 
-  private String processGet(URI uri) throws WomConnectionException {
-    HttpClient httpClient = getHttpClient();
-    HttpGet request = new HttpGet(uri);
+  private String processGet(URI uri) throws WomException {
     try {
-      return processRequest(httpClient, request);
+      return processRequest(new HttpGet(uri));
     } catch (IOException e) {
-      throw new WomConnectionException("wom.connectionError", e);
+      throw new WomException("wom.connectionError", e);
     }
   }
 
-  private String processPost(URI uri, String jsonString) throws WomConnectionException {
-    HttpClient httpClient = getHttpClient();
+  private String processPost(URI uri, String jsonString) throws WomException {
     HttpPost request = new HttpPost(uri);
     StringEntity entity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
     try {
       request.setHeader(HTTP.CONTENT_TYPE, MediaType.APPLICATION_JSON);
       request.setEntity(entity);
-      return processRequest(httpClient, request);
+      return processRequest(request);
     } catch (IOException e) {
-      throw new WomConnectionException("wom.connectionError", e);
+      throw new WomException("wom.connectionError", e);
     }
   }
 
-  private String processRequest(HttpClient httpClient, HttpRequestBase request) throws IOException, WomConnectionException {
-    HttpResponse response = httpClient.execute(request);
+  private String processDelete(URI uri, String jsonString) throws WomException {
+    HttpEntityEnclosingRequestBase request = new HttpEntityEnclosingRequestBase() {
+      @Override
+      public String getMethod() {
+        return HttpDelete.METHOD_NAME;
+      }
+    };
+    request.setURI(uri);
+    StringEntity entity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
+    try {
+      request.setHeader(HTTP.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+      request.setEntity(entity);
+      return processRequest(request);
+    } catch (IOException e) {
+      throw new WomException("wom.connectionError", e);
+    }
+  }
+
+  private String processRequest(HttpRequestBase request) throws IOException, WomException {
+    HttpResponse response = getHttpClient().execute(request);
     boolean isSuccess = response != null
         && (response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() < 300);
     if (isSuccess) {
@@ -191,20 +223,27 @@ public class TenantServiceConsumer {
     }
   }
 
-  private void processErrorResponse(HttpResponse response) throws WomConnectionException, IOException {
+  private void processErrorResponse(HttpResponse response) throws WomException, IOException {
     if (response == null) {
-      throw new WomConnectionException("wom.noResponse");
+      throw new WomException("wom.noResponse");
     } else if (response.getEntity() != null) {
       try (InputStream is = response.getEntity().getContent()) {
         String errorMessage = IOUtils.toString(is, StandardCharsets.UTF_8);
         if (StringUtils.contains(errorMessage, "wom.")) {
-          throw new WomConnectionException(errorMessage);
+          if (StringUtils.contains(errorMessage, "{")) {
+            try {
+              throw new WomException(fromJsonString(errorMessage, WomErrorMessage.class));
+            } catch (Exception e) {
+              LOG.warn("Error parsing message '{}', throw the original error as it is", errorMessage, e);
+            }
+          }
+          throw new WomException(errorMessage);
         } else {
-          throw new WomConnectionException("wom.errorResponse:" + errorMessage);
+          throw new WomException("wom.errorResponse:" + errorMessage);
         }
       }
     } else {
-      throw new WomConnectionException("wom.errorResponse:" + response.getStatusLine().getStatusCode());
+      throw new WomException("wom.errorResponse:" + response.getStatusLine().getStatusCode());
     }
   }
 
@@ -224,36 +263,6 @@ public class TenantServiceConsumer {
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
     connectionManager.setDefaultMaxPerRoute(MAX_POOL_CONNECTIONS);
     return connectionManager;
-  }
-
-  private <T> T fromJsonString(String value, Class<T> resultClass) {
-    try {
-      if (StringUtils.isBlank(value)) {
-        return null;
-      }
-      JsonDefaultHandler jsonDefaultHandler = new JsonDefaultHandler();
-      new JsonParserImpl().parse(new ByteArrayInputStream(value.getBytes()), jsonDefaultHandler);
-      JsonValue object = jsonDefaultHandler.getJsonObject();
-      // Workaround for missing java.time.Instant date Type mappings
-      Iterator<String> keys = object.getKeys();
-      while (keys.hasNext()) {
-        String key = keys.next();
-        if (StringUtils.containsIgnoreCase(key, "date")) {
-          keys.remove();
-        }
-      }
-      return ObjectBuilder.createObject(resultClass, object);
-    } catch (JsonException e) {
-      throw new IllegalStateException("Error creating object from string : " + value, e);
-    }
-  }
-
-  private String toJsonString(Object object) {
-    try {
-      return new JsonGeneratorImpl().createJsonObject(object).toString();
-    } catch (JsonException e) {
-      throw new IllegalStateException("Error parsing object to string " + object, e);
-    }
   }
 
 }
