@@ -42,7 +42,9 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <addon.meeds.deeds-dapp.version>1.2.x-SNAPSHOT</addon.meeds.deeds-dapp.version>
+    <addon.exo.wallet.version>2.5.x-SNAPSHOT</addon.exo.wallet.version>
+    <addon.exo.gamification.version>2.5.x-SNAPSHOT</addon.exo.gamification.version>
+
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
     <exo.snapshots.repo.url>https://repository.exoplatform.org/content/repositories/meeds-snapshots</exo.snapshots.repo.url>
@@ -51,9 +53,16 @@
     <dependencies>
       <!-- Import versions from platform project -->
       <dependency>
-        <groupId>io.meeds.deeds-dapp</groupId>
-        <artifactId>deeds-dapp-parent</artifactId>
-        <version>${addon.meeds.deeds-dapp.version}</version>
+        <groupId>org.exoplatform.addons.wallet</groupId>
+        <artifactId>wallet</artifactId>
+        <version>${addon.exo.wallet.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.addons.gamification</groupId>
+        <artifactId>gamification</artifactId>
+        <version>${addon.exo.gamification.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

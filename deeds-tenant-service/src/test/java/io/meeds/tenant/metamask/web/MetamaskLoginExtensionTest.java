@@ -38,7 +38,7 @@ import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.service.TenantManagerService;
+import io.meeds.tenant.service.HubService;
 
 @ExtendWith(MockitoExtension.class)
 public class MetamaskLoginExtensionTest {
@@ -47,14 +47,14 @@ public class MetamaskLoginExtensionTest {
   private MetamaskLoginService   metamaskLoginService;
 
   @Mock
-  private TenantManagerService   tenantManagerService;
+  private HubService             hubService;
 
   private MetamaskLoginExtension metamaskLoginExtension;
 
   @BeforeEach
   public void setUp() {
     reset(metamaskLoginService);
-    metamaskLoginExtension = new MetamaskLoginExtension(tenantManagerService, metamaskLoginService);
+    metamaskLoginExtension = new MetamaskLoginExtension(hubService, metamaskLoginService);
   }
 
   @Test

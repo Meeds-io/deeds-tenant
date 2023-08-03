@@ -20,7 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.gatein.sso.agent.tomcat.ServletAccess;
 
 import org.exoplatform.services.organization.auth.AuthenticatorPlugin;
-import org.exoplatform.services.security.*;
+import org.exoplatform.services.security.Credential;
+import org.exoplatform.services.security.PasswordCredential;
+import org.exoplatform.services.security.UsernameCredential;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 import io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter;

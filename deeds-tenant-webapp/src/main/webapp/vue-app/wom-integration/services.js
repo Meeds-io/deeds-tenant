@@ -18,7 +18,8 @@
  *
  */
 import * as metamaskUtils from '../js/MetamaskUtils.js';
-import * as tenantService from './js/TenantService.js';
+import * as hubService from './js/HubService.js';
+import * as hubReportService from './js/HubReportService.js';
 
 if (!Vue.prototype.$metamaskUtils) {
   window.Object.defineProperty(Vue.prototype, '$metamaskUtils', {
@@ -26,8 +27,14 @@ if (!Vue.prototype.$metamaskUtils) {
   });
 }
 
-if (!Vue.prototype.$tenantService) {
-  window.Object.defineProperty(Vue.prototype, '$tenantService', {
-    value: tenantService,
+if (!Vue.prototype.$hubService) {
+  window.Object.defineProperty(Vue.prototype, '$hubService', {
+    value: hubService,
+  });
+}
+
+if (!Vue.prototype.$hubReportService) {
+  window.Object.defineProperty(Vue.prototype, '$hubReportService', {
+    value: hubReportService,
   });
 }
