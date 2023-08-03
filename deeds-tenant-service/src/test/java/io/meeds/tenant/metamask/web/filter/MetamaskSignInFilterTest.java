@@ -194,7 +194,7 @@ public class MetamaskSignInFilterTest {
     when(request.getContextPath()).thenReturn("/portal");
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
     when(request.getRemoteUser()).thenReturn("fakeUser");
-    when(metamaskLoginService.isDeedTenant()).thenReturn(true);
+    when(metamaskLoginService.isDeedHub()).thenReturn(true);
     filter.doFilter(request, response, chain);
 
     verify(servletContext, never()).getRequestDispatcher(any());
@@ -207,7 +207,7 @@ public class MetamaskSignInFilterTest {
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
     when(request.getRemoteUser()).thenReturn("fakeUser");
     when(metamaskLoginService.isTenantManager("fakeUser")).thenReturn(true);
-    when(metamaskLoginService.isDeedTenant()).thenReturn(true);
+    when(metamaskLoginService.isDeedHub()).thenReturn(true);
     filter.doFilter(request, response, chain);
 
     verify(servletContext, times(1)).getRequestDispatcher(METAMASK_TENANT_SETUP_FORM);

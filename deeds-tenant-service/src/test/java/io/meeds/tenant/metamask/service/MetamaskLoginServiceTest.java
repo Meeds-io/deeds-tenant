@@ -63,6 +63,7 @@ import org.exoplatform.web.security.security.SecureRandomService;
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
 import io.meeds.tenant.metamask.FakeTestException;
+import io.meeds.tenant.service.HubService;
 import io.meeds.tenant.service.TenantManagerService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -92,10 +93,16 @@ public class MetamaskLoginServiceTest {
   SecureRandomService    secureRandomService;
 
   @Mock
-  TenantManagerService   tenantManagerService;
+  SecuritySettingService securitySettingService;
 
   @Mock
-  SecuritySettingService securitySettingService;
+  AccountSetupService   accountSetupService;
+
+  @Mock
+  TenantManagerService  tenantManagerService;
+
+  @Mock
+  HubService            hubService;
 
   @Mock
   InitParams             params;
@@ -147,9 +154,9 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testIsAllowUserRegistration() throws Exception {
+  public void testIsAllowUserRegistration() {
     newService();
-    assertFalse(metamaskLoginService.isAllowUserRegistration());
+    assertFalse(metamaskLoginService.isAllowUserRegistration()); // NOSONAR
 
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.OPEN);
     newService();
@@ -161,7 +168,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testIsAddressAllowedToRegister() throws Exception {
+  public void testIsAddressAllowedToRegister() {
     String managerAddress = "managerAddress";
     newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
@@ -220,7 +227,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testValidateSignedMessage() throws Exception {
+  public void testValidateSignedMessage() {
     String walletAddress = "0x927f51a2996Ff74d1C380F92DC9006b53A225CeF";
     String rawMessage = "-2037692822791791745-3891968992033463560-1384458414145506416";
     String signedMessage =
@@ -240,7 +247,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testGenerateLoginMessage() throws Exception {
+  public void testGenerateLoginMessage() {
     newService();
     mockSecureRandomService();
 
@@ -267,10 +274,12 @@ public class MetamaskLoginServiceTest {
     metamaskLoginService = new MetamaskLoginService(organizationService,
                                                     userAcl,
                                                     secureRandomService,
+                                                    accountSetupService,
                                                     tenantManagerService,
-                                                    mock(AccountSetupService.class),
                                                     securitySettingService,
+                                                    hubService,
                                                     params);
+
   }
 
   private void mockSecureRandomService() {

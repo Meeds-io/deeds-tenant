@@ -24,7 +24,11 @@
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
 
   <component>
-    <type>io.meeds.tenant.rest.TenantManagerRest</type>
+    <type>io.meeds.tenant.rest.HubRest</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.rest.HubReportRest</type>
   </component>
 
   <component>
@@ -41,7 +45,23 @@
   </component>
 
   <component>
-    <type>io.meeds.tenant.rest.client.TenantServiceConsumer</type>
+    <type>io.meeds.tenant.rest.client.WoMServiceClient</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.storage.HubWalletStorage</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.storage.HubIdentityStorage</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.service.HubService</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.service.HubReportService</type>
   </component>
 
   <component>
@@ -77,7 +97,7 @@
   <external-component-plugins>
     <target-component>org.exoplatform.social.core.manager.IdentityManager</target-component>
     <component-plugin>
-      <name>WalletAdminIdentityProvider plugin</name>
+      <name>WalletHubIdentityProvider plugin</name>
       <set-method>registerIdentityProviders</set-method>
       <type>org.exoplatform.social.core.identity.IdentityProviderPlugin</type>
       <init-params>
@@ -107,13 +127,22 @@
     </component-plugin>
   </external-component-plugins>
 
-  <external-component-plugins profiles="wallet">
+  <external-component-plugins>
     <target-component>org.exoplatform.services.organization.OrganizationService</target-component>
     <component-plugin>
       <name>new.metamask.created.user.listener</name>
       <set-method>addListenerPlugin</set-method>
       <type>io.meeds.tenant.metamask.listener.NewMetamaskCreatedUserListener</type>
       <description>a listener to associate used Metamask wallet to newly registered user</description>
+    </component-plugin>
+  </external-component-plugins>
+
+  <external-component-plugins>
+    <target-component>org.exoplatform.services.listener.ListenerService</target-component>
+    <component-plugin>
+      <name>exo.wallet.reward.report.success</name>
+      <set-method>addListener</set-method>
+      <type>io.meeds.tenant.listener.HubRewardReportListener</type>
     </component-plugin>
   </external-component-plugins>
 

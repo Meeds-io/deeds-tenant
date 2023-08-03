@@ -44,6 +44,12 @@
       <scope>provided</scope>
       <type>war</type>
     </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <finalName>deeds-tenant-addon</finalName>

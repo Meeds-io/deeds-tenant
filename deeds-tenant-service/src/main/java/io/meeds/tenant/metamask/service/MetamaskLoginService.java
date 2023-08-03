@@ -42,6 +42,7 @@ import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
+import io.meeds.tenant.service.HubService;
 import io.meeds.tenant.service.TenantManagerService;
 
 public class MetamaskLoginService implements Startable {
@@ -62,24 +63,28 @@ public class MetamaskLoginService implements Startable {
 
   private SecureRandomService    secureRandomService;
 
-  private TenantManagerService   tenantManagerService;
+  private boolean                secureRootAccessWithMetamask;
 
   private AccountSetupService    accountSetupService;
 
-  private boolean                secureRootAccessWithMetamask;
+  private HubService             hubService;
+
+  private TenantManagerService   tenantManagerService;
 
   private List<String>           allowedRootWallets                     = new ArrayList<>();
 
-  public MetamaskLoginService(OrganizationService organizationService,
+  public MetamaskLoginService(OrganizationService organizationService, // NOSONAR
                               UserACL userACL,
                               SecureRandomService secureRandomService,
-                              TenantManagerService tenantManagerService,
                               AccountSetupService accountSetupService,
+                              TenantManagerService tenantManagerService,
                               SecuritySettingService securitySettingService,
+                              HubService hubService,
                               InitParams params) {
     this.organizationService = organizationService;
     this.secureRandomService = secureRandomService;
     this.tenantManagerService = tenantManagerService;
+    this.hubService = hubService;
     this.accountSetupService = accountSetupService;
     this.securitySettingService = securitySettingService;
     this.userACL = userACL;
@@ -256,9 +261,9 @@ public class MetamaskLoginService implements Startable {
   /**
    * @return true if current instance if the one of a Tenant Management
    */
-  public boolean isDeedTenant() {
+  public boolean isDeedHub() {
     try {
-      return tenantManagerService.isTenant();
+      return hubService.isDeedHub();
     } catch (Exception e) {
       LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
       return false;
@@ -269,7 +274,7 @@ public class MetamaskLoginService implements Startable {
    * @return DEED NFT identifier
    */
   public long getDeedId() {
-    return tenantManagerService.getDeedId();
+    return hubService.getDeedId();
   }
 
   private String generateRandomToken() {

@@ -15,18 +15,30 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.constant;
+package io.meeds.tenant.listener;
 
-public class WomConnectionException extends Exception {
+import org.exoplatform.commons.api.persistence.ExoTransactional;
+import org.exoplatform.services.listener.Asynchronous;
+import org.exoplatform.services.listener.Event;
+import org.exoplatform.services.listener.Listener;
+import org.exoplatform.wallet.model.reward.RewardReport;
 
-  private static final long serialVersionUID = -3215265051038143377L;
+import io.meeds.tenant.service.HubReportService;
 
-  public WomConnectionException(String message) {
-    super(message);
+@Asynchronous
+public class HubRewardReportListener extends Listener<RewardReport, Object> {
+
+  private HubReportService hubReportService;
+
+  public HubRewardReportListener(HubReportService hubReportService) {
+    this.hubReportService = hubReportService;
   }
 
-  public WomConnectionException(String message, Exception e) {
-    super(message, e);
+  @Override
+  @ExoTransactional
+  public void onEvent(Event<RewardReport, Object> event) throws Exception {
+    RewardReport rewardReport = event.getSource();
+    hubReportService.sendReportToWoM(rewardReport);
   }
 
 }

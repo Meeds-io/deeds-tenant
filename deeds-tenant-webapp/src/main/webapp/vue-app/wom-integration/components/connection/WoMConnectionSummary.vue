@@ -77,7 +77,7 @@ export default {
   methods: {
     refresh() {
       this.loading = true;
-      return this.$tenantService.getHub()
+      return this.$hubService.getHub()
         .then(hub => this.hub = hub)
         .finally(() => this.loading = false);
     },

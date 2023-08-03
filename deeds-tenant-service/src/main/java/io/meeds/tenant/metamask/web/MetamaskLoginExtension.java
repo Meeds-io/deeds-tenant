@@ -32,7 +32,7 @@ import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.login.UIParamsExtension;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.service.TenantManagerService;
+import io.meeds.tenant.service.HubService;
 
 /**
  * A Login extension to submit Login parameters to UI
@@ -43,12 +43,12 @@ public class MetamaskLoginExtension implements UIParamsExtension {
 
   protected MetamaskLoginService    metamaskLoginService;
 
-  protected TenantManagerService    tenantManagerService;
+  protected HubService              hubService;
 
-  public MetamaskLoginExtension(TenantManagerService tenantManagerService,
+  public MetamaskLoginExtension(HubService hubService,
                                 MetamaskLoginService metamaskLoginService) {
     this.metamaskLoginService = metamaskLoginService;
-    this.tenantManagerService = tenantManagerService;
+    this.hubService = hubService;
   }
 
   @Override
@@ -69,14 +69,14 @@ public class MetamaskLoginExtension implements UIParamsExtension {
   }
 
   protected void addDeedTenantParameters(HttpSession httpSession, Map<String, Object> params) {
-    if (metamaskLoginService.isDeedTenant()) {
+    if (metamaskLoginService.isDeedHub()) {
       long deedId = metamaskLoginService.getDeedId();
       params.put("nftId", deedId);
       params.put("isDeedTenant", true);
 
       if (deedId > -1) {
-        params.put("cityIndex", tenantManagerService.getDeedCity());
-        params.put("cardTypeIndex", tenantManagerService.getDeedType());
+        params.put("cityIndex", hubService.getDeedCity());
+        params.put("cardTypeIndex", hubService.getDeedType());
         String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
         if (StringUtils.isNotBlank(walletAddress)
             && metamaskLoginService.isTenantManager(walletAddress)) {

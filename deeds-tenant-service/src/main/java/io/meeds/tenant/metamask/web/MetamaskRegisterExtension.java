@@ -30,7 +30,7 @@ import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.register.RegisterHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.service.TenantManagerService;
+import io.meeds.tenant.service.HubService;
 
 /**
  * An extension to submit parameters to Register UI
@@ -42,9 +42,9 @@ public class MetamaskRegisterExtension extends MetamaskLoginExtension {
   private static final List<String> EXTENSION_NAMES               = Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
                                                                                   LoginHandler.LOGIN_EXTENSION_NAME);
 
-  public MetamaskRegisterExtension(TenantManagerService tenantManagerService,
+  public MetamaskRegisterExtension(HubService hubService,
                                    MetamaskLoginService metamaskLoginService) {
-    super(tenantManagerService, metamaskLoginService);
+    super(hubService, metamaskLoginService);
   }
 
   @Override
