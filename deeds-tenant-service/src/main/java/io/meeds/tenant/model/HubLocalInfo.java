@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class HubReward extends Hub {
+public class HubLocalInfo extends Hub {
 
   private double           rewardsAmount;
 
@@ -39,7 +39,7 @@ public class HubReward extends Hub {
 
   private long             usersCount;
 
-  public HubReward(long deedId, // NOSONAR
+  public HubLocalInfo(long deedId, // NOSONAR
                    short city,
                    short type) {
     super(deedId,
@@ -56,7 +56,7 @@ public class HubReward extends Hub {
           null);
   }
 
-  public HubReward(long deedId, // NOSONAR
+  public HubLocalInfo(long deedId, // NOSONAR
                    short city,
                    short type,
                    String address,

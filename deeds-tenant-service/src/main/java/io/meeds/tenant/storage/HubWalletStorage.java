@@ -55,7 +55,7 @@ public class HubWalletStorage {
 
   public String getOrCreateHubAddress(String hubPrivateKey) throws WomException {
     String hubAddress = hubIdentityStorage.getHubProperty(ADDRESS);
-    if (StringUtils.isNotBlank(hubAddress)) {
+    if (StringUtils.startsWith(hubAddress, "0x")) {
       return hubAddress;
     } else {
       return createHubWallet(hubPrivateKey);
@@ -106,8 +106,12 @@ public class HubWalletStorage {
     String walletFileJson = toJsonString(hubWalletFile);
     walletFileJson = codecInitializer.getCodec().encode(walletFileJson);
     hubIdentityStorage.saveHubProperty(WALLET, walletFileJson);
-    hubIdentityStorage.saveHubProperty(ADDRESS, hubWalletFile.getAddress());
-    return hubWalletFile.getAddress();
+    String address = hubWalletFile.getAddress();
+    if (!StringUtils.startsWith(address, "0x")) {
+      address = "0x" + address;
+    }
+    hubIdentityStorage.saveHubProperty(ADDRESS, StringUtils.lowerCase(address));
+    return address;
   }
 
 }

@@ -45,6 +45,10 @@
   </component>
 
   <component>
+    <type>io.meeds.tenant.rest.client.WomConnectionService</type>
+  </component>
+
+  <component>
     <type>io.meeds.tenant.rest.client.WoMServiceClient</type>
   </component>
 
@@ -54,6 +58,10 @@
 
   <component>
     <type>io.meeds.tenant.storage.HubIdentityStorage</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.storage.HubReportStorage</type>
   </component>
 
   <component>
