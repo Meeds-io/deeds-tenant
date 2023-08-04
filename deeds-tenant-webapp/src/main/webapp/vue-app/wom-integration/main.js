@@ -32,7 +32,42 @@ export function init() {
         data: () => ({
           cities: ['TANIT', 'RESHEF', 'ASHTARTE', 'MELQART', 'ESHMUN', 'KUSHOR', 'HAMMON'],
           cardTypes: ['COMMON', 'UNCOMMON', 'RARE', 'LEGENDARY'],
+          hub: null,
         }),
+        computed: {
+          blockchains() {
+            return {
+              0: {
+                name: this.$t('wom.unkownBlockchain'),
+                blockexplorer: '',
+                testnet: true,
+              },
+              1: {
+                name: 'Mainnet',
+                blockexplorer: 'https://etherscan.io',
+                testnet: false,
+              },
+              5: {
+                name: 'Goerli',
+                blockexplorer: 'https://goerli.etherscan.io',
+                testnet: true,
+              },
+              137: {
+                name: 'Polygon',
+                blockexplorer: 'https://polygonscan.com',
+                testnet: false,
+              },
+              80001: {
+                name: 'Mumbai',
+                blockexplorer: 'https://mumbai.polygonscan.com',
+                testnet: true,
+              },
+            };
+          },
+        },
+        created() {
+          this.$root.$on('wom-hub-changed', hub => this.hub = hub);
+        },
         template: `<wom-integration id="${appId}" />`,
         i18n,
         vuetify: Vue.prototype.vuetifyOptions,

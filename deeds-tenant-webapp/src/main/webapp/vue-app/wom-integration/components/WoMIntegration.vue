@@ -21,7 +21,7 @@
     <v-main>
       <v-card class="pa-4" flat>
         <wom-integration-connection-summary />
-        <wom-integration-uem-rewards />
+        <wom-integration-hub-rewards class="mt-4" />
       </v-card>
     </v-main>
   </v-app>
