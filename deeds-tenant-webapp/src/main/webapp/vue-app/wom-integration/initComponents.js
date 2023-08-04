@@ -20,10 +20,6 @@ import WoMIntegration from './components/WoMIntegration.vue';
 
 import WoMConnectionSummary from './components/connection/WoMConnectionSummary.vue';
 
-import DeedChip from './components/connection/common/DeedChip.vue';
-import AddressIcon from './components/connection/common/AddressIcon.vue';
-import Address from './components/connection/common/Address.vue';
-
 import MetamaskButton from './components/connection/form/MetamaskButton.vue';
 import DeedManagerSelector from './components/connection/form/DeedManagerSelector.vue';
 import DeedSelector from './components/connection/form/DeedSelector.vue';
@@ -36,8 +32,16 @@ import ColorPickerDrawer from './components/connection/drawer/ColorPickerDrawer.
 
 import HubCard from './components/connection/view/HubCard.vue';
 
-import UEMRewards from './components/rewards/UEMRewards.vue';
-import UEMRewardItem from './components/rewards/UEMRewardItem.vue';
+import HubRewards from './components/rewards/HubRewards.vue';
+import HubRewardItem from './components/rewards/HubRewardItem.vue';
+import HubRewardItemMenu from './components/rewards/HubRewardItemMenu.vue';
+import HubRewardStatus from './components/rewards/HubRewardStatus.vue';
+import HubRewardUsersList from './components/rewards/HubRewardUsersList.vue';
+
+import DeedChip from './components/common/DeedChip.vue';
+import AddressIcon from './components/common/AddressIcon.vue';
+import Address from './components/common/Address.vue';
+import BlockchainChip from './components/common/BlockchainChip.vue';
 
 const components = {
   'wom-integration': WoMIntegration,
@@ -47,15 +51,21 @@ const components = {
   'wom-integration-deed-manager-selector': DeedManagerSelector,
   'wom-integration-rewarding-receiver': RewardingReceiverSelector,
   'wom-integration-metamask-button': MetamaskButton,
-  'wom-integration-address': Address,
-  'wom-integration-address-icon': AddressIcon,
-  'wom-integration-deed-selector': DeedSelector,
   'wom-integration-color-picker': ColorPicker,
   'wom-integration-color-picker-drawer': ColorPickerDrawer,
   'wom-integration-deed-chip': DeedChip,
   'wom-integration-hub-card': HubCard,
-  'wom-integration-uem-rewards': UEMRewards,
-  'wom-integration-uem-reward-item': UEMRewardItem,
+
+  'wom-integration-hub-rewards': HubRewards,
+  'wom-integration-hub-reward-item': HubRewardItem,
+  'wom-integration-hub-reward-item-menu': HubRewardItemMenu,
+  'wom-integration-hub-reward-status': HubRewardStatus,
+  'wom-integration-hub-reward-users-list': HubRewardUsersList,
+
+  'wom-integration-address': Address,
+  'wom-integration-address-icon': AddressIcon,
+  'wom-integration-deed-selector': DeedSelector,
+  'wom-integration-hub-blockchain-chip': BlockchainChip,
 };
 
 for (const key in components) {

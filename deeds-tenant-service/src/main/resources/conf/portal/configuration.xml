@@ -24,6 +24,55 @@
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
 
   <component>
+    <type>io.meeds.tenant.rest.HubRest</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.rest.HubReportRest</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.service.TenantManagerService</type>
+    <init-params>
+      <values-param>
+        <name>managerDefaultRoles</name>
+        <value>*:/platform/users</value>
+        <value>*:/platform/administrators</value>
+        <value>*:/platform/analytics</value>
+        <value>*:/platform/rewarding</value>
+      </values-param>
+    </init-params>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.rest.client.WomConnectionService</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.rest.client.WoMServiceClient</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.storage.HubWalletStorage</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.storage.HubIdentityStorage</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.storage.HubReportStorage</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.service.HubService</type>
+  </component>
+
+  <component>
+    <type>io.meeds.tenant.service.HubReportService</type>
+  </component>
+
+  <component>
     <type>io.meeds.tenant.metamask.web.MetamaskLoginExtension</type>
   </component>
 

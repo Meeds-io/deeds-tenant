@@ -61,7 +61,7 @@ import io.meeds.deeds.model.Hub;
 import io.meeds.deeds.model.WomConnectionRequest;
 import io.meeds.deeds.model.WomDisconnectionRequest;
 import io.meeds.tenant.model.HubConfiguration;
-import io.meeds.tenant.model.HubReward;
+import io.meeds.tenant.model.HubLocalInfo;
 import io.meeds.tenant.rest.client.WoMServiceClient;
 import io.meeds.tenant.storage.HubIdentityStorage;
 import io.meeds.tenant.storage.HubWalletStorage;
@@ -171,7 +171,7 @@ public class HubService {
     String joinDateMillis = (String) hubProfile.getProperty(JOIN_DATE);
     Instant joinDate = Instant.ofEpochMilli(Long.parseLong(joinDateMillis));
 
-    HubReward hub = new HubReward(Long.parseLong(deedId),
+    HubLocalInfo hub = new HubLocalInfo(Long.parseLong(deedId),
                                   Short.parseShort(city),
                                   Short.parseShort(type),
                                   address,
@@ -229,7 +229,7 @@ public class HubService {
     return Numeric.toHexString(retval);
   }
 
-  private void computeRewardingInfo(HubReward hubStatus) {
+  private void computeRewardingInfo(HubLocalInfo hubStatus) {
     try {
       RewardSettings settings = rewardSettingsService.getSettings();
       hubStatus.setRewardsPeriod(settings.getPeriodType());
@@ -251,7 +251,7 @@ public class HubService {
     }
   }
 
-  private void computeUsersCount(HubReward hubStatus) {
+  private void computeUsersCount(HubLocalInfo hubStatus) {
     try {
       hubStatus.setUsersCount(organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize());
     } catch (Exception e) {
