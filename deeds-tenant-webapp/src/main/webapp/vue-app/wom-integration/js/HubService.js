@@ -31,7 +31,7 @@ export function getHub(nftId) {
     } else if (resp?.status === 404) {
       return null;
     } else {
-      handleResponseError(resp);
+      return handleResponseError(resp);
     }
   });
 }
@@ -45,7 +45,7 @@ export function isTenantManager(address, nftId) {
       return resp.text()
         .then(data => data === 'true');
     } else {
-      handleResponseError(resp);
+      return handleResponseError(resp);
     }
   });
 }
@@ -75,7 +75,7 @@ export function disconnectFromWoM(request) {
     body: JSON.stringify(request),
   }).then((resp) => {
     if (!resp?.ok) {
-      handleResponseError(resp);
+      return handleResponseError(resp);
     }
   });
 }
@@ -88,7 +88,7 @@ export function getConfiguration() {
     if (resp?.ok) {
       return resp.json();
     } else {
-      handleResponseError(resp);
+      return handleResponseError(resp);
     }
   });
 }
