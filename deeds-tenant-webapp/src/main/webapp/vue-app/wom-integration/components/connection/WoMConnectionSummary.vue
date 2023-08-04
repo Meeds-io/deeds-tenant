@@ -69,6 +69,11 @@ export default {
       });
     },
   },
+  watch: {
+    hub() {
+      this.$root.$emit('wom-hub-changed', this.hub);
+    },
+  },
   created() {
     this.$root.$on('wom-connection-success', this.refresh);
     this.$root.$on('wom-disconnection-success', this.refresh);

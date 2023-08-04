@@ -17,6 +17,8 @@
  */
 package io.meeds.tenant.rest;
 
+import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -35,6 +37,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
 import io.meeds.deeds.constant.WomException;
+import io.meeds.deeds.constant.WomParsingException;
 import io.meeds.deeds.model.Hub;
 import io.meeds.deeds.model.WomConnectionRequest;
 import io.meeds.deeds.model.WomDisconnectionRequest;
@@ -69,7 +72,7 @@ public class HubRest implements ResourceContainer {
   public Response getHub(
                          @Parameter(description = "Deed NFT identifier", required = false)
                          @QueryParam("nftId")
-                         String nftId) {
+                         String nftId) throws WomParsingException {
     Hub hub;
     if (StringUtils.isBlank(nftId)) {
       hub = hubService.getHub();
@@ -84,7 +87,7 @@ public class HubRest implements ResourceContainer {
     if (hub == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(hub).build();
+    return Response.ok(toJsonString(hub)).build();
   }
 
   @GET
