@@ -19,7 +19,7 @@
             class="me-4">
             fa-hand-holding-usd
           </v-icon>
-          {{ $t('womn.noUEMRewards') }}
+          {{ $t('wom.noUEMRewards') }}
         </div>
       </template>
       <template #default="props">
