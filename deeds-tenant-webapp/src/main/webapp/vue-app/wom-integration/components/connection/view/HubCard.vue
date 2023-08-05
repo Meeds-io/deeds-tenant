@@ -76,7 +76,8 @@
         class="ms-5 mt-n10 rounded-lg position-absolute z-index-two"
         outlined>
         <v-img
-          :src="`${hubLogoUrl}`"
+          v-if="hubLogoUrl"
+          :src="hubLogoUrl"
           class="no-border-radius mx-auto"
           height="100%"
           width="90%"
