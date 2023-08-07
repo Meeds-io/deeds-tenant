@@ -98,11 +98,10 @@
           </div>
         </div>
         <div
-          :title="hubDescription"
+          v-sanitized-html="hubDescription"
           class="text-light-color transparent font-weight-normal mt-3 text-truncate-2 flex-grow-1 pa-0"
           flat
           tile>
-          {{ hubDescription }}
         </div>
         <div class="d-flex mt-4">
           <div class="d-flex align-center justify-center">
@@ -140,14 +139,29 @@ export default {
     },
   },
   computed: {
+    hubNames() {
+      return this.hub?.name || {};
+    },
     hubName() {
-      return this.hub?.name;
+      return this.hubNames[eXo.env.portal.language] || this.hubNames['en'] || '';
+    },
+    hubDescriptions() {
+      return this.hub?.description || {};
     },
     hubDescription() {
-      return this.hub?.description;
+      return this.hubDescriptions[eXo.env.portal.language] || this.hubDescriptions['en'] || '';
+    },
+    hubAddress() {
+      return this.hub?.address;
+    },
+    hubUpdateTime() {
+      return this.hub?.updatedDate && new Date(this.hub?.updatedDate).getTime();
+    },
+    womServerUrl() {
+      return this.$root.configuration?.womServerUrl;
     },
     hubLogoUrl() {
-      return this.hub?.logoUrl;
+      return this.hubAddress && `${this.womServerUrl}/api/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
     },
     hubUrl() {
       return this.hub?.url;
@@ -188,7 +202,7 @@ export default {
         style: 'decimal',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(this.hub?.rewardsAmount || 0);
+      }).format(this.hub?.rewardsPerPeriod || 0);
     },
     hubRewardsPeriodType() {
       return this.hub?.rewardsPeriod?.toLowerCase();
