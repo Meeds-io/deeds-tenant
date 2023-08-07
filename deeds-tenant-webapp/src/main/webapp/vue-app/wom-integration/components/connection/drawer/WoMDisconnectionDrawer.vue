@@ -101,8 +101,8 @@ export default {
     },
     init() {
       this.loading = true;
-      this.$hubService.getConfiguration()
-        .then(configuration => this.token = configuration.token)
+      this.$hubService.generateToken()
+        .then(token => this.token = token)
         .finally(() => this.loading = false);
     },
     reset() {
