@@ -205,7 +205,7 @@ export default {
       }).format(this.hub?.rewardsPerPeriod || 0);
     },
     hubRewardsPeriodType() {
-      return this.hub?.rewardsPeriod?.toLowerCase();
+      return this.hub?.rewardsPeriodType?.toLowerCase();
     },
     hubRewardsPeriod() {
       return this.$t(`wom.${this.hubRewardsPeriodType}`);
