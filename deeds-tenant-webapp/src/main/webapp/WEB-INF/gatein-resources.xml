@@ -31,6 +31,13 @@
     <css-path>/css/login.css</css-path>
   </portlet-skin>
 
+  <portlet-skin>
+    <application-name>deeds-tenant</application-name>
+    <portlet-name>WoMIntegration</portlet-name>
+    <skin-name>Enterprise</skin-name>
+    <css-path>/css/womIntegration.css</css-path>
+  </portlet-skin>
+
   <portlet>
     <name>WoMIntegration</name>
     <module>
@@ -63,6 +70,12 @@
       </depends>
       <depends>
         <module>ethers</module>
+      </depends>
+      <depends>
+        <module>translationField</module>
+      </depends>
+      <depends>
+        <module>imageCropper</module>
       </depends>
     </module>
   </portlet>

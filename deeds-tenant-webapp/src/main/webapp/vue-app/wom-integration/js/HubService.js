@@ -80,6 +80,19 @@ export function disconnectFromWoM(request) {
   });
 }
 
+export function generateToken() {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/token`, {
+    method: 'GET',
+    credentials: 'include',
+  }).then((resp) => {
+    if (resp?.ok) {
+      return resp.text();
+    } else {
+      return handleResponseError(resp);
+    }
+  });
+}
+
 export function getConfiguration() {
   return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/configuration`, {
     method: 'GET',
@@ -88,6 +101,60 @@ export function getConfiguration() {
     if (resp?.ok) {
       return resp.json();
     } else {
+      return handleResponseError(resp);
+    }
+  });
+}
+
+export function saveHubAvatar(paramsObj) {
+  const formData = new FormData();
+  if (paramsObj) {
+    Object.keys(paramsObj).forEach(key => {
+      const value = paramsObj[key];
+      if (window.Array && Array.isArray && Array.isArray(value)) {
+        value.forEach(val => formData.append(key, val));
+      } else {
+        formData.append(key, value);
+      }
+    });
+  }
+  const params = new URLSearchParams(formData).toString();
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/avatar`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  }).then((resp) => {
+    if (!resp?.ok) {
+      return handleResponseError(resp);
+    }
+  });
+}
+
+export function saveHubBanner(paramsObj) {
+  const formData = new FormData();
+  if (paramsObj) {
+    Object.keys(paramsObj).forEach(key => {
+      const value = paramsObj[key];
+      if (window.Array && Array.isArray && Array.isArray(value)) {
+        value.forEach(val => formData.append(key, val));
+      } else {
+        formData.append(key, value);
+      }
+    });
+  }
+  const params = new URLSearchParams(formData).toString();
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/banner`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params,
+  }).then((resp) => {
+    if (!resp?.ok) {
       return handleResponseError(resp);
     }
   });
