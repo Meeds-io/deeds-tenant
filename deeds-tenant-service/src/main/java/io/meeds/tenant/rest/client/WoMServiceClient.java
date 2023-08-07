@@ -20,9 +20,12 @@ package io.meeds.tenant.rest.client;
 import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
 import static io.meeds.deeds.utils.JsonUtils.toJsonString;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
+<<<<<<< HEAD
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -42,6 +45,13 @@ import org.springframework.stereotype.Component;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+=======
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+
+import org.exoplatform.upload.UploadResource;
+>>>>>>> 9b8a0f3 (fix: Add Hub name and description translation with avatar and banner upload capability  - MEED-2392 - Meeds-io/MIPs#58)
 
 import io.meeds.deeds.constant.WomException;
 import io.meeds.deeds.model.Hub;
@@ -58,6 +68,10 @@ public class WoMServiceClient {
   private static final String  WOM_DISCONNECT_URI            = "/api/hubs";
 
   private static final String  HUB_TENANT_BY_ADDRESS_URI     = "/api/hubs/{hubAddress}";
+
+  private static final String  HUB_AVATAR_BY_ADDRESS_URI     = "/api/hubs/{hubAddress}/avatar";
+
+  private static final String  HUB_BANNER_BY_ADDRESS_URI     = "/api/hubs/{hubAddress}/banner";
 
   private static final String  HUB_TENANT_BY_NFT_URI         = "/api/hubs/byNftId/{nftId}";
 
@@ -112,6 +126,59 @@ public class WoMServiceClient {
   public HubRewardReportStatus getRewardReportStatus(String hash) throws WomException {
     String responseText = womConnectionService.processGet(getWoMRewardReportUri(hash));
     return fromJsonString(responseText, HubRewardReportStatus.class);
+  }
+
+  public void saveHubAvatar(String hubAddress,
+                            String signedMessage,
+                            String rawMessage,
+                            String token,
+                            UploadResource uploadResource) throws IOException, WomException {
+    saveHubAttachment(getSaveAvatarUri(hubAddress), hubAddress, signedMessage, rawMessage, token, uploadResource);
+  }
+
+  public void saveHubBanner(String hubAddress,
+                            String signedMessage,
+                            String rawMessage,
+                            String token,
+                            UploadResource uploadResource) throws IOException, WomException {
+    saveHubAttachment(getSaveBannerUri(hubAddress), hubAddress, signedMessage, rawMessage, token, uploadResource);
+  }
+
+  public String getWomUrl() {
+    return WOM_URL;
+  }
+
+  private void saveHubAttachment(URI attachmentUri,
+                                 String hubAddress,
+                                 String signedMessage,
+                                 String rawMessage,
+                                 String token,
+                                 UploadResource uploadResource) throws IOException, WomException {
+    HttpPost httpPost = new HttpPost(attachmentUri);
+    MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create()
+                                                                 .addBinaryBody("file",
+                                                                                new File(uploadResource.getStoreLocation()))
+                                                                 .setContentType(ContentType.MULTIPART_FORM_DATA)
+                                                                 .addTextBody("hubAddress", hubAddress)
+                                                                 .addTextBody("signedMessage", signedMessage)
+                                                                 .addTextBody("rawMessage", rawMessage)
+                                                                 .addTextBody("token", token);
+    httpPost.setEntity(entityBuilder.build());
+    womConnectionService.processRequest(httpPost);
+  }
+
+  private URI getSaveAvatarUri(String hubAddress) {
+    String uri = WOM_URL + HUB_AVATAR_BY_ADDRESS_URI;
+    return URI.create(uri.replace("//", "/")
+                         .replace(":/", "://")
+                         .replace("{hubAddress}", hubAddress));
+  }
+
+  private URI getSaveBannerUri(String hubAddress) {
+    String uri = WOM_URL + HUB_BANNER_BY_ADDRESS_URI;
+    return URI.create(uri.replace("//", "/")
+                         .replace(":/", "://")
+                         .replace("{hubAddress}", hubAddress));
   }
 
   private URI getWoMConnectionUri() {
