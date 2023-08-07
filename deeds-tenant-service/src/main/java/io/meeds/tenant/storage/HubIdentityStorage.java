@@ -17,6 +17,8 @@
  */
 package io.meeds.tenant.storage;
 
+import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
+import static io.meeds.deeds.utils.JsonUtils.toJsonString;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.ADDRESS;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.COLOR;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_CITY;
@@ -28,33 +30,40 @@ import static io.meeds.tenant.plugin.WalletHubIdentityProvider.EARNER_ADDRESS;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.IDENTITY_REMOTE_ID;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.JOIN_DATE;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.LOGO_URL;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.NAME;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.REWARD_AMOUNT;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.REWARD_PERIOD_TYPE;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.UPDATED_DATE;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.URL;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.USERS_COUNT;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.WALLET;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
 
 import io.meeds.deeds.constant.WomException;
+import io.meeds.deeds.constant.WomParsingException;
 import io.meeds.deeds.model.Hub;
 import io.meeds.tenant.rest.client.WoMServiceClient;
 
 @Component
 public class HubIdentityStorage {
 
-  private static final Log LOG         = ExoLogger.getLogger(HubIdentityStorage.class);
-
   private IdentityManager  identityManager;
 
   private WoMServiceClient womServiceClient;
 
-  private Identity         hubIdentity = null;
+  private boolean          retrievedFromWoM;
+
+  private Hub              hub = null;
 
   public HubIdentityStorage(IdentityManager identityManager,
                             WoMServiceClient womServiceClient) {
@@ -62,72 +71,113 @@ public class HubIdentityStorage {
     this.womServiceClient = womServiceClient;
   }
 
-  public Identity getHubIdentity() {
-    if (this.hubIdentity == null) {
-      this.hubIdentity = identityManager.getOrCreateIdentity(IDENTITY_PROVIDER_NAME, IDENTITY_REMOTE_ID);
-      if (this.hubIdentity != null) {
-        populateProfile(this.hubIdentity.getProfile());
-      }
+  public Hub getHub() {
+    if (retrievedFromWoM) {
+      return hub;
     }
-    return this.hubIdentity;
-  }
-
-  public Profile getHubProfile() {
-    Identity identity = getHubIdentity();
-    return identity == null ? null : identity.getProfile();
-  }
-
-  public String getHubProperty(String attributeName) {
     Profile hubProfile = getHubProfile();
-    return hubProfile == null ? null : (String) hubProfile.getProperty(attributeName);
+    boolean retrieved = retrieveHubFromWoM(hubProfile);
+    if (retrieved) {
+      hub = mapToHub(hubProfile);
+    }
+    return hub;
   }
 
-  public void saveHubProperty(String name, String value) {
-    Identity identity = getHubIdentity();
-    if (identity == null || identity.getProfile() == null) {
-      return;
-    }
-    Profile hubProfile = identity.getProfile();
-    if (StringUtils.isBlank(value)) {
-      hubProfile.removeProperty(name);
-    } else {
-      hubProfile.setProperty(name, value);
-    }
+  public String getHubAddress() {
+    return (String) getHubProfile().getProperty(ADDRESS);
+  }
+
+  public String getHubWallet() {
+    return (String) getHubProfile().getProperty(WALLET);
+  }
+
+  public void saveHubWallet(String address, String wallet) {
+    Profile hubProfile = getHubProfile();
+    hubProfile.setProperty(ADDRESS, StringUtils.lowerCase(address));
+    hubProfile.setProperty(WALLET, wallet);
     identityManager.updateProfile(hubProfile);
   }
 
   public void refreshHubIdentity() {
     // Force Retrieve Hub profile again
-    hubIdentity = null;
+    retrievedFromWoM = false;
+    hub = null;
   }
 
-  public void populateProfile(Profile hubProfile) {
+  private Profile getHubProfile() {
+    return getHubIdentity().getProfile();
+  }
+
+  private Identity getHubIdentity() {
+    return identityManager.getOrCreateIdentity(IDENTITY_PROVIDER_NAME, IDENTITY_REMOTE_ID);
+  }
+
+  private boolean retrieveHubFromWoM(Profile hubProfile) {
     try {
       String hubAddress = (String) hubProfile.getProperty(ADDRESS);
-      Hub hub = womServiceClient.getHub(hubAddress);
-      if (hub != null) {
-        populateProfile(hubProfile, hub);
-      } else {
+      Hub remoteHub = womServiceClient.getHub(hubAddress);
+      if (remoteHub == null) {
         clearHubProperties(hubProfile);
+      } else {
+        mapToProfile(hubProfile, remoteHub);
       }
+      this.retrievedFromWoM = true;
+      return remoteHub != null;
     } catch (WomException e) {
-      LOG.warn("Error communicating with WoM Server, couldn't retrieve Hub remote status", e);
+      throw new IllegalStateException("Error communicating with WoM Server, couldn't retrieve Hub remote status", e);
     }
   }
 
-  private void populateProfile(Profile hubProfile, Hub hub) {
+  private void mapToProfile(Profile hubProfile, Hub hub) throws WomParsingException {
     hubProfile.setProperty(DEED_ID, String.valueOf(hub.getDeedId()));
     hubProfile.setProperty(DEED_CITY, String.valueOf(hub.getCity()));
     hubProfile.setProperty(DEED_TYPE, String.valueOf(hub.getType()));
-    hubProfile.setProperty(NAME, hub.getName());
-    hubProfile.setProperty(DESCRIPTION, hub.getDescription());
+    hubProfile.setProperty(NAME, toJsonString(hub.getName()));
+    hubProfile.setProperty(DESCRIPTION, toJsonString(hub.getDescription()));
     hubProfile.setProperty(URL, hub.getUrl());
-    hubProfile.setProperty(LOGO_URL, hub.getLogoUrl());
+    hubProfile.setProperty(REWARD_PERIOD_TYPE, hub.getRewardsPeriodType());
+    hubProfile.setProperty(REWARD_AMOUNT, String.valueOf(hub.getRewardsPerPeriod()));
+    hubProfile.setProperty(USERS_COUNT, String.valueOf(hub.getUsersCount()));
     hubProfile.setProperty(COLOR, hub.getColor());
     hubProfile.setProperty(EARNER_ADDRESS, hub.getEarnerAddress());
     hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
     hubProfile.setProperty(JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
+    hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
     identityManager.updateProfile(hubProfile);
+  }
+
+  private Hub mapToHub(Profile hubProfile) {
+    String deedId = (String) hubProfile.getProperty(DEED_ID);
+    String city = (String) hubProfile.getProperty(DEED_CITY);
+    String type = (String) hubProfile.getProperty(DEED_TYPE);
+    String address = (String) hubProfile.getProperty(ADDRESS);
+    String name = (String) hubProfile.getProperty(NAME);
+    String description = (String) hubProfile.getProperty(DESCRIPTION);
+    String url = (String) hubProfile.getProperty(URL);
+    String rewardsAmount = (String) hubProfile.getProperty(REWARD_AMOUNT);
+    String rewardsPeriodType = (String) hubProfile.getProperty(REWARD_PERIOD_TYPE);
+    String usersCount = (String) hubProfile.getProperty(USERS_COUNT);
+    String color = (String) hubProfile.getProperty(COLOR);
+    String earnerAddress = (String) hubProfile.getProperty(EARNER_ADDRESS);
+    String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
+    Instant joinDate = parseInstant(hubProfile, JOIN_DATE);
+    Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
+
+    return new Hub(Long.parseLong(deedId),
+                   Short.parseShort(city),
+                   Short.parseShort(type),
+                   address,
+                   parseToMap(name),
+                   parseToMap(description),
+                   url,
+                   color,
+                   deedManagerAddress,
+                   earnerAddress,
+                   joinDate,
+                   updatedDate,
+                   parseToLong(usersCount),
+                   rewardsPeriodType,
+                   parseToDouble(rewardsAmount));
   }
 
   private void clearHubProperties(Profile hubProfile) {
@@ -138,13 +188,39 @@ public class HubIdentityStorage {
       hubProfile.removeProperty(NAME);
       hubProfile.removeProperty(DESCRIPTION);
       hubProfile.removeProperty(URL);
-      hubProfile.removeProperty(LOGO_URL);
       hubProfile.removeProperty(COLOR);
       hubProfile.removeProperty(EARNER_ADDRESS);
       hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
       hubProfile.removeProperty(JOIN_DATE);
+      hubProfile.removeProperty(UPDATED_DATE);
+      hubProfile.removeProperty(REWARD_PERIOD_TYPE);
+      hubProfile.removeProperty(REWARD_AMOUNT);
+      hubProfile.removeProperty(USERS_COUNT);
       identityManager.updateProfile(hubProfile);
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, String> parseToMap(String value) {
+    try {
+      return StringUtils.isBlank(value) ? Collections.emptyMap()
+                                        : (Map<String, String>) fromJsonString(value, Map.class);
+    } catch (Exception e) {
+      throw new IllegalStateException("Error parsing value: " + value, e);
+    }
+  }
+
+  private Instant parseInstant(Profile hubProfile, String propName) {
+    String propDateMillis = (String) hubProfile.getProperty(propName);
+    return StringUtils.isBlank(propDateMillis) ? null : Instant.ofEpochMilli(Long.parseLong(propDateMillis));
+  }
+
+  private double parseToDouble(String value) {
+    return StringUtils.isBlank(value) ? 0 : Double.parseDouble(value);
+  }
+
+  private long parseToLong(String value) {
+    return StringUtils.isBlank(value) ? 0 : Long.parseLong(value);
   }
 
 }

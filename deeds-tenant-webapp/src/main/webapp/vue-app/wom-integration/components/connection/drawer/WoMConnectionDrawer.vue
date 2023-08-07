@@ -91,34 +91,54 @@
               @submit.prevent="connect">
               <wom-integration-rewarding-receiver
                 :address.sync="earnerAddress" />
-              <div class="text-subtitle-1 mb-2 mt-4">
-                {{ $t('wom.hubName') }}
-              </div>
-              <v-text-field
-                ref="hubName"
-                v-model="hubName"
-                :placeholder="$t('wom.hubNamePlaceholder')"
+
+              <translation-text-field
+                ref="hubNameTranslations"
+                v-model="hubNameTranslations"
                 :rules="rules.hubName"
-                class="pt-0 mt-0 width-auto full-height flex-grow-1 flex-shrink-1"
-                outlined
-                dense
+                :field-value.sync="hubName"
+                :placeholder="$t('wom.hubNamePlaceholder')"
+                :maxlength="hubNameMaxLength"
+                :supported-languages="supportedLanguages"
+                drawer-title="wom.translateHubName"
+                name="hubName"
+                class="width-auto flex-grow-1 mt-4"
+                back-icon
+                no-expand-icon
                 autofocus
-                mandatory />
-              <div class="text-subtitle-1 mb-2 mt-4">
-                {{ $t('wom.hubDescription') }}
-              </div>
-              <v-textarea
-                ref="hubDescription"
-                v-model="hubDescription"
-                :placeholder="$t('wom.hubDescriptionPlaceholder')"
-                :rules="rules.hubDescription"
-                :counter-value="hubDescriptionCounterValue"
-                :rows="5"
-                :row-height="24"
-                :counter="hubDescriptionMaxLength"
-                class="pt-0 mt-0 extended-textarea"
-                auto-grow
-                mandatory />
+                required>
+                <template #title>
+                  <div class="text-subtitle-1">
+                    {{ $t('wom.hubName') }}
+                  </div>
+                </template>
+              </translation-text-field>
+              <translation-text-field
+                ref="hubDescriptionTranslation"
+                v-model="hubDescriptionTranslations"
+                :field-value.sync="hubDescription"
+                :maxlength="hubDescriptionMaxLength"
+                :supported-languages="supportedLanguages"
+                drawer-title="wom.translateHubDescription"
+                class="width-auto flex-grow-1 mt-4"
+                no-expand-icon
+                back-icon
+                rich-editor>
+                <template #title>
+                  <div class="text-subtitle-1">
+                    {{ $t('wom.hubDescription') }}
+                  </div>
+                </template>
+                <rich-editor
+                  id="hubDescription"
+                  ref="hubDescriptionEditor"
+                  v-model="hubDescription"
+                  :placeholder="$t('wom.hubDescriptionPlaceholder')"
+                  :max-length="hubDescriptionMaxLength"
+                  :tag-enabled="false"
+                  ck-editor-type="hubDescription" />
+              </translation-text-field>
+
               <div class="text-subtitle-1 mb-2 mt-4">
                 {{ $t('wom.hubUrl') }}
               </div>
@@ -131,17 +151,30 @@
                 outlined
                 dense
                 mandatory />
-              <div class="text-subtitle-1 mb-2 mt-4">
-                {{ $t('wom.hubLogoUrl') }}
+
+              <div class="subtitle-1 mt-4">
+                {{ $t('wom.hubAvatar') }}
               </div>
-              <v-text-field
-                ref="hubLogoUrl"
-                v-model="hubLogoUrl"
-                :placeholder="$t('wom.hubLogoUrlPlaceholder')"
-                :rules="rules.hubLogoUrl"
-                class="pt-0 mt-0 width-auto full-height flex-grow-1 flex-shrink-1"
-                outlined
-                dense />
+              <wom-integration-image-selector
+                ref="hubAvatar"
+                v-model="hubAvatarUrl"
+                :max-upload-size="0.5"
+                image-type="avatar"
+                @updated="hubAvatarUploadId = $event" />
+
+              <div class="subtitle-1 mt-4">
+                {{ $t('wom.hubBanner') }}
+              </div>
+              <wom-integration-image-selector
+                ref="hubBanner"
+                v-model="hubBannerUrl"
+                :max-upload-size="0.5"
+                image-type="cover"
+                @updated="hubBannerUploadId = $event" />
+
+              <div class="subtitle-1 mt-4">
+                {{ $t('wom.hubBrandingColor') }}
+              </div>
               <wom-integration-color-picker
                 v-model="hubColor" />
             </v-form>
@@ -206,15 +239,25 @@ export default {
     deedManagerAddress: null,
     earnerAddress: null,
     hubName: null,
+    hubNameTranslations: null,
     hubDescription: null,
-    hubDescriptionMaxLength: 100,
+    hubDescriptionTranslations: null,
+    hubNameMaxLength: 100,
+    hubDescriptionMaxLength: 500,
     hubUrl: null,
-    hubLogoUrl: null,
     hubColor: null,
+    hubAvatarUrl: null,
+    hubBannerUrl: null,
+    hubAvatarUploadId: null,
+    hubBannerUploadId: null,
     token: null,
     signedMessage: null,
     deedId: null,
     validateEmpty: false,
+    supportedLanguages: {
+      'en': 'English',
+      'fr': 'French / Français',
+    },
   }),
   computed: {
     step1Valid() {
@@ -249,7 +292,7 @@ export default {
       return {
         hubName: [
           () => !!this.hubName || !this.validateEmpty || this.$t('wom.emptyHubName'),
-          () => !this.hubName || this.hubName?.length <= 50 || this.$t('wom.tooLongHubName')
+          () => !this.hubName || this.hubName?.length <= this.hubNameMaxLength || this.$t('wom.tooLongHubName')
         ],
         hubDescription: [
           () => !!this.hubDescription || !this.validateEmpty || this.$t('wom.emptyHubDesription'),
@@ -259,10 +302,6 @@ export default {
           () => !!this.hubUrl || !this.validateEmpty || this.$t('wom.emptyHubUrl'),
           () => !this.hubUrl || this.hubUrl?.length <= 100 || this.$t('wom.tooLongHubUrl'),
           () => !this.hubUrl || !this.validateEmpty || this.isValidUrl(this.hubUrl) || this.$t('wom.invalidHubUrl')
-        ],
-        hubLogoUrl: [
-          () => !this.hubLogoUrl || this.hubLogoUrl?.length <= 500 || this.$t('wom.tooLongHubLogoUrl'),
-          () => !this.hubLogoUrl || !this.validateEmpty || this.isValidUrl(this.hubLogoUrl) || this.$t('wom.invalidHubLogoUrl')
         ],
       };
     },
@@ -282,31 +321,50 @@ export default {
         this.$refs.drawer.endLoading();
       }
     },
+    hubDescription() {
+      if (this.$refs.hubDescriptionTranslation) {
+        this.$refs.hubDescriptionTranslation.setValue(this.hubDescription);
+      }
+    },
   },
   methods: {
     open() {
       this.reset();
+      this.$translationService.getTranslationConfiguration()
+        .then(configuration => {
+          if (configuration?.supportedLanguages) {
+            const supportedLanguages = configuration?.supportedLanguages || this.supportedLanguages;
+            Object.keys(this.supportedLanguages).forEach(lang => this.supportedLanguages[lang] = supportedLanguages[lang]);
+          }
+        });
       this.$refs.drawer.open();
     },
     init() {
       this.stepper = 1;
 
       this.loading = true;
-      this.$hubService.getConfiguration()
-        .then(configuration => {
-          this.token = configuration.token;
-          this.earnerAddress = configuration.adminWallet;
-        })
+      return this.$hubService.generateToken()
+        .then(token => this.token = token)
         .finally(() => this.loading = false);
     },
     reset() {
       this.deedId = null;
-      this.earnerAddress = this.hub?.earnerAddress || null;
-      this.hubName = this.hub?.name || null;
-      this.hubDescription = this.hub?.description || null;
-      this.hubUrl = this.hub?.url || null;
-      this.hubLogoUrl = this.hub?.logoUrl || null;
+      this.earnerAddress = this.hub?.earnerAddress || this.$root?.configuration?.adminWallet || null;
+      this.hubNameTranslations = this.hub?.name || null;
+      this.hubName = this.hubNameTranslations?.en || null;
+      this.hubDescriptionTranslations = this.hub?.description || null;
+      this.hubDescription = this.hubDescriptionTranslations?.en || null;
+      this.hubUrl = this.hub?.url || window.location.origin;
       this.hubColor = this.hub?.color || '#707070';
+      this.hubAvatarUploadId = null;
+      this.hubBannerUploadId = null;
+
+      const womServerUrl = this.$root.configuration?.womServerUrl;
+      const hubUpdateTime = this.hub?.updatedDate && new Date(this.hub?.updatedDate).getTime();
+      const hubAddress = this.hub?.address;
+
+      this.hubAvatarUrl = hubAddress && `${womServerUrl}/api/hubs/${hubAddress}/avatar?v=${hubUpdateTime || 0}` || null;
+      this.hubBannerUrl = hubAddress && `${womServerUrl}/api/hubs/${hubAddress}/banner?v=${hubUpdateTime || 0}` || null;
 
       this.validateEmpty = false;
       this.deedManagerAddress = null;
@@ -343,16 +401,38 @@ export default {
       this.$hubService.connectToWoM({
         deedId: this.deedId,
         deedManagerAddress: this.deedManagerAddress,
-        hubName: this.hubName,
-        hubDescription: this.hubDescription,
+        hubName: this.hubNameTranslations,
+        hubDescription: this.hubDescriptionTranslations,
         hubUrl: this.hubUrl,
-        hubLogoUrl: this.hubLogoUrl,
         color: this.hubColor,
         earnerAddress: this.earnerAddress,
+        usersCount: this.$root?.configuration?.usersCount,
+        rewardsPeriodType: this.$root?.configuration?.rewardsPeriodType,
+        rewardsPerPeriod: this.$root?.configuration?.rewardsPerPeriod,
         signedMessage: this.signedMessage,
         rawMessage: this.rawMessage,
         token: this.token,
       })
+        .then(() => {
+          if (this.hubAvatarUploadId) {
+            return this.$hubService.saveHubAvatar({
+              uploadId: this.hubAvatarUploadId,
+              signedMessage: this.signedMessage,
+              rawMessage: this.rawMessage,
+              token: this.token,
+            });
+          }
+        })
+        .then(() => {
+          if (this.hubBannerUploadId) {
+            return this.$hubService.saveHubBanner({
+              uploadId: this.hubBannerUploadId,
+              signedMessage: this.signedMessage,
+              rawMessage: this.rawMessage,
+              token: this.token,
+            });
+          }
+        })
         .then(() => {
           this.connecting = false;
           this.close();
