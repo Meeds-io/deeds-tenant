@@ -25,6 +25,8 @@ import DeedManagerSelector from './components/connection/form/DeedManagerSelecto
 import DeedSelector from './components/connection/form/DeedSelector.vue';
 import RewardingReceiverSelector from './components/connection/form/RewardingReceiverSelector.vue';
 import ColorPicker from './components/connection/form/ColorPicker.vue';
+import ImageSelector from './components/connection/form/ImageSelector.vue';
+import ImageSelectorButtons from './components/connection/form/ImageSelectorButtons.vue';
 
 import WoMConnectionDrawer from './components/connection/drawer/WoMConnectionDrawer.vue';
 import WoMDisconnectionDrawer from './components/connection/drawer/WoMDisconnectionDrawer.vue';
@@ -50,6 +52,8 @@ const components = {
   'wom-integration-disconnection-drawer': WoMDisconnectionDrawer,
   'wom-integration-deed-manager-selector': DeedManagerSelector,
   'wom-integration-rewarding-receiver': RewardingReceiverSelector,
+  'wom-integration-image-selector': ImageSelector,
+  'wom-integration-image-selector-buttons': ImageSelectorButtons,
   'wom-integration-metamask-button': MetamaskButton,
   'wom-integration-color-picker': ColorPicker,
   'wom-integration-color-picker-drawer': ColorPickerDrawer,

@@ -90,6 +90,7 @@
               <compress>false</compress>
               <includes>
                 <include>login.less</include>
+                <include>womIntegration.less</include>
               </includes>
             </configuration>
           </execution>

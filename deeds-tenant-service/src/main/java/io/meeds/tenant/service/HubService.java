@@ -17,36 +17,24 @@
 package io.meeds.tenant.service;
 
 import static io.meeds.deeds.utils.JsonUtils.toJsonString;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.ADDRESS;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.COLOR;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_CITY;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_ID;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_MANAGER_ADDRESS;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_TYPE;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DESCRIPTION;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.EARNER_ADDRESS;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.JOIN_DATE;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.LOGO_URL;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.NAME;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.URL;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.web3j.crypto.Sign;
 import org.web3j.utils.Numeric;
 
+import org.exoplatform.commons.exception.ObjectNotFoundException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.UserStatus;
-import org.exoplatform.social.core.identity.model.Profile;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
+import org.exoplatform.upload.UploadResource;
+import org.exoplatform.upload.UploadService;
+import org.exoplatform.wallet.model.reward.RewardPeriodType;
 import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.model.reward.RewardSettings;
 import org.exoplatform.wallet.reward.service.RewardReportService;
@@ -58,7 +46,6 @@ import io.meeds.deeds.model.Hub;
 import io.meeds.deeds.model.WomConnectionRequest;
 import io.meeds.deeds.model.WomDisconnectionRequest;
 import io.meeds.tenant.model.HubConfiguration;
-import io.meeds.tenant.model.HubLocalInfo;
 import io.meeds.tenant.rest.client.WoMServiceClient;
 import io.meeds.tenant.storage.HubIdentityStorage;
 import io.meeds.tenant.storage.HubWalletStorage;
@@ -79,6 +66,8 @@ public class HubService {
 
   private WalletAccountService  walletAccountService;
 
+  private UploadService         uploadService;
+
   private HubIdentityStorage    hubIdentityStorage;
 
   private HubWalletStorage      hubWalletStorage;
@@ -89,6 +78,7 @@ public class HubService {
                     RewardSettingsService rewardSettingsService,
                     RewardReportService rewardReportService,
                     OrganizationService organizationService,
+                    UploadService uploadService,
                     WoMServiceClient womServiceClient,
                     HubIdentityStorage hubIdentityStorage,
                     HubWalletStorage hubWalletStorage) {
@@ -96,44 +86,43 @@ public class HubService {
     this.walletAccountService = walletAccountService;
     this.rewardSettingsService = rewardSettingsService;
     this.organizationService = organizationService;
+    this.uploadService = uploadService;
     this.rewardReportService = rewardReportService;
     this.hubIdentityStorage = hubIdentityStorage;
     this.hubWalletStorage = hubWalletStorage;
   }
 
-  public long getDeedId() {
-    String deedId = hubIdentityStorage.getHubProperty(DEED_ID);
-    return StringUtils.isBlank(deedId) ? -1 : Long.parseLong(deedId);
+  public Hub getHub() {
+    return hubIdentityStorage.getHub();
   }
 
   public boolean isDeedHub() {
-    return getDeedId() > -1;
+    return getHub() != null;
+  }
+
+  public long getDeedId() {
+    Hub hub = getHub();
+    return hub == null ? -1 : hub.getDeedId();
   }
 
   public short getDeedCity() {
-    if (isDeedHub()) {
-      String city = hubIdentityStorage.getHubProperty(DEED_CITY);
-      return StringUtils.isBlank(city) ? -1 : Short.parseShort(city);
-    } else {
-      return -1;
-    }
+    return isDeedHub() ? getHub().getCity() : null;
   }
 
   public short getDeedType() {
-    if (isDeedHub()) {
-      String type = hubIdentityStorage.getHubProperty(DEED_TYPE);
-      return StringUtils.isBlank(type) ? -1 : Short.parseShort(type);
-    } else {
-      return -1;
-    }
+    return isDeedHub() ? getHub().getType() : null;
   }
 
   public String getDeedManager() {
-    if (isDeedHub()) {
-      return hubIdentityStorage.getHubProperty(DEED_MANAGER_ADDRESS);
-    } else {
-      return null;
-    }
+    return isDeedHub() ? getHub().getDeedManagerAddress() : null;
+  }
+
+  public String getHubAddress() {
+    return isDeedHub() ? getHub().getAddress() : null;
+  }
+
+  public Instant getHubJoinDate() {
+    return isDeedHub() ? getHub().getCreatedDate() : null;
   }
 
   public boolean isDeedManager(String address, long nftId) throws WomException {
@@ -144,59 +133,21 @@ public class HubService {
     }
   }
 
-  public String getHubAddress() {
-    return hubIdentityStorage.getHubProperty(ADDRESS);
-  }
-
-  public Instant getHubJoinDate() {
-    String joinDate = hubIdentityStorage.getHubProperty(JOIN_DATE);
-    return StringUtils.isBlank(joinDate) ? null : Instant.ofEpochMilli(Long.parseLong(joinDate));
-  }
-
   public Hub getHub(long nftId) throws WomException {
     return womServiceClient.getHub(nftId);
   }
 
-  public Hub getHub() {
-    Profile hubProfile = hubIdentityStorage.getHubProfile();
-    if (!isDeedHub() || hubProfile == null) {
-      return null;
-    }
-    String deedId = (String) hubProfile.getProperty(DEED_ID);
-    String city = (String) hubProfile.getProperty(DEED_CITY);
-    String type = (String) hubProfile.getProperty(DEED_TYPE);
-    String address = (String) hubProfile.getProperty(ADDRESS);
-    String name = (String) hubProfile.getProperty(NAME);
-    String description = (String) hubProfile.getProperty(DESCRIPTION);
-    String url = (String) hubProfile.getProperty(URL);
-    String logoUrl = (String) hubProfile.getProperty(LOGO_URL);
-    String color = (String) hubProfile.getProperty(COLOR);
-    String earnerAddress = (String) hubProfile.getProperty(EARNER_ADDRESS);
-    String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
-    String joinDateMillis = (String) hubProfile.getProperty(JOIN_DATE);
-    Instant joinDate = Instant.ofEpochMilli(Long.parseLong(joinDateMillis));
-
-    HubLocalInfo hub = new HubLocalInfo(Long.parseLong(deedId),
-                                  Short.parseShort(city),
-                                  Short.parseShort(type),
-                                  address,
-                                  name,
-                                  description,
-                                  url,
-                                  logoUrl,
-                                  color,
-                                  deedManagerAddress,
-                                  earnerAddress,
-                                  joinDate);
-    computeRewardingInfo(hub);
-    computeUsersCount(hub);
-    return hub;
+  public String generateWoMToken() throws WomException {
+    return womServiceClient.generateToken();
   }
 
-  public HubConfiguration getConfiguration() throws WomException {
+  public HubConfiguration getConfiguration() {
     HubConfiguration deedTenantConfiguration = new HubConfiguration();
-    deedTenantConfiguration.setToken(womServiceClient.generateToken());
     deedTenantConfiguration.setAdminWallet(walletAccountService.getAdminWallet().getAddress());
+    deedTenantConfiguration.setUsersCount(computeUsersCount());
+    deedTenantConfiguration.setRewardsPeriodType(getRewardsPeriodType().name());
+    deedTenantConfiguration.setRewardsPerPeriod(getRewardsForPeriod(LocalDate.now()));
+    deedTenantConfiguration.setWomServerUrl(womServiceClient.getWomUrl());
     return deedTenantConfiguration;
   }
 
@@ -223,6 +174,44 @@ public class HubService {
     }
   }
 
+  public void saveHubAvatar(String uploadId,
+                            String signedMessage,
+                            String rawMessage,
+                            String token) throws ObjectNotFoundException, WomException, IOException {
+    UploadResource uploadResource = uploadService.getUploadResource(uploadId);
+    if (uploadResource == null) {
+      throw new ObjectNotFoundException("wom.uploadedFileNotFound");
+    }
+    String hubAddress = getHubAddress();
+    if (StringUtils.isBlank(hubAddress)) {
+      throw new WomException("wom.notConnected");
+    }
+    womServiceClient.saveHubAvatar(hubAddress,
+                                   signedMessage,
+                                   rawMessage,
+                                   token,
+                                   uploadResource);
+  }
+
+  public void saveHubBanner(String uploadId,
+                            String signedMessage,
+                            String rawMessage,
+                            String token) throws ObjectNotFoundException, WomException, IOException {
+    UploadResource uploadResource = uploadService.getUploadResource(uploadId);
+    if (uploadResource == null) {
+      throw new ObjectNotFoundException("wom.uploadedFileNotFound");
+    }
+    String hubAddress = getHubAddress();
+    if (StringUtils.isBlank(hubAddress)) {
+      throw new WomException("wom.notConnected");
+    }
+    womServiceClient.saveHubBanner(hubAddress,
+                                   signedMessage,
+                                   rawMessage,
+                                   token,
+                                   uploadResource);
+  }
+
   public String signHubMessage(Object object) throws WomException {
     String rawRequest = toJsonString(object);
     byte[] encodedRequest = rawRequest.getBytes(StandardCharsets.UTF_8);
@@ -234,33 +223,26 @@ public class HubService {
     return Numeric.toHexString(retval);
   }
 
-  private void computeRewardingInfo(HubLocalInfo hubStatus) {
-    try {
-      RewardSettings settings = rewardSettingsService.getSettings();
-      hubStatus.setRewardsPeriod(settings.getPeriodType());
-      List<RewardPeriod> rewardPeriodsInProgress = rewardReportService.getRewardPeriodsInProgress();
-      if (CollectionUtils.isNotEmpty(rewardPeriodsInProgress)) {
-        RewardPeriod rewardPeriod = rewardPeriodsInProgress.get(rewardPeriodsInProgress.size() - 1);
-        RewardReport rewardReport = rewardReportService.getRewardReport(rewardPeriod.getPeriodMedianDate());
-        if (rewardReport != null) {
-          hubStatus.setRewardsAmount(rewardReport.getTokensToSend());
-        }
-      } else {
-        RewardReport rewardReport = rewardReportService.computeRewards(LocalDate.now(ZoneId.of(settings.getTimeZone())));
-        if (rewardReport != null) {
-          hubStatus.setRewardsAmount(rewardReport.getTokensToSend());
-        }
-      }
-    } catch (Exception e) {
-      LOG.warn("Error computing Hub rewarding information, retrieve already computed data", e);
+  private RewardPeriodType getRewardsPeriodType() {
+    RewardSettings settings = rewardSettingsService.getSettings();
+    return settings.getPeriodType();
+  }
+
+  private double getRewardsForPeriod(LocalDate date) {
+    RewardReport rewardReport = rewardReportService.computeRewards(date);
+    if (rewardReport != null) {
+      return rewardReport.getTokensToSend();
+    } else {
+      return 0;
     }
   }
 
-  private void computeUsersCount(HubLocalInfo hubStatus) {
+  private long computeUsersCount() {
     try {
-      hubStatus.setUsersCount(organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize());
+      return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
     } catch (Exception e) {
       LOG.warn("Error computing Hub users count information, retrieve already computed data", e);
+      return 0;
     }
   }
 
