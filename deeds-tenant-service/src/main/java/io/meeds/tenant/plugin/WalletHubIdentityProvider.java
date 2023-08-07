@@ -32,6 +32,8 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
   public static final String JOIN_DATE              = "HUB_JOIN_DATE";
 
+  public static final String UPDATED_DATE           = "HUB_UPDATED_DATE";
+
   public static final String WALLET                 = "HUB_WALLET";
 
   public static final String NAME                   = "HUB_NAME";
@@ -39,8 +41,6 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
   public static final String DESCRIPTION            = "HUB_DESCRIPTION";
 
   public static final String URL                    = "HUB_URL";
-
-  public static final String LOGO_URL               = "HUB_LOGO_URL";
 
   public static final String COLOR                  = "HUB_COLOR";
 
@@ -53,6 +53,12 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
   public static final String DEED_TYPE              = "HUB_TYPE";
 
   public static final String DEED_MANAGER_ADDRESS   = "HUB_MANAGER_ADDRESS";
+
+  public static final String REWARD_PERIOD_TYPE     = "HUB_PERIOD_TYPE";
+
+  public static final String REWARD_AMOUNT          = "HUB_REWARDS_AMOUNT";
+
+  public static final String USERS_COUNT            = "HUB_USERS_COUNT";
 
   @Override
   public String getName() {

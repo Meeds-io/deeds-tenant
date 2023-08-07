@@ -26,8 +26,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HubConfiguration {
 
-  private String token;
-
   private String adminWallet;
+
+  private long   usersCount;
+
+  private String rewardsPeriodType;
+
+  private double rewardsPerPeriod;
+
+  private String womServerUrl;
 
 }

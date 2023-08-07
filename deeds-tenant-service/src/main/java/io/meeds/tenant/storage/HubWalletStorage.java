@@ -37,6 +37,7 @@ import org.exoplatform.web.security.security.TokenServiceInitializationException
 
 import io.meeds.deeds.constant.WomException;
 import io.meeds.deeds.constant.WomParsingException;
+import io.meeds.deeds.model.Hub;
 
 @Component
 public class HubWalletStorage {
@@ -56,7 +57,7 @@ public class HubWalletStorage {
   }
 
   public String getOrCreateHubAddress(String hubPrivateKey) throws WomException {
-    String hubAddress = hubIdentityStorage.getHubProperty(ADDRESS);
+    String hubAddress = hubIdentityStorage.getHubAddress();
     if (StringUtils.startsWith(hubAddress, "0x")) {
       return hubAddress;
     } else {
@@ -65,7 +66,7 @@ public class HubWalletStorage {
   }
 
   public ECKeyPair getHubWallet() throws WomException {
-    String hubWalletString = hubIdentityStorage.getHubProperty(WALLET);
+    String hubWalletString = hubIdentityStorage.getHubWallet();
     try {
       hubWalletString = codecInitializer.getCodec().decode(hubWalletString);
       WalletFile hubWallet = fromJsonString(hubWalletString, WalletFile.class);
@@ -107,12 +108,11 @@ public class HubWalletStorage {
     WalletFile hubWalletFile = org.web3j.crypto.Wallet.createStandard(walletPassword, ecKeyPair);
     String walletFileJson = toJsonString(hubWalletFile);
     walletFileJson = codecInitializer.getCodec().encode(walletFileJson);
-    hubIdentityStorage.saveHubProperty(WALLET, walletFileJson);
     String address = hubWalletFile.getAddress();
     if (!StringUtils.startsWith(address, "0x")) {
       address = "0x" + address;
     }
-    hubIdentityStorage.saveHubProperty(ADDRESS, StringUtils.lowerCase(address));
+    hubIdentityStorage.saveHubWallet(address, walletFileJson);
     return address;
   }
 
