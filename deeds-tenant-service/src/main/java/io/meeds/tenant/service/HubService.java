@@ -113,7 +113,7 @@ public class HubService {
   }
 
   public String getHubAddress() {
-    return isDeedHub() ? getHub().getAddress() : null;
+    return hubIdentityStorage.getHubAddress();
   }
 
   public Instant getHubJoinDate() {
@@ -139,6 +139,7 @@ public class HubService {
   public HubConfiguration getConfiguration() {
     HubConfiguration deedTenantConfiguration = new HubConfiguration();
     deedTenantConfiguration.setAdminWallet(walletAccountService.getAdminWallet().getAddress());
+    deedTenantConfiguration.setHubAddress(getHubAddress());
     deedTenantConfiguration.setUsersCount(computeUsersCount());
     deedTenantConfiguration.setRewardsPeriodType(getRewardsPeriodType().name());
     deedTenantConfiguration.setRewardsPerPeriod(getRewardsForPeriod(LocalDate.now()));

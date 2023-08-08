@@ -9,7 +9,10 @@
       offset-y>
       <template #activator="{ on, attrs }">
         <v-btn
+          :href="womReportUrl"
           :color="color"
+          target="_blank"
+          rel="nofollow noreferrer noopener"
           outlined
           icon
           small
@@ -42,6 +45,14 @@ export default {
     menu: false,
   }),
   computed: {
+    womReportUrl() {
+      const womServerUrl = this.$root?.configuration?.womServerUrl;
+      const reportHash = this.report?.hash;
+      if (!womServerUrl || !reportHash) {
+        return null;
+      }
+      return `${womServerUrl}/hubs?report=${reportHash}`;
+    },
     hub() {
       return this.$root.hub;
     },
