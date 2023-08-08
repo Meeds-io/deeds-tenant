@@ -152,7 +152,9 @@ public class HubReportService {
         throw new WomException("wom.notSentReward");
       }
       HubRewardReportStatus rewardReportStatus = womServiceClient.getRewardReportStatus(hash);
-      if (rewardReportStatus == null) {
+      if (rewardReportStatus == null
+          || rewardReportStatus.getHubRewardReport() == null
+          || !StringUtils.equalsIgnoreCase(rewardReportStatus.getHubRewardReport().getHubAddress(), hubService.getHubAddress())) {
         hubReportStorage.cleanRewardPeriodHash(periodId);
         hubReportStorage.cleanRewardPeriodStatus(periodId);
         throw new WomException("wom.rewardNotFoundInWom");
