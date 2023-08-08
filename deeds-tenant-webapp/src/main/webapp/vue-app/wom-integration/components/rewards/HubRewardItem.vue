@@ -194,13 +194,17 @@ export default {
     },
     refresh() {
       this.loading = true;
-      return this.$hubReportService.refreshReport(this.report?.id)
+      return this.$hubReportService.getReport(this.report?.id, true)
         .then(report => this.$emit('refresh', report))
         .then(() => this.$root.$emit('alert-message', this.$t('wom.reportRefreshedSuccessfully'), 'success'))
         .catch(e => {
           const error = (e?.cause || String(e));
           const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1]}` || error;
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
+
+          return this.$hubReportService.getReport(this.report?.id)
+            .then(report => this.$emit('refresh', report))
+            .catch(() => this.$emit('report-not-found', this.report?.id));
         })
         .finally(() => this.loading = false);
     },
