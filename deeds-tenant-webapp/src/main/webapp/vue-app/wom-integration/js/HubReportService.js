@@ -31,6 +31,21 @@ export function getReports(offset, limit) {
   });
 }
 
+export function getReport(id, refreshFromWoM) {
+  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/reports/${id}?refresh=${refreshFromWoM || false}`, {
+    method: 'GET',
+    credentials: 'include',
+  }).then((resp) => {
+    if (resp?.status === 200) {
+      return resp.json();
+    } else if (resp?.status === 404) {
+      return null;
+    } else {
+      return handleResponseError(resp);
+    }
+  });
+}
+
 export function getLocalRewardDetails(date) {
   return fetch(`/portal/rest/wallet/api/reward/compute?date=${date}`, {
     method: 'GET',
@@ -57,21 +72,6 @@ export function getLocalRewardDetails(date) {
 export function sendReport(id) {
   return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/reports/${id}`, {
     method: 'PUT',
-    credentials: 'include',
-  }).then((resp) => {
-    if (resp?.status === 200) {
-      return resp.json();
-    } else if (resp?.status === 404) {
-      return null;
-    } else {
-      return handleResponseError(resp);
-    }
-  });
-}
-
-export function refreshReport(id) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/reports/${id}?refresh=true`, {
-    method: 'GET',
     credentials: 'include',
   }).then((resp) => {
     if (resp?.status === 200) {

@@ -28,6 +28,8 @@ public class HubConfiguration {
 
   private String adminWallet;
 
+  private String hubAddress;
+
   private long   usersCount;
 
   private String rewardsPeriodType;
