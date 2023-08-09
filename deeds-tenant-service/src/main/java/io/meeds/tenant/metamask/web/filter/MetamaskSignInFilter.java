@@ -31,8 +31,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.gatein.wci.security.Credentials;
-
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
@@ -133,7 +131,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
             request.getSession().setAttribute(PASSWORD_REQUEST_PARAM, getCompoundPassword(request));
             request.getSession().setAttribute(ExternalRegisterHandler.REQUIRE_EMAIL_VALIDATION, "true");
 
-            String tokenId = remindPasswordTokenService.createToken(new Credentials(walletAddress, password),
+            String tokenId = remindPasswordTokenService.createToken(walletAddress,
                                                                     EXTERNAL_REGISTRATION_TOKEN);
 
             String path = servletContext.getContextPath() + "/external-registration?token=" + tokenId;
