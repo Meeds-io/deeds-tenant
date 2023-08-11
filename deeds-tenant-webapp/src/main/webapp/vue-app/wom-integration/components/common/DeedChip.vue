@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     deedId() {
-      return this.deed?.nftId;
+      return this.deed?.nftId || this.deed?.deedId;
     },
     cityIndex() {
       return this.deed?.city;
