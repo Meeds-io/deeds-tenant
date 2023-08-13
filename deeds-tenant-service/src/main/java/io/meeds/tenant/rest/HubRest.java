@@ -17,7 +17,7 @@
  */
 package io.meeds.tenant.rest;
 
-import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
 
 import java.io.IOException;
 
@@ -40,11 +40,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.constant.WomParsingException;
-import io.meeds.deeds.model.Hub;
-import io.meeds.deeds.model.WomConnectionRequest;
-import io.meeds.deeds.model.WomDisconnectionRequest;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.constant.WomParsingException;
+import io.meeds.deeds.api.model.Hub;
+import io.meeds.deeds.api.model.WomConnectionRequest;
+import io.meeds.deeds.api.model.WomDisconnectionRequest;
 import io.meeds.tenant.service.HubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

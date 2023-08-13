@@ -17,15 +17,14 @@
  */
 package io.meeds.tenant.rest.client;
 
-import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
-import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
-<<<<<<< HEAD
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -45,20 +44,18 @@ import org.springframework.stereotype.Component;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-=======
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import org.exoplatform.upload.UploadResource;
->>>>>>> 9b8a0f3 (fix: Add Hub name and description translation with avatar and banner upload capability  - MEED-2392 - Meeds-io/MIPs#58)
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.model.Hub;
-import io.meeds.deeds.model.HubRewardReportRequest;
-import io.meeds.deeds.model.HubRewardReportStatus;
-import io.meeds.deeds.model.WomConnectionRequest;
-import io.meeds.deeds.model.WomDisconnectionRequest;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.model.Hub;
+import io.meeds.deeds.api.model.HubReportRequest;
+import io.meeds.deeds.api.model.HubReport;
+import io.meeds.deeds.api.model.WomConnectionRequest;
+import io.meeds.deeds.api.model.WomDisconnectionRequest;
 
 @Component
 public class WoMServiceClient {
@@ -118,14 +115,14 @@ public class WoMServiceClient {
     return womConnectionService.processDelete(getWoMDisonnectionUri(), toJsonString(disconnectionRequest));
   }
 
-  public HubRewardReportStatus sendReportToWoM(HubRewardReportRequest hubRewardReportRequest) throws WomException {
-    String responseText = womConnectionService.processPost(getWoMRewardReportUri(), toJsonString(hubRewardReportRequest));
-    return fromJsonString(responseText, HubRewardReportStatus.class);
+  public HubReport sendReport(HubReportRequest reportRequest) throws WomException {
+    String responseText = womConnectionService.processPost(getWoMReportUri(), toJsonString(reportRequest));
+    return fromJsonString(responseText, HubReport.class);
   }
 
-  public HubRewardReportStatus getRewardReportStatus(String hash) throws WomException {
-    String responseText = womConnectionService.processGet(getWoMRewardReportUri(hash));
-    return fromJsonString(responseText, HubRewardReportStatus.class);
+  public HubReport retrieveReport(String hash) throws WomException {
+    String responseText = womConnectionService.processGet(getWoMReportUri(hash));
+    return fromJsonString(responseText, HubReport.class);
   }
 
   public void saveHubAvatar(String hubAddress,
@@ -187,13 +184,13 @@ public class WoMServiceClient {
                          .replace(":/", "://"));
   }
 
-  private URI getWoMRewardReportUri() {
+  private URI getWoMReportUri() {
     String uri = WOM_URL + WOM_REWARD_REPORT_URI;
     return URI.create(uri.replace("//", "/")
                          .replace(":/", "://"));
   }
 
-  private URI getWoMRewardReportUri(String hash) {
+  private URI getWoMReportUri(String hash) {
     String uri = WOM_URL + WOM_REWARD_REPORT_BY_HASH_URI;
     return URI.create(uri.replace("//", "/")
                          .replace(":/", "://")

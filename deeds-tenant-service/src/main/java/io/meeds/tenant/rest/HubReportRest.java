@@ -17,7 +17,7 @@
  */
 package io.meeds.tenant.rest;
 
-import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
 
 import java.util.List;
 
@@ -36,9 +36,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.constant.WomParsingException;
-import io.meeds.tenant.model.HubRewardReportLocalStatus;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.constant.WomParsingException;
+import io.meeds.tenant.model.HubReportLocalStatus;
 import io.meeds.tenant.service.HubReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -79,8 +79,8 @@ public class HubReportRest implements ResourceContainer {
     if (limit < 0) {
       return Response.status(Status.BAD_REQUEST).entity("Limit must be strictly positive").build();
     }
-    List<HubRewardReportLocalStatus> hubRewardReports = hubReportService.getHubRewardReports(offset, limit);
-    return Response.ok(toJsonString(hubRewardReports)).build();
+    List<HubReportLocalStatus> reports = hubReportService.getReports(offset, limit);
+    return Response.ok(toJsonString(reports)).build();
   }
 
   @GET
@@ -100,8 +100,8 @@ public class HubReportRest implements ResourceContainer {
                             @QueryParam("refresh")
                             boolean refresh) throws WomParsingException {
     try {
-      HubRewardReportLocalStatus hubRewardReport = hubReportService.getHubRewardReport(periodId, refresh);
-      return Response.ok(toJsonString(hubRewardReport)).build();
+      HubReportLocalStatus report = hubReportService.getReport(periodId, refresh);
+      return Response.ok(toJsonString(report)).build();
     } catch (WomException e) {
       LOG.debug("Error communicating with WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
@@ -122,8 +122,8 @@ public class HubReportRest implements ResourceContainer {
                                   @PathParam("periodId")
                                   long periodId) {
     try {
-      HubRewardReportLocalStatus hubRewardReport = hubReportService.sendReportToWoM(periodId);
-      return Response.ok(toJsonString(hubRewardReport)).build();
+      HubReportLocalStatus report = hubReportService.sendReport(periodId);
+      return Response.ok(toJsonString(report)).build();
     } catch (WomException e) {
       LOG.debug("Error communicating with WoM Server", e);
       return Response.status(Status.SERVICE_UNAVAILABLE).entity(e.getMessage()).build();
