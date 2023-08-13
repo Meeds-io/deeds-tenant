@@ -401,9 +401,9 @@ export default {
       this.$hubService.connectToWoM({
         deedId: this.deedId,
         deedManagerAddress: this.deedManagerAddress,
-        hubName: this.hubNameTranslations,
-        hubDescription: this.hubDescriptionTranslations,
-        hubUrl: this.hubUrl,
+        name: this.hubNameTranslations,
+        description: this.hubDescriptionTranslations,
+        url: this.hubUrl,
         color: this.hubColor,
         earnerAddress: this.earnerAddress,
         usersCount: this.$root?.configuration?.usersCount,
