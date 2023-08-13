@@ -84,7 +84,7 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title :title="$t('wom.usersRewardAmount')">{{ $t('wom.usersRewardAmount') }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ rewardAmount }} Ɱ</v-list-item-subtitle>
+                  <v-list-item-subtitle>{{ hubRewardAmount }} Ɱ</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-col>
@@ -135,48 +135,45 @@ export default {
         }
       } || {};
     },
-    hubRewardReport() {
-      return this.report?.hubRewardReport;
-    },
     fromDate() {
-      return this.hubRewardReport?.fromDate;
+      return this.report?.fromDate;
     },
     toDate() {
-      return this.hubRewardReport?.toDate;
+      return this.report?.toDate;
     },
     participantsCount() {
       return new Intl.NumberFormat(eXo.env.portal.language, {
         style: 'decimal',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(this.hubRewardReport?.participantsCount || 0);
+      }).format(this.report?.participantsCount || 0);
     },
     recipientsCount() {
       return new Intl.NumberFormat(eXo.env.portal.language, {
         style: 'decimal',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(this.hubRewardReport?.recipientsCount || 0);
+      }).format(this.report?.recipientsCount || 0);
     },
     achievementsCount() {
       return new Intl.NumberFormat(eXo.env.portal.language, {
         style: 'decimal',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(this.hubRewardReport?.achievementsCount || 0);
+      }).format(this.report?.achievementsCount || 0);
     },
-    rewardAmount() {
+    hubRewardAmount() {
       return new Intl.NumberFormat(eXo.env.portal.language, {
         style: 'decimal',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-      }).format(this.hubRewardReport?.rewardAmount || 0);
+      }).format(this.report?.hubRewardAmount || 0);
     },
     blockchainNetworkId() {
-      return this.hubRewardReport?.rewardTokenNetworkId || 0;
+      return this.report?.rewardTokenNetworkId || 0;
     },
     tokenAddress() {
-      return this.hubRewardReport?.rewardTokenAddress || 0;
+      return this.report?.rewardTokenAddress || 0;
     },
   },
   methods: {

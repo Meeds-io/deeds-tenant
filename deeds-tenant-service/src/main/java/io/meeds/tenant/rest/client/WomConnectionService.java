@@ -17,7 +17,7 @@
  */
 package io.meeds.tenant.rest.client;
 
-import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,8 +48,8 @@ import org.apache.http.protocol.HTTP;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.model.WomErrorMessage;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.model.WomErrorMessage;
 
 public class WomConnectionService {
 

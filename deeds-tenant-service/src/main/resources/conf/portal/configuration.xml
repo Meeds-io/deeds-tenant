@@ -150,7 +150,7 @@
     <component-plugin>
       <name>exo.wallet.reward.report.success</name>
       <set-method>addListener</set-method>
-      <type>io.meeds.tenant.listener.HubRewardReportListener</type>
+      <type>io.meeds.tenant.listener.HubReportListener</type>
     </component-plugin>
   </external-component-plugins>
 

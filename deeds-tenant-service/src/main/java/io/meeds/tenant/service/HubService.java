@@ -16,12 +16,11 @@
  */
 package io.meeds.tenant.service;
 
-import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.web3j.crypto.Sign;
@@ -35,16 +34,14 @@ import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.upload.UploadResource;
 import org.exoplatform.upload.UploadService;
 import org.exoplatform.wallet.model.reward.RewardPeriodType;
-import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.model.reward.RewardSettings;
-import org.exoplatform.wallet.reward.service.RewardReportService;
 import org.exoplatform.wallet.reward.service.RewardSettingsService;
 import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.model.Hub;
-import io.meeds.deeds.model.WomConnectionRequest;
-import io.meeds.deeds.model.WomDisconnectionRequest;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.model.Hub;
+import io.meeds.deeds.api.model.WomConnectionRequest;
+import io.meeds.deeds.api.model.WomDisconnectionRequest;
 import io.meeds.tenant.model.HubConfiguration;
 import io.meeds.tenant.rest.client.WoMServiceClient;
 import io.meeds.tenant.storage.HubIdentityStorage;
@@ -62,8 +59,6 @@ public class HubService {
 
   private RewardSettingsService rewardSettingsService;
 
-  private RewardReportService   rewardReportService;
-
   private WalletAccountService  walletAccountService;
 
   private UploadService         uploadService;
@@ -74,20 +69,18 @@ public class HubService {
 
   private WoMServiceClient      womServiceClient;
 
-  public HubService(WalletAccountService walletAccountService, // NOSONAR
+  public HubService(WalletAccountService walletAccountService,
                     RewardSettingsService rewardSettingsService,
-                    RewardReportService rewardReportService,
                     OrganizationService organizationService,
                     UploadService uploadService,
                     WoMServiceClient womServiceClient,
                     HubIdentityStorage hubIdentityStorage,
                     HubWalletStorage hubWalletStorage) {
-    this.womServiceClient = womServiceClient;
     this.walletAccountService = walletAccountService;
     this.rewardSettingsService = rewardSettingsService;
     this.organizationService = organizationService;
     this.uploadService = uploadService;
-    this.rewardReportService = rewardReportService;
+    this.womServiceClient = womServiceClient;
     this.hubIdentityStorage = hubIdentityStorage;
     this.hubWalletStorage = hubWalletStorage;
   }
@@ -147,7 +140,6 @@ public class HubService {
     deedTenantConfiguration.setHubAddress(getHubAddress());
     deedTenantConfiguration.setUsersCount(computeUsersCount());
     deedTenantConfiguration.setRewardsPeriodType(getRewardsPeriodType().name());
-    deedTenantConfiguration.setRewardsPerPeriod(getRewardsForPeriod(LocalDate.now()));
     deedTenantConfiguration.setWomServerUrl(womServiceClient.getWomUrl());
     return deedTenantConfiguration;
   }
@@ -155,7 +147,7 @@ public class HubService {
   public String connectToWoM(WomConnectionRequest connectionRequest) throws WomException {
     try {
       String hubAddress = hubWalletStorage.getOrCreateHubAddress(null);
-      connectionRequest.setHubAddress(hubAddress);
+      connectionRequest.setAddress(hubAddress);
       womServiceClient.connectToWoM(connectionRequest);
       return hubAddress;
     } finally {
@@ -213,6 +205,15 @@ public class HubService {
                                    uploadResource);
   }
 
+  public long computeUsersCount() {
+    try {
+      return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
+    } catch (Exception e) {
+      LOG.warn("Error computing Hub users count information, retrieve already computed data", e);
+      return 0;
+    }
+  }
+
   public String signHubMessage(Object object) throws WomException {
     String rawRequest = toJsonString(object);
     byte[] encodedRequest = rawRequest.getBytes(StandardCharsets.UTF_8);
@@ -227,24 +228,6 @@ public class HubService {
   private RewardPeriodType getRewardsPeriodType() {
     RewardSettings settings = rewardSettingsService.getSettings();
     return settings.getPeriodType();
-  }
-
-  private double getRewardsForPeriod(LocalDate date) {
-    RewardReport rewardReport = rewardReportService.computeRewards(date);
-    if (rewardReport != null) {
-      return rewardReport.getTokensToSend();
-    } else {
-      return 0;
-    }
-  }
-
-  private long computeUsersCount() {
-    try {
-      return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
-    } catch (Exception e) {
-      LOG.warn("Error computing Hub users count information, retrieve already computed data", e);
-      return 0;
-    }
   }
 
 }
