@@ -20,9 +20,7 @@ package io.meeds.tenant.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.meeds.deeds.constant.HubRewardReportStatusType;
-import io.meeds.deeds.model.HubRewardReport;
-import io.meeds.deeds.model.HubRewardReportStatus;
+import io.meeds.deeds.api.model.HubReport;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -31,7 +29,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonInclude(value = Include.NON_EMPTY)
-public class HubRewardReportLocalStatus extends HubRewardReportStatus {
+public class HubReportLocalStatus extends HubReport {
 
   private long    id;
 
@@ -39,28 +37,24 @@ public class HubRewardReportLocalStatus extends HubRewardReportStatus {
 
   private boolean canSend;
 
-  public HubRewardReportLocalStatus(long id,
-                                    String hash,
-                                    HubRewardReport hubRewardReport,
-                                    HubRewardReportStatusType status,
-                                    String error,
-                                    boolean canRefresh,
-                                    boolean canSend) {
-    super(hash, hubRewardReport, status, error);
-    this.id = id;
-    this.canRefresh = canRefresh;
-    this.canSend = canSend;
-  }
+  public HubReportLocalStatus(HubReport report,
+                              long id,
+                              boolean canRefresh,
+                              boolean canSend) {
+    super(report);
+    this.setHash(report.getHash());
+    this.setSignature(report.getSignature());
+    this.setEarnerAddress(report.getEarnerAddress());
+    this.setDeedManagerAddress(report.getDeedManagerAddress());
+    this.setStatus(report.getStatus());
+    this.setError(report.getError());
+    this.setSentDate(report.getSentDate());
+    this.setUemRewardIndex(report.getUemRewardIndex());
+    this.setUemRewardAmount(report.getUemRewardAmount());
+    this.setLastPeriodUemRewardAmount(report.getLastPeriodUemRewardAmount());
+    this.setRewardId(report.getRewardId());
+    this.setRewardHash(report.getRewardHash());
 
-  public HubRewardReportLocalStatus(HubRewardReportStatus report,
-                                    long id,
-                                    boolean canRefresh,
-                                    boolean canSend) {
-    super(report.getHash(),
-          report.getHubRewardReport(),
-          report.getStatus(),
-          report.getError(),
-          report.getRewardPayment());
     this.id = id;
     this.canRefresh = canRefresh;
     this.canSend = canSend;

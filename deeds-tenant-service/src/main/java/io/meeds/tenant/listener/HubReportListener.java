@@ -26,19 +26,19 @@ import org.exoplatform.wallet.model.reward.RewardReport;
 import io.meeds.tenant.service.HubReportService;
 
 @Asynchronous
-public class HubRewardReportListener extends Listener<RewardReport, Object> {
+public class HubReportListener extends Listener<RewardReport, Object> {
 
-  private HubReportService hubReportService;
+  private HubReportService reportService;
 
-  public HubRewardReportListener(HubReportService hubReportService) {
-    this.hubReportService = hubReportService;
+  public HubReportListener(HubReportService reportService) {
+    this.reportService = reportService;
   }
 
   @Override
   @ExoTransactional
   public void onEvent(Event<RewardReport, Object> event) throws Exception {
     RewardReport rewardReport = event.getSource();
-    hubReportService.sendReportToWoM(rewardReport);
+    reportService.sendReport(rewardReport);
   }
 
 }
