@@ -17,8 +17,8 @@
  */
 package io.meeds.tenant.storage;
 
-import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
-import static io.meeds.deeds.utils.JsonUtils.toJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.ADDRESS;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.COLOR;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_CITY;
@@ -49,9 +49,9 @@ import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.constant.WomParsingException;
-import io.meeds.deeds.model.Hub;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.constant.WomParsingException;
+import io.meeds.deeds.api.model.Hub;
 import io.meeds.tenant.rest.client.WoMServiceClient;
 
 @Component
