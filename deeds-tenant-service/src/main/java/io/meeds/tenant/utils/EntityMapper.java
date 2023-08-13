@@ -21,15 +21,20 @@ import static org.exoplatform.wallet.utils.WalletUtils.getContractAddress;
 import static org.exoplatform.wallet.utils.WalletUtils.getNetworkId;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import org.exoplatform.wallet.model.reward.RewardPeriod;
 import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.model.reward.WalletReward;
 import org.exoplatform.wallet.model.transaction.TransactionDetail;
 
-import io.meeds.deeds.model.HubRewardReport;
+import io.meeds.deeds.api.model.HubReportData;
 
 public class EntityMapper {
 
@@ -37,37 +42,54 @@ public class EntityMapper {
     // Utils Class
   }
 
-  public static HubRewardReport toHubReport(RewardReport rewardReport,
-                                            String hubAddress,
-                                            long deedId,
-                                            long countParticipants,
-                                            long countAchievements) {
-    HubRewardReport hubRewardReport = new HubRewardReport();
-    hubRewardReport.setHubAddress(hubAddress);
-    hubRewardReport.setDeedId(deedId);
-    hubRewardReport.setRewardTokenAddress(getContractAddress());
-    hubRewardReport.setRewardTokenNetworkId(getNetworkId());
-
+  public static HubReportData toHubReport(RewardReport rewardReport,
+                                          String hubAddress,
+                                          long deedId,
+                                          long usersCount,
+                                          long participantsCount,
+                                          long achievementsCount) {
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
-    hubRewardReport.setFromDate(Instant.ofEpochSecond(rewardPeriod.getStartDateInSeconds()));
-    hubRewardReport.setToDate(Instant.ofEpochSecond(rewardPeriod.getEndDateInSeconds()));
-    hubRewardReport.setPeriodType(rewardPeriod.getRewardPeriodType().name());
+    long recipientsCount = rewardReport.getValidRewardCount();
+    double hubRewardAmount = rewardReport.getTokensSent();
+    Set<String> transactions = rewardReport.getValidRewards()
+                                           .stream()
+                                           .filter(Objects::nonNull)
+                                           .map(WalletReward::getTransaction)
+                                           .filter(Objects::nonNull)
+                                           .filter(TransactionDetail::isSucceeded)
+                                           .map(TransactionDetail::getHash)
+                                           .filter(Objects::nonNull)
+                                           .collect(Collectors.toSet());
 
-    hubRewardReport.setAchievementsCount(countAchievements);
-    hubRewardReport.setParticipantsCount(countParticipants);
-    hubRewardReport.setRecipientsCount(rewardReport.getValidRewardCount());
-    hubRewardReport.setRewardAmount(rewardReport.getTokensSent());
-    hubRewardReport.setTransactions(rewardReport.getValidRewards()
-                                                .stream()
-                                                .filter(Objects::nonNull)
-                                                .map(WalletReward::getTransaction)
-                                                .filter(Objects::nonNull)
-                                                .filter(TransactionDetail::isSucceeded)
-                                                .map(TransactionDetail::getHash)
-                                                .filter(Objects::nonNull)
-                                                .collect(Collectors.toSet()));
-    hubRewardReport.setSentRewardsDate(Instant.now());
-    return hubRewardReport;
+    String periodType = rewardPeriod.getRewardPeriodType().name();
+    Instant toDate = Instant.ofEpochSecond(rewardPeriod.getEndDateInSeconds());
+    Instant fromDate = Instant.ofEpochSecond(rewardPeriod.getStartDateInSeconds());
+    String rewardTokenAddress = getContractAddress();
+    long rewardTokenNetworkId = getNetworkId();
+
+    return new HubReportData(StringUtils.lowerCase(hubAddress),
+                             deedId,
+                             fromDate,
+                             toDate,
+                             periodType,
+                             usersCount,
+                             participantsCount,
+                             recipientsCount,
+                             achievementsCount,
+                             StringUtils.lowerCase(rewardTokenAddress),
+                             rewardTokenNetworkId,
+                             hubRewardAmount,
+                             lowerCase(transactions));
+  }
+
+  public static Set<String> lowerCase(Set<String> hashes) {
+    if (CollectionUtils.isEmpty(hashes)) {
+      return Collections.emptySet();
+    } else {
+      return hashes.stream()
+                   .map(StringUtils::lowerCase)
+                   .collect(Collectors.toSet());
+    }
   }
 
 }

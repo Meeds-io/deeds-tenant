@@ -17,10 +17,8 @@
  */
 package io.meeds.tenant.storage;
 
-import static io.meeds.deeds.utils.JsonUtils.fromJsonString;
-import static io.meeds.deeds.utils.JsonUtils.toJsonString;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.ADDRESS;
-import static io.meeds.tenant.plugin.WalletHubIdentityProvider.WALLET;
+import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -35,9 +33,8 @@ import org.exoplatform.wallet.service.WalletAccountService;
 import org.exoplatform.web.security.codec.CodecInitializer;
 import org.exoplatform.web.security.security.TokenServiceInitializationException;
 
-import io.meeds.deeds.constant.WomException;
-import io.meeds.deeds.constant.WomParsingException;
-import io.meeds.deeds.model.Hub;
+import io.meeds.deeds.api.constant.WomException;
+import io.meeds.deeds.api.constant.WomParsingException;
 
 @Component
 public class HubWalletStorage {
