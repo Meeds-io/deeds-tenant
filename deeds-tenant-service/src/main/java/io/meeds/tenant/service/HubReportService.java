@@ -265,6 +265,9 @@ public class HubReportService {
                                            0d,
                                            0d,
                                            0d,
+                                           0d,
+                                           0d,
+                                           0d,
                                            null,
                                            null);
     reportStatus.setReportData(report);
