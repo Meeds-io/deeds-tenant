@@ -42,18 +42,43 @@ public class HubReportLocalStatus extends HubReport {
                               boolean canRefresh,
                               boolean canSend) {
     super(report);
-    this.setHash(report.getHash());
-    this.setSignature(report.getSignature());
-    this.setEarnerAddress(report.getEarnerAddress());
-    this.setDeedManagerAddress(report.getDeedManagerAddress());
-    this.setStatus(report.getStatus());
-    this.setError(report.getError());
-    this.setSentDate(report.getSentDate());
-    this.setUemRewardIndex(report.getUemRewardIndex());
-    this.setUemRewardAmount(report.getUemRewardAmount());
-    this.setLastPeriodUemRewardAmount(report.getLastPeriodUemRewardAmount());
-    this.setRewardId(report.getRewardId());
-    this.setRewardHash(report.getRewardHash());
+    // Use @AlArgsConstructor to detect any change on model by having a
+    // compilation error when the list of attributes changes
+    HubReport reportTmp = new HubReport(report.getHash(),
+                                        report.getSignature(),
+                                        report.getEarnerAddress(),
+                                        report.getDeedManagerAddress(),
+                                        report.getStatus(),
+                                        report.getError(),
+                                        report.getSentDate(),
+                                        report.getUemRewardIndex(),
+                                        report.getUemRewardAmount(),
+                                        report.getLastPeriodUemRewardAmount(),
+                                        report.getLastPeriodUemDiff(),
+                                        report.getHubRewardAmountPerPeriod(),
+                                        report.getHubRewardLastPeriodDiff(),
+                                        report.getLastPeriodUemRewardAmountPerPeriod(),
+                                        report.getMp(),
+                                        report.getRewardId(),
+                                        report.getRewardHash());
+
+    this.setHash(reportTmp.getHash());
+    this.setSignature(reportTmp.getSignature());
+    this.setEarnerAddress(reportTmp.getEarnerAddress());
+    this.setDeedManagerAddress(reportTmp.getDeedManagerAddress());
+    this.setStatus(reportTmp.getStatus());
+    this.setError(reportTmp.getError());
+    this.setSentDate(reportTmp.getSentDate());
+    this.setUemRewardIndex(reportTmp.getUemRewardIndex());
+    this.setUemRewardAmount(reportTmp.getUemRewardAmount());
+    this.setLastPeriodUemRewardAmount(getLastPeriodUemRewardAmount());
+    this.setLastPeriodUemDiff(getLastPeriodUemDiff());
+    this.setHubRewardAmountPerPeriod(getHubRewardAmountPerPeriod());
+    this.setHubRewardLastPeriodDiff(getHubRewardLastPeriodDiff());
+    this.setLastPeriodUemRewardAmountPerPeriod(getLastPeriodUemRewardAmountPerPeriod());
+    this.setMp(getMp());
+    this.setRewardId(reportTmp.getRewardId());
+    this.setRewardHash(reportTmp.getRewardHash());
 
     this.id = id;
     this.canRefresh = canRefresh;
