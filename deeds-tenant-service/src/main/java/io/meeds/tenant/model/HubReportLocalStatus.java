@@ -17,9 +17,13 @@
  */
 package io.meeds.tenant.model;
 
+import java.time.Instant;
+import java.util.SortedSet;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import io.meeds.deeds.api.constant.HubReportStatusType;
 import io.meeds.deeds.api.model.HubReport;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -37,48 +41,71 @@ public class HubReportLocalStatus extends HubReport {
 
   private boolean canSend;
 
-  public HubReportLocalStatus(HubReport report,
-                              long id,
+  public HubReportLocalStatus(long id, // NOSONAR
                               boolean canRefresh,
-                              boolean canSend) {
-    super(report);
-    // Use @AlArgsConstructor to detect any change on model by having a
-    // compilation error when the list of attributes changes
-    HubReport reportTmp = new HubReport(report.getHash(),
-                                        report.getSignature(),
-                                        report.getEarnerAddress(),
-                                        report.getDeedManagerAddress(),
-                                        report.getStatus(),
-                                        report.getError(),
-                                        report.getSentDate(),
-                                        report.getUemRewardIndex(),
-                                        report.getUemRewardAmount(),
-                                        report.getLastPeriodUemRewardAmount(),
-                                        report.getLastPeriodUemDiff(),
-                                        report.getHubRewardAmountPerPeriod(),
-                                        report.getHubRewardLastPeriodDiff(),
-                                        report.getLastPeriodUemRewardAmountPerPeriod(),
-                                        report.getMp(),
-                                        report.getRewardId(),
-                                        report.getRewardHash());
-
-    this.setHash(reportTmp.getHash());
-    this.setSignature(reportTmp.getSignature());
-    this.setEarnerAddress(reportTmp.getEarnerAddress());
-    this.setDeedManagerAddress(reportTmp.getDeedManagerAddress());
-    this.setStatus(reportTmp.getStatus());
-    this.setError(reportTmp.getError());
-    this.setSentDate(reportTmp.getSentDate());
-    this.setUemRewardIndex(reportTmp.getUemRewardIndex());
-    this.setUemRewardAmount(reportTmp.getUemRewardAmount());
-    this.setLastPeriodUemRewardAmount(getLastPeriodUemRewardAmount());
-    this.setLastPeriodUemDiff(getLastPeriodUemDiff());
-    this.setHubRewardAmountPerPeriod(getHubRewardAmountPerPeriod());
-    this.setHubRewardLastPeriodDiff(getHubRewardLastPeriodDiff());
-    this.setLastPeriodUemRewardAmountPerPeriod(getLastPeriodUemRewardAmountPerPeriod());
-    this.setMp(getMp());
-    this.setRewardId(reportTmp.getRewardId());
-    this.setRewardHash(reportTmp.getRewardHash());
+                              boolean canSend,
+                              String hash,
+                              String signature,
+                              String hubAddress,
+                              long deedId,
+                              Instant fromDate,
+                              Instant toDate,
+                              Instant sentDate,
+                              String periodType,
+                              long usersCount,
+                              long participantsCount,
+                              long recipientsCount,
+                              long achievementsCount,
+                              String rewardTokenAddress,
+                              long rewardTokenNetworkId,
+                              double hubRewardAmount,
+                              SortedSet<String> transactions,
+                              String earnerAddress,
+                              String deedManagerAddress,
+                              HubReportStatusType status,
+                              String error,
+                              double uemRewardIndex,
+                              double uemRewardAmount,
+                              double lastPeriodUemRewardAmount,
+                              double lastPeriodUemDiff,
+                              double hubRewardAmountPerPeriod,
+                              double hubRewardLastPeriodDiff,
+                              double lastPeriodUemRewardAmountPerPeriod,
+                              double mp,
+                              String rewardId,
+                              String rewardHash,
+                              String rewardTransactionHash) {
+    super(hash,
+          signature,
+          hubAddress,
+          deedId,
+          fromDate,
+          toDate,
+          sentDate,
+          periodType,
+          usersCount,
+          participantsCount,
+          recipientsCount,
+          achievementsCount,
+          rewardTokenAddress,
+          rewardTokenNetworkId,
+          hubRewardAmount,
+          transactions,
+          earnerAddress,
+          deedManagerAddress,
+          status,
+          error,
+          uemRewardIndex,
+          uemRewardAmount,
+          lastPeriodUemRewardAmount,
+          lastPeriodUemDiff,
+          hubRewardAmountPerPeriod,
+          hubRewardLastPeriodDiff,
+          lastPeriodUemRewardAmountPerPeriod,
+          mp,
+          rewardId,
+          rewardHash,
+          rewardTransactionHash);
 
     this.id = id;
     this.canRefresh = canRefresh;
