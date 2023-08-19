@@ -52,8 +52,8 @@ import org.exoplatform.upload.UploadResource;
 
 import io.meeds.deeds.api.constant.WomException;
 import io.meeds.deeds.api.model.Hub;
-import io.meeds.deeds.api.model.HubReportRequest;
 import io.meeds.deeds.api.model.HubReport;
+import io.meeds.deeds.api.model.HubReportVerifiableData;
 import io.meeds.deeds.api.model.WomConnectionRequest;
 import io.meeds.deeds.api.model.WomDisconnectionRequest;
 
@@ -115,7 +115,7 @@ public class WoMServiceClient {
     return womConnectionService.processDelete(getWoMDisonnectionUri(), toJsonString(disconnectionRequest));
   }
 
-  public HubReport sendReport(HubReportRequest reportRequest) throws WomException {
+  public HubReport sendReport(HubReportVerifiableData reportRequest) throws WomException {
     String responseText = womConnectionService.processPost(getWoMReportUri(), toJsonString(reportRequest));
     return fromJsonString(responseText, HubReport.class);
   }

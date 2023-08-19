@@ -21,9 +21,9 @@ import static org.exoplatform.wallet.utils.WalletUtils.getContractAddress;
 import static org.exoplatform.wallet.utils.WalletUtils.getNetworkId;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Objects;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -34,7 +34,11 @@ import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.model.reward.WalletReward;
 import org.exoplatform.wallet.model.transaction.TransactionDetail;
 
-import io.meeds.deeds.api.model.HubReportData;
+import io.meeds.deeds.api.constant.HubReportStatusType;
+import io.meeds.deeds.api.model.Hub;
+import io.meeds.deeds.api.model.HubReport;
+import io.meeds.deeds.api.model.HubReportPayload;
+import io.meeds.tenant.model.HubReportLocalStatus;
 
 public class EntityMapper {
 
@@ -42,24 +46,25 @@ public class EntityMapper {
     // Utils Class
   }
 
-  public static HubReportData toHubReport(RewardReport rewardReport,
-                                          String hubAddress,
-                                          long deedId,
-                                          long usersCount,
-                                          long participantsCount,
-                                          long achievementsCount) {
+  public static HubReportPayload toHubReport(RewardReport rewardReport,
+                                             String hubAddress,
+                                             long deedId,
+                                             long usersCount,
+                                             long participantsCount,
+                                             long achievementsCount,
+                                             Instant sentDate) {
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
     long recipientsCount = rewardReport.getValidRewardCount();
     double hubRewardAmount = rewardReport.getTokensSent();
-    Set<String> transactions = rewardReport.getValidRewards()
-                                           .stream()
-                                           .filter(Objects::nonNull)
-                                           .map(WalletReward::getTransaction)
-                                           .filter(Objects::nonNull)
-                                           .filter(TransactionDetail::isSucceeded)
-                                           .map(TransactionDetail::getHash)
-                                           .filter(Objects::nonNull)
-                                           .collect(Collectors.toSet());
+    SortedSet<String> transactions = rewardReport.getValidRewards()
+                                                 .stream()
+                                                 .filter(Objects::nonNull)
+                                                 .map(WalletReward::getTransaction)
+                                                 .filter(Objects::nonNull)
+                                                 .filter(TransactionDetail::isSucceeded)
+                                                 .map(TransactionDetail::getHash)
+                                                 .filter(Objects::nonNull)
+                                                 .collect(Collectors.toCollection(TreeSet::new));
 
     String periodType = rewardPeriod.getRewardPeriodType().name();
     Instant toDate = Instant.ofEpochSecond(rewardPeriod.getEndDateInSeconds());
@@ -67,28 +72,114 @@ public class EntityMapper {
     String rewardTokenAddress = getContractAddress();
     long rewardTokenNetworkId = getNetworkId();
 
-    return new HubReportData(StringUtils.lowerCase(hubAddress),
-                             deedId,
-                             fromDate,
-                             toDate,
-                             periodType,
-                             usersCount,
-                             participantsCount,
-                             recipientsCount,
-                             achievementsCount,
-                             StringUtils.lowerCase(rewardTokenAddress),
-                             rewardTokenNetworkId,
-                             hubRewardAmount,
-                             lowerCase(transactions));
+    return new HubReportPayload(StringUtils.lowerCase(hubAddress),
+                                deedId,
+                                fromDate,
+                                toDate,
+                                sentDate,
+                                periodType,
+                                usersCount,
+                                participantsCount,
+                                recipientsCount,
+                                achievementsCount,
+                                StringUtils.lowerCase(rewardTokenAddress),
+                                rewardTokenNetworkId,
+                                hubRewardAmount,
+                                lowerCase(transactions));
   }
 
-  public static Set<String> lowerCase(Set<String> hashes) {
+  public static HubReportLocalStatus toHubLocalReport(HubReportPayload reportData, // NOSONAR
+                                                      Hub hub,
+                                                      long id,
+                                                      String hash,
+                                                      boolean canRefresh,
+                                                      boolean canSend, HubReportStatusType statusType,
+                                                      String errorMessageKey) {
+    return new HubReportLocalStatus(id,
+                                    canRefresh,
+                                    canSend,
+                                    hash,
+                                    null,
+                                    reportData.getHubAddress(),
+                                    reportData.getDeedId(),
+                                    reportData.getFromDate(),
+                                    reportData.getToDate(),
+                                    reportData.getSentDate(),
+                                    reportData.getPeriodType(),
+                                    reportData.getUsersCount(),
+                                    reportData.getParticipantsCount(),
+                                    reportData.getRecipientsCount(),
+                                    reportData.getAchievementsCount(),
+                                    reportData.getRewardTokenAddress(),
+                                    reportData.getRewardTokenNetworkId(),
+                                    reportData.getHubRewardAmount(),
+                                    lowerCase(reportData.getTransactions()),
+                                    hub == null ? null : StringUtils.lowerCase(hub.getEarnerAddress()),
+                                    hub == null ? null : StringUtils.lowerCase(hub.getDeedManagerAddress()),
+                                    statusType,
+                                    errorMessageKey,
+                                    // Computed in WoM Server
+                                    0d,
+                                    0d,
+                                    0d,
+                                    0d,
+                                    0d,
+                                    0d,
+                                    0d,
+                                    0d,
+                                    null,
+                                    null,
+                                    null);
+  }
+
+  public static HubReportLocalStatus toHubLocalReport(HubReport report,
+                                                      long id,
+                                                      boolean canRefresh,
+                                                      boolean canSend) {
+    return new HubReportLocalStatus(id,
+                                    canRefresh,
+                                    canSend,
+                                    report.getHash(),
+                                    report.getSignature(),
+                                    report.getHubAddress(),
+                                    report.getDeedId(),
+                                    report.getFromDate(),
+                                    report.getToDate(),
+                                    report.getSentDate(),
+                                    report.getPeriodType(),
+                                    report.getUsersCount(),
+                                    report.getParticipantsCount(),
+                                    report.getRecipientsCount(),
+                                    report.getAchievementsCount(),
+                                    report.getRewardTokenAddress(),
+                                    report.getRewardTokenNetworkId(),
+                                    report.getHubRewardAmount(),
+                                    lowerCase(report.getTransactions()),
+                                    StringUtils.lowerCase(report.getEarnerAddress()),
+                                    StringUtils.lowerCase(report.getDeedManagerAddress()),
+                                    report.getStatus(),
+                                    report.getError(),
+                                    // Computed in WoM Server
+                                    report.getUemRewardIndex(),
+                                    report.getUemRewardAmount(),
+                                    report.getLastPeriodUemRewardAmount(),
+                                    report.getLastPeriodUemDiff(),
+                                    report.getHubRewardAmountPerPeriod(),
+                                    report.getHubRewardLastPeriodDiff(),
+                                    report.getLastPeriodUemRewardAmountPerPeriod(),
+                                    report.getMp(),
+                                    report.getRewardId(),
+                                    report.getRewardHash(),
+                                    report.getRewardTransactionHash());
+  }
+
+  public static SortedSet<String> lowerCase(SortedSet<String> hashes) {
     if (CollectionUtils.isEmpty(hashes)) {
-      return Collections.emptySet();
+      return new TreeSet<>();
     } else {
       return hashes.stream()
                    .map(StringUtils::lowerCase)
-                   .collect(Collectors.toSet());
+                   .collect(Collectors.toCollection(TreeSet::new));
     }
   }
 
