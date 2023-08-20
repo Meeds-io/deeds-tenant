@@ -116,6 +116,8 @@ public class EntityMapper {
                                     lowerCase(reportData.getTransactions()),
                                     hub == null ? null : StringUtils.lowerCase(hub.getEarnerAddress()),
                                     hub == null ? null : StringUtils.lowerCase(hub.getDeedManagerAddress()),
+                                    null,
+                                    0,
                                     statusType,
                                     errorMessageKey,
                                     // Computed in WoM Server
@@ -157,6 +159,8 @@ public class EntityMapper {
                                     lowerCase(report.getTransactions()),
                                     StringUtils.lowerCase(report.getEarnerAddress()),
                                     StringUtils.lowerCase(report.getDeedManagerAddress()),
+                                    StringUtils.lowerCase(report.getOwnerAddress()),
+                                    report.getOwnerMintingPercentage(),
                                     report.getStatus(),
                                     report.getError(),
                                     // Computed in WoM Server
