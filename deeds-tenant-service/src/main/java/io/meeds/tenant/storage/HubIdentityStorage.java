@@ -24,6 +24,7 @@ import static io.meeds.tenant.plugin.WalletHubIdentityProvider.COLOR;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_CITY;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_ID;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_MANAGER_ADDRESS;
+import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_OWNER_ADDRESS;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DEED_TYPE;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.DESCRIPTION;
 import static io.meeds.tenant.plugin.WalletHubIdentityProvider.EARNER_ADDRESS;
@@ -141,6 +142,7 @@ public class HubIdentityStorage {
     hubProfile.setProperty(COLOR, hub.getColor());
     hubProfile.setProperty(EARNER_ADDRESS, hub.getEarnerAddress());
     hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
+    hubProfile.setProperty(DEED_OWNER_ADDRESS, hub.getOwnerAddress());
     hubProfile.setProperty(JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
     hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
     identityManager.updateProfile(hubProfile);
@@ -160,6 +162,7 @@ public class HubIdentityStorage {
     String color = (String) hubProfile.getProperty(COLOR);
     String earnerAddress = (String) hubProfile.getProperty(EARNER_ADDRESS);
     String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
+    String ownerAddress = (String) hubProfile.getProperty(DEED_OWNER_ADDRESS);
     Instant joinDate = parseInstant(hubProfile, JOIN_DATE);
     Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
 
@@ -171,6 +174,7 @@ public class HubIdentityStorage {
                    parseToMap(description),
                    url,
                    color,
+                   ownerAddress,
                    deedManagerAddress,
                    earnerAddress,
                    joinDate,
@@ -191,6 +195,7 @@ public class HubIdentityStorage {
       hubProfile.removeProperty(COLOR);
       hubProfile.removeProperty(EARNER_ADDRESS);
       hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
+      hubProfile.removeProperty(DEED_OWNER_ADDRESS);
       hubProfile.removeProperty(JOIN_DATE);
       hubProfile.removeProperty(UPDATED_DATE);
       hubProfile.removeProperty(REWARD_PERIOD_TYPE);
