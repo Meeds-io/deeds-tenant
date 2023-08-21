@@ -54,6 +54,8 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
   public static final String DEED_MANAGER_ADDRESS   = "HUB_MANAGER_ADDRESS";
 
+  public static final String DEED_OWNER_ADDRESS     = "HUB_OWNER_ADDRESS";
+
   public static final String REWARD_PERIOD_TYPE     = "HUB_PERIOD_TYPE";
 
   public static final String REWARD_AMOUNT          = "HUB_REWARDS_AMOUNT";

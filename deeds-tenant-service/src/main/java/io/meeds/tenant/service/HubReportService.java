@@ -118,7 +118,7 @@ public class HubReportService {
         HubReport report = womServiceClient.sendReport(reportRequest);
         String error = report == null ? null : report.getError();
 
-        if (StringUtils.isBlank(error)) {
+        if (report != null && StringUtils.isBlank(error)) {
           markReportAsSent(rewardPeriod, hash, report.getSentDate());
           return toHubLocalReport(report,
                                   hubReportStorage.getPeriodKey(rewardPeriod),
