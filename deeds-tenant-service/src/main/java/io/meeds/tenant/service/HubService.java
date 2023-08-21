@@ -162,6 +162,7 @@ public class HubService {
     try {
       String hubAddress = hubWalletStorage.getOrCreateHubAddress(null);
       connectionRequest.setAddress(hubAddress);
+      connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
       womServiceClient.connectToWoM(connectionRequest);
       return hubAddress;
     } finally {
@@ -230,6 +231,10 @@ public class HubService {
 
   public String signHubMessage(Object object) throws WomException {
     String rawRequest = toJsonString(object);
+    return signHubMessage(rawRequest);
+  }
+
+  private String signHubMessage(String rawRequest) throws WomException {
     byte[] encodedRequest = rawRequest.getBytes(StandardCharsets.UTF_8);
     Sign.SignatureData signatureData = Sign.signPrefixedMessage(encodedRequest, hubWalletStorage.getHubWallet());
     byte[] retval = new byte[65];
