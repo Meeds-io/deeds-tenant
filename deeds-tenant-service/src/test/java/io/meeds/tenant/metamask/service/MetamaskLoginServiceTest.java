@@ -18,7 +18,6 @@ package io.meeds.tenant.metamask.service;
 
 import static io.meeds.tenant.metamask.service.MetamaskLoginService.ALLOWED_ROOT_ACCESS_WALLETS_PARAM;
 import static io.meeds.tenant.metamask.service.MetamaskLoginService.LOGIN_MESSAGE_ATTRIBUTE_NAME;
-import static io.meeds.tenant.metamask.service.MetamaskLoginService.METAMASK_ALLOW_REGISTRATION_PARAM;
 import static io.meeds.tenant.metamask.service.MetamaskLoginService.SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,42 +60,47 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.web.security.security.SecureRandomService;
 
+import io.meeds.portal.security.constant.UserRegistrationType;
+import io.meeds.portal.security.service.SecuritySettingService;
 import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.service.TenantManagerService;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MetamaskLoginServiceTest {
 
-  static final String   SUPER_USER = "superUser";
+  static final String    SUPER_USER = "superUser";
 
   @Mock
-  OrganizationService   organizationService;
+  OrganizationService    organizationService;
 
   @Mock
-  UserHandler           userHandler;
+  UserHandler            userHandler;
 
   @Mock
-  GroupHandler          groupHandler;
+  GroupHandler           groupHandler;
 
   @Mock
-  MembershipTypeHandler membershipTypeHandler;
+  MembershipTypeHandler  membershipTypeHandler;
 
   @Mock
-  MembershipHandler     membershipHandler;
+  MembershipHandler      membershipHandler;
 
   @Mock
-  UserACL               userAcl;
+  UserACL                userAcl;
 
   @Mock
-  SecureRandomService   secureRandomService;
+  SecureRandomService    secureRandomService;
 
   @Mock
-  TenantManagerService  tenantManagerService;
+  TenantManagerService   tenantManagerService;
 
   @Mock
-  InitParams            params;
+  SecuritySettingService securitySettingService;
 
-  MetamaskLoginService  metamaskLoginService;
+  @Mock
+  InitParams             params;
+
+  MetamaskLoginService   metamaskLoginService;
 
   @Before
   public void setUp() {
@@ -147,15 +151,11 @@ public class MetamaskLoginServiceTest {
     newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration());
 
-    when(params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)).thenReturn(true);
-    ValueParam valueParam = new ValueParam();
-    valueParam.setValue("true");
-    when(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM)).thenReturn(valueParam);
-
+    when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.OPEN);
     newService();
     assertTrue(metamaskLoginService.isAllowUserRegistration());
 
-    valueParam.setValue("false");
+    when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.RESTRICTED);
     newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration());
   }
@@ -166,16 +166,12 @@ public class MetamaskLoginServiceTest {
     newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
-    when(params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)).thenReturn(true);
-    ValueParam valueParam = new ValueParam();
-    valueParam.setValue("true");
-    when(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM)).thenReturn(valueParam);
-
     newService();
+    when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.OPEN);
     assertTrue(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
-    valueParam.setValue("false");
     newService();
+    when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.RESTRICTED);
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
     when(tenantManagerService.isTenantManager(managerAddress)).thenReturn(true);
@@ -273,6 +269,7 @@ public class MetamaskLoginServiceTest {
                                                     secureRandomService,
                                                     tenantManagerService,
                                                     mock(AccountSetupService.class),
+                                                    securitySettingService,
                                                     params);
   }
 
