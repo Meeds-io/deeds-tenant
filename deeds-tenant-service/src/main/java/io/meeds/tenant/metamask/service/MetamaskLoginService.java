@@ -40,51 +40,50 @@ import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.web.security.security.SecureRandomService;
 
+import io.meeds.portal.security.constant.UserRegistrationType;
+import io.meeds.portal.security.service.SecuritySettingService;
 import io.meeds.tenant.service.TenantManagerService;
 
 public class MetamaskLoginService implements Startable {
 
-  public static final String   LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
+  public static final String     LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
 
-  public static final String   METAMASK_ALLOW_REGISTRATION_PARAM      = "allow.registration";
+  public static final String     SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM = "secureRootAccessWithMetamask";
 
-  public static final String   SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM = "secureRootAccessWithMetamask";
+  public static final String     ALLOWED_ROOT_ACCESS_WALLETS_PARAM      = "allowedRootAccessWallets";
 
-  public static final String   ALLOWED_ROOT_ACCESS_WALLETS_PARAM      = "allowedRootAccessWallets";
+  protected static final Log     LOG                                    = ExoLogger.getLogger(MetamaskLoginService.class);
 
-  protected static final Log   LOG                                    = ExoLogger.getLogger(MetamaskLoginService.class);
+  private SecuritySettingService securitySettingService;
 
-  private OrganizationService  organizationService;
+  private OrganizationService    organizationService;
 
-  private UserACL              userACL;
+  private UserACL                userACL;
 
-  private SecureRandomService  secureRandomService;
+  private SecureRandomService    secureRandomService;
 
-  private TenantManagerService tenantManagerService;
+  private TenantManagerService   tenantManagerService;
 
-  private AccountSetupService  accountSetupService;
+  private AccountSetupService    accountSetupService;
 
-  private boolean              allowUserRegistration;
+  private boolean                secureRootAccessWithMetamask;
 
-  private boolean              secureRootAccessWithMetamask;
-
-  private List<String>         allowedRootWallets                     = new ArrayList<>();
+  private List<String>           allowedRootWallets                     = new ArrayList<>();
 
   public MetamaskLoginService(OrganizationService organizationService,
                               UserACL userACL,
                               SecureRandomService secureRandomService,
                               TenantManagerService tenantManagerService,
                               AccountSetupService accountSetupService,
+                              SecuritySettingService securitySettingService,
                               InitParams params) {
     this.organizationService = organizationService;
     this.secureRandomService = secureRandomService;
     this.tenantManagerService = tenantManagerService;
     this.accountSetupService = accountSetupService;
+    this.securitySettingService = securitySettingService;
     this.userACL = userACL;
     if (params != null) {
-      if (params.containsKey(METAMASK_ALLOW_REGISTRATION_PARAM)) {
-        this.allowUserRegistration = Boolean.parseBoolean(params.getValueParam(METAMASK_ALLOW_REGISTRATION_PARAM).getValue());
-      }
       if (params.containsKey(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)) {
         this.secureRootAccessWithMetamask = Boolean.parseBoolean(params.getValueParam(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)
                                                                        .getValue());
@@ -115,18 +114,17 @@ public class MetamaskLoginService implements Startable {
    * @return allowUserRegistration parameter value
    */
   public boolean isAllowUserRegistration() {
-    return allowUserRegistration;
+    return securitySettingService.getRegistrationType() == UserRegistrationType.OPEN;
   }
 
   /**
-   * @param  walletAddress wallet address that attempts to register
-   * @return               allowUserRegistration parameter value, else, it will
-   *                       checks whether the Tenant Manager has been registered
-   *                       to the tenant or not. If not regitered, allow to
-   *                       display the register form, else return false.
+   * @param walletAddress wallet address that attempts to register
+   * @return allowUserRegistration parameter value, else, it will checks whether
+   *         the Tenant Manager has been registered to the tenant or not. If not
+   *         regitered, allow to display the register form, else return false.
    */
   public boolean isAllowUserRegistration(String walletAddress) {
-    if (allowUserRegistration) {
+    if (isAllowUserRegistration()) {
       return true;
     } else {
       return isTenantManager(walletAddress);
@@ -134,18 +132,17 @@ public class MetamaskLoginService implements Startable {
   }
 
   /**
-   * @param  walletAddress to check if it's of Tenant Manager
-   * @return               true is wallet address is of the Tenant Manager else
-   *                       return false.
+   * @param walletAddress to check if it's of Tenant Manager
+   * @return true is wallet address is of the Tenant Manager else return false.
    */
   public boolean isTenantManager(String walletAddress) {
     return tenantManagerService.isTenantManager(walletAddress);
   }
 
   /**
-   * @param  walletAddress wallet address
-   * @return               true if secure root access is allowed and designated
-   *                       wallet is allowed to access using root account
+   * @param walletAddress wallet address
+   * @return true if secure root access is allowed and designated wallet is
+   *         allowed to access using root account
    */
   public boolean isSuperUser(String walletAddress) {
     return secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase());
@@ -154,8 +151,8 @@ public class MetamaskLoginService implements Startable {
   /**
    * Retrieves User name with associated wallet Address
    * 
-   * @param  walletAddress Ethereum Wallet Address
-   * @return               username
+   * @param walletAddress Ethereum Wallet Address
+   * @return username
    */
   public String getUserWithWalletAddress(String walletAddress) {
     if (secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase())) {
@@ -175,11 +172,10 @@ public class MetamaskLoginService implements Startable {
   /**
    * Validates signed message by a wallet using Metamask
    * 
-   * @param  walletAddress wallet Address (wallet public key)
-   * @param  rawMessage    raw signed message
-   * @param  signedMessage encrypted message
-   * @return               true if the message has been decrypted successfully,
-   *                       else false
+   * @param walletAddress wallet Address (wallet public key)
+   * @param rawMessage raw signed message
+   * @param signedMessage encrypted message
+   * @return true if the message has been decrypted successfully, else false
    */
   public boolean validateSignedMessage(String walletAddress, String rawMessage, String signedMessage) {
     if (StringUtils.isBlank(walletAddress) || StringUtils.isBlank(rawMessage) || StringUtils.isBlank(signedMessage)) {
@@ -216,10 +212,10 @@ public class MetamaskLoginService implements Startable {
    * alread exists in {@link HttpSession}, else the token already generated will
    * be returned
    * 
-   * @param  session {@link HttpSession}
-   * @param  renew   boolean
-   * @return         already existing token in {@link HttpSession} or a newly
-   *                 generated one
+   * @param session {@link HttpSession}
+   * @param renew boolean
+   * @return already existing token in {@link HttpSession} or a newly generated
+   *         one
    */
   public String generateLoginMessage(HttpSession session, boolean renew) {
     String token = getLoginMessage(session);
@@ -238,9 +234,9 @@ public class MetamaskLoginService implements Startable {
    * {@link HttpSession}. If a token already exists in session, it will be
    * returned else a newly generated token will be returned
    * 
-   * @param  session {@link HttpSession}
-   * @return         already existing token in {@link HttpSession} or a newly
-   *                 generated one
+   * @param session {@link HttpSession}
+   * @return already existing token in {@link HttpSession} or a newly generated
+   *         one
    */
   public String generateLoginMessage(HttpSession session) {
     return generateLoginMessage(session, false);
@@ -250,8 +246,8 @@ public class MetamaskLoginService implements Startable {
    * Retrieves Login Message to Sign with Metamask Generated and stored in HTTP
    * Session
    * 
-   * @param  session {@link HttpSession} of current user
-   * @return         Login Message
+   * @param session {@link HttpSession} of current user
+   * @return Login Message
    */
   public String getLoginMessage(HttpSession session) {
     return session == null ? null : (String) session.getAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME);
