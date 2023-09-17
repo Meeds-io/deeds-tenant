@@ -114,12 +114,13 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
       // If user is already authenticated, no registration form is required
       if (request.getRemoteUser() == null
           && StringUtils.isNotBlank(walletAddress)
-          && StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)
-          && metamaskLoginService.isAllowUserRegistration(walletAddress)) {
+          && StringUtils.startsWith(password, METAMASK_SIGNED_MESSAGE_PREFIX)) {
         // Step 1: Forward to user registration form. The user isn't found and
         // registration of new users is allowed
         String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
-        if (StringUtils.isBlank(username)) { // User not found in Database
+        if (StringUtils.isBlank(username) && !metamaskLoginService.isAllowUserRegistration(walletAddress)) {
+          LOG.debug("Metamask registration isn't allowed");
+        } else if (StringUtils.isBlank(username)) { // User not found in Database
           // Forward to user registration form after signedMessage validation
           String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
           String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");

@@ -135,7 +135,7 @@ export default {
         .then(() => this.retrieveAddress())
         .then(() => this.$nextTick())
         .then(() => this.$refs.metamaskLoginForm.submit())
-        .catch(console.debug);// eslint-disable-line no-console
+        .catch(e => this.$root.$emit('alert-message', e?.message || String(e), 'warning'));
     },
     retrieveAddress() {
       return this.$metamaskUtils.retrieveAddress()

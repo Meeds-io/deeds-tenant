@@ -25,31 +25,33 @@ export async function signInWithMetamask(rawMessage, isMobile) {
     const onboarding = new MetaMaskOnboarding();
     return onboarding.startOnboarding();
   } else {
-    if (!isMobile) {
-      try {
-        const accounts = await window.ethereum.request({
-          method: 'wallet_requestPermissions',
-          params: [{
-            eth_accounts: {},
-          }]
-        });
-        const account = accounts?.length && accounts[0];
-        if (!account) {
-          throw new Error('No selected account');
-        }
-      } catch (e) {
-        if (!String(e).includes('32601')) {
-          throw e;
-        }
-      }
-    }
-    const address = await retrieveAddress();
+    const address = await chooseAccount(isMobile);
     const signedMessage = await window.ethereum.request({
       method: 'personal_sign',
       params: [rawMessage, address],
     });
     return `SIGNED_MESSAGE@${signedMessage}`;
   }
+}
+
+export async function chooseAccount(isMobile) {
+  try {
+    const accounts = await window.ethereum.request({
+      method: 'wallet_requestPermissions',
+      params: [{
+        eth_accounts: {},
+      }]
+    });
+    const account = accounts?.length && accounts[0];
+    if (!account && !isMobile) {
+      throw new Error('No selected account');
+    }
+  } catch (e) {
+    if (!String(e).includes('32601')) {
+      throw e;
+    }
+  }
+  return retrieveAddress();
 }
 
 export function retrieveAddress() {

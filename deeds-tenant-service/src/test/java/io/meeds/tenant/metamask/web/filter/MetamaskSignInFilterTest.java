@@ -262,14 +262,13 @@ public class MetamaskSignInFilterTest {
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + signedMessage);
     when(metamaskLoginService.getUserWithWalletAddress(walletAddress)).thenReturn(walletAddress);
     when(metamaskLoginService.getLoginMessage(any())).thenReturn(rawMessageToSign);
-    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
     String compoundPassword = filter.getCompoundPassword(request);
 
     filter.doFilter(request, response, chain);
     verify(response, never()).sendRedirect(any());
     verify(servletContext, never()).getRequestDispatcher(any());
-    verify(chain, times(1)).doFilter(argThat(new ArgumentMatcher<ServletRequest>() {
+    verify(chain, times(1)).doFilter(argThat(new ArgumentMatcher<>() {
       public boolean matches(ServletRequest argument) {
         return StringUtils.equals(walletAddress, argument.getParameter(USERNAME_REQUEST_PARAM))
             && StringUtils.equals(compoundPassword, argument.getParameter(PASSWORD_REQUEST_PARAM));
