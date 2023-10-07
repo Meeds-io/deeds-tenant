@@ -60,8 +60,7 @@ public class MetamaskAuthenticator extends AuthenticatorPlugin {
         }
         boolean validated = metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage);
         if (validated) {
-          String username = metamaskLoginService.getUserWithWalletAddress(walletAddress);
-          return StringUtils.isBlank(username) ? walletAddress : username;
+          return metamaskLoginService.getUserWithWalletAddress(walletAddress);
         }
       }
     }

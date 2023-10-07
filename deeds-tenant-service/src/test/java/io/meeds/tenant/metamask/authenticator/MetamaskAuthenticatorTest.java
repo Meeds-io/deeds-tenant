@@ -74,15 +74,19 @@ public class MetamaskAuthenticatorTest {
   @Test
   public void testValidateNotExistingUser() {
     String walletAddress = "walletAddress";
+    String otherUserName = "otherUserName";
     String rawMessage = "rawMessage";
     String signedMessage = "signedMessage";
+    String composedPassword = walletAddress + "@" + rawMessage + "@" + signedMessage;
 
     when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage)).thenReturn(true);
-    assertEquals(walletAddress,
-                 metamaskAuthenticator.validateUser(new Credential[] {
-                     new UsernameCredential(walletAddress),
-                     new PasswordCredential(walletAddress + "@" + rawMessage + "@" + signedMessage),
-                 }));
+    assertNull(metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential(walletAddress),
+                                                                     new PasswordCredential(composedPassword) }));
+
+    when(metamaskLoginService.getUserWithWalletAddress(walletAddress)).thenReturn(otherUserName);
+    assertEquals(otherUserName,
+                 metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential(walletAddress),
+                                                                       new PasswordCredential(composedPassword) }));
   }
 
   @Test
