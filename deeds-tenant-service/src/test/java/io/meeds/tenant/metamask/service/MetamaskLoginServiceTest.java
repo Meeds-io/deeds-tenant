@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 import java.security.SecureRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.junit.Before;
 import org.junit.Test;
