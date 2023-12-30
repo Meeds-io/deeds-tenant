@@ -16,30 +16,36 @@
  */
 package io.meeds.tenant.metamask.authenticator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.exoplatform.services.security.*;
+import org.exoplatform.services.security.Credential;
+import org.exoplatform.services.security.PasswordCredential;
+import org.exoplatform.services.security.UsernameCredential;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MetamaskAuthenticatorTest {
+
+  private static final String   PASSWORD = "password";
+
+  private static final String   USERNAME = "username";
 
   @Mock
   private MetamaskLoginService  metamaskLoginService;
 
   private MetamaskAuthenticator metamaskAuthenticator;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     reset(metamaskLoginService);
     metamaskAuthenticator = new MetamaskAuthenticator(metamaskLoginService);
@@ -49,25 +55,25 @@ public class MetamaskAuthenticatorTest {
   public void testValidateInvalidCredentialsCount() {
     assertNull(metamaskAuthenticator.validateUser(null));
     assertNull(metamaskAuthenticator.validateUser(new Credential[0]));
-    assertNull(metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential("username") }));
+    assertNull(metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential(USERNAME) }));
     assertNull(metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential(null) }));
-    assertNull(metamaskAuthenticator.validateUser(new Credential[] { new PasswordCredential("password") }));
+    assertNull(metamaskAuthenticator.validateUser(new Credential[] { new PasswordCredential(PASSWORD) }));
     assertNull(metamaskAuthenticator.validateUser(new Credential[] { new PasswordCredential(null) }));
   }
 
   @Test
   public void testValidateInvalidPassword() {
     assertNull(metamaskAuthenticator.validateUser(new Credential[] {
-        new UsernameCredential(null),
-        new PasswordCredential(null),
+                                                                     new UsernameCredential(null),
+                                                                     new PasswordCredential(null),
     }));
     assertNull(metamaskAuthenticator.validateUser(new Credential[] {
-        new UsernameCredential("username"),
-        new PasswordCredential("password"),
+                                                                     new UsernameCredential(USERNAME),
+                                                                     new PasswordCredential(PASSWORD),
     }));
     assertNull(metamaskAuthenticator.validateUser(new Credential[] {
-        new UsernameCredential("username"),
-        new PasswordCredential("password@password@password"),
+                                                                     new UsernameCredential(USERNAME),
+                                                                     new PasswordCredential("password@password@password"),
     }));
   }
 
@@ -94,14 +100,15 @@ public class MetamaskAuthenticatorTest {
     String walletAddress = "walletAddress";
     String rawMessage = "rawMessage";
     String signedMessage = "signedMessage";
-    String username = "username";
+    String username = USERNAME;
 
     when(metamaskLoginService.validateSignedMessage(walletAddress, rawMessage, signedMessage)).thenReturn(true);
     when(metamaskLoginService.getUserWithWalletAddress(walletAddress)).thenReturn(username);
     assertEquals(username,
                  metamaskAuthenticator.validateUser(new Credential[] {
-                     new UsernameCredential(walletAddress),
-                     new PasswordCredential(walletAddress + "@" + rawMessage + "@" + signedMessage),
+                                                                       new UsernameCredential(walletAddress),
+                                                                       new PasswordCredential(walletAddress + "@" + rawMessage +
+                                                                           "@" + signedMessage),
                  }));
   }
 

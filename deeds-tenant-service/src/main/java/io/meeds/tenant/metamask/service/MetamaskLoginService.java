@@ -22,80 +22,71 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import jakarta.servlet.http.HttpSession;
-
 import org.apache.commons.lang3.StringUtils;
-import org.picocontainer.Startable;
+import org.picketlink.idm.api.SecureRandomProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
 import org.web3j.crypto.Sign;
 import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
-import org.exoplatform.web.security.security.SecureRandomService;
+import org.exoplatform.services.organization.UserHandler;
 
+import io.meeds.common.ContainerTransactional;
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
 import io.meeds.tenant.service.TenantManagerService;
 
-public class MetamaskLoginService implements Startable {
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import lombok.Setter;
 
-  public static final String     LOGIN_MESSAGE_ATTRIBUTE_NAME           = "metamask_login_message";
+@Service
+public class MetamaskLoginService {
 
-  public static final String     SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM = "secureRootAccessWithMetamask";
+  public static final String     LOGIN_MESSAGE_ATTRIBUTE_NAME = "metamask_login_message";
 
-  public static final String     ALLOWED_ROOT_ACCESS_WALLETS_PARAM      = "allowedRootAccessWallets";
+  protected static final Log     LOG                          = ExoLogger.getLogger(MetamaskLoginService.class);
 
-  protected static final Log     LOG                                    = ExoLogger.getLogger(MetamaskLoginService.class);
-
+  @Autowired
   private SecuritySettingService securitySettingService;
 
+  @Autowired
   private OrganizationService    organizationService;
 
+  @Autowired
   private UserACL                userACL;
 
-  private SecureRandomService    secureRandomService;
+  @Autowired
+  private SecureRandomProvider   secureRandomProvider;
 
+  @Autowired
   private TenantManagerService   tenantManagerService;
 
+  @Autowired
   private AccountSetupService    accountSetupService;
 
+  @Setter
+  @Value("${meeds.login.metamask.secureRootAccessWithMetamask:true}")
   private boolean                secureRootAccessWithMetamask;
 
-  private List<String>           allowedRootWallets                     = new ArrayList<>();
+  @Setter
+  @Value("#{'${meeds.login.metamask.allowedRootAccessWallets:}'.split(',')}")
+  private List<String>           allowedRootWallets           = new ArrayList<>();
 
-  public MetamaskLoginService(OrganizationService organizationService,
-                              UserACL userACL,
-                              SecureRandomService secureRandomService,
-                              TenantManagerService tenantManagerService,
-                              AccountSetupService accountSetupService,
-                              SecuritySettingService securitySettingService,
-                              InitParams params) {
-    this.organizationService = organizationService;
-    this.secureRandomService = secureRandomService;
-    this.tenantManagerService = tenantManagerService;
-    this.accountSetupService = accountSetupService;
-    this.securitySettingService = securitySettingService;
-    this.userACL = userACL;
-    if (params != null) {
-      if (params.containsKey(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)) {
-        this.secureRootAccessWithMetamask = Boolean.parseBoolean(params.getValueParam(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)
-                                                                       .getValue());
-      }
-      if (params.containsKey(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)) {
-        String[] wallets = StringUtils.split(params.getValueParam(ALLOWED_ROOT_ACCESS_WALLETS_PARAM).getValue(), ",");
-        Arrays.stream(wallets).forEach(address -> allowedRootWallets.add(address.trim().toLowerCase()));
-      }
-    }
-  }
-
-  @Override
+  @PostConstruct
+  @ContainerTransactional
   public void start() {
     if (this.secureRootAccessWithMetamask) {
       // Avoid allowing to change root password
@@ -103,11 +94,6 @@ public class MetamaskLoginService implements Startable {
       // Generate a new random password for root user
       secureRootPassword();
     }
-  }
-
-  @Override
-  public void stop() {
-    // Nothing to stop
   }
 
   /**
@@ -145,7 +131,9 @@ public class MetamaskLoginService implements Startable {
    *         allowed to access using root account
    */
   public boolean isSuperUser(String walletAddress) {
-    return secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase());
+    return secureRootAccessWithMetamask
+           && allowedRootWallets != null
+           && allowedRootWallets.stream().anyMatch(address -> StringUtils.equalsIgnoreCase(address, walletAddress));
   }
 
   /**
@@ -155,7 +143,7 @@ public class MetamaskLoginService implements Startable {
    * @return username
    */
   public String getUserWithWalletAddress(String walletAddress) {
-    if (secureRootAccessWithMetamask && allowedRootWallets.contains(walletAddress.toLowerCase())) {
+    if (isSuperUser(walletAddress)) {
       return userACL.getSuperUser();
     }
     try {
@@ -273,19 +261,38 @@ public class MetamaskLoginService implements Startable {
   }
 
   private String generateRandomToken() {
-    SecureRandom secureRandom = secureRandomService.getSecureRandom();
+    SecureRandom secureRandom = secureRandomProvider.getSecureRandom();
     return secureRandom.nextLong() + "-" + secureRandom.nextLong() + "-" + secureRandom.nextLong();
   }
 
   private void secureRootPassword() {
+    PortalContainer container = PortalContainer.getInstanceIfPresent();
+    UserHandler userHandler = organizationService.getUserHandler();
+    if (userHandler != null) {
+      if (container != null && container.isStarted()) {
+        secureRootPassword(userHandler);
+      } else if (container != null) {
+        PortalContainer.addInitTask(container.getPortalContext(), new PortalContainerPostInitTask() {
+          @Override
+          public void execute(ServletContext context, PortalContainer portalContainer) {
+            secureRootPassword(userHandler);
+          }
+        }, "portal");
+      } else {
+        throw new IllegalStateException("Can't secure root access due to missing Kernel container in current context");
+      }
+    }
+  }
+
+  private void secureRootPassword(UserHandler userHandler) {
     try {
-      User rootUser = organizationService.getUserHandler().findUserByName(userACL.getSuperUser());
+      User rootUser = userHandler.findUserByName(userACL.getSuperUser());
       if (rootUser == null) {
         LOG.warn("Root user wasn't found, can't regenerate password.");
       } else {
         LOG.info("Regenerate root password to allow accessing it via Metamask only");
         rootUser.setPassword(generateRandomToken());
-        organizationService.getUserHandler().saveUser(rootUser, false);
+        userHandler.saveUser(rootUser, false);
       }
     } catch (Exception e) {
       LOG.warn("Can't secure root access", e);

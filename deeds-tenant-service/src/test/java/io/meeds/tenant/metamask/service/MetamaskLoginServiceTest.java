@@ -16,41 +16,36 @@
  */
 package io.meeds.tenant.metamask.service;
 
-import static io.meeds.tenant.metamask.service.MetamaskLoginService.ALLOWED_ROOT_ACCESS_WALLETS_PARAM;
 import static io.meeds.tenant.metamask.service.MetamaskLoginService.LOGIN_MESSAGE_ATTRIBUTE_NAME;
-import static io.meeds.tenant.metamask.service.MetamaskLoginService.SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
-import jakarta.servlet.http.HttpSession;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.mockito.stubbing.OngoingStubbing;
+import org.picketlink.idm.api.SecureRandomProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.MembershipHandler;
@@ -58,81 +53,73 @@ import org.exoplatform.services.organization.MembershipTypeHandler;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
-import org.exoplatform.web.security.security.SecureRandomService;
 
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
 import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.service.TenantManagerService;
 
-@RunWith(MockitoJUnitRunner.class)
+import jakarta.servlet.http.HttpSession;
+
+@SpringBootTest(classes = {
+    MetamaskLoginService.class,
+})
 public class MetamaskLoginServiceTest {
 
   static final String    SUPER_USER = "superUser";
 
-  @Mock
+  @MockBean
   OrganizationService    organizationService;
 
-  @Mock
+  @MockBean
   UserHandler            userHandler;
 
-  @Mock
+  @MockBean
   GroupHandler           groupHandler;
 
-  @Mock
+  @MockBean
   MembershipTypeHandler  membershipTypeHandler;
 
-  @Mock
+  @MockBean
   MembershipHandler      membershipHandler;
 
-  @Mock
+  @MockBean
   UserACL                userAcl;
 
-  @Mock
-  SecureRandomService    secureRandomService;
+  @MockBean
+  SecureRandomProvider   secureRandomProvider;
 
-  @Mock
+  @MockBean
   TenantManagerService   tenantManagerService;
 
-  @Mock
+  @MockBean
   SecuritySettingService securitySettingService;
 
-  @Mock
-  InitParams             params;
+  @MockBean
+  AccountSetupService    accountSetupService;
 
+  @Autowired
   MetamaskLoginService   metamaskLoginService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
-    reset(organizationService,
-          userHandler,
-          groupHandler,
-          membershipHandler,
-          membershipTypeHandler,
-          userAcl,
-          secureRandomService,
-          tenantManagerService);
-
     when(organizationService.getUserHandler()).thenReturn(userHandler);
     when(userAcl.getSuperUser()).thenReturn(SUPER_USER);
   }
 
   @Test
   public void testDontSetRootPasswordOnStartup() {
-    newService();
-    metamaskLoginService.start();
-    verifyNoInteractions(organizationService);
+    metamaskLoginService.setSecureRootAccessWithMetamask(false);
+    try {
+      metamaskLoginService.start();
+      verifyNoInteractions(organizationService);
+    } finally {
+      metamaskLoginService.setSecureRootAccessWithMetamask(true);
+    }
   }
 
   @Test
   public void testSetRootPasswordOnStartup() throws Exception {
-    when(params.containsKey(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)).thenReturn(true);
-    ValueParam valueParam = new ValueParam();
-    valueParam.setValue("true");
-    when(params.getValueParam(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)).thenReturn(valueParam);
-
-    newService();
-
     metamaskLoginService.start();
     verify(userHandler, times(0)).saveUser(any(), anyBoolean());
 
@@ -147,30 +134,24 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testIsAllowUserRegistration() throws Exception {
-    newService();
+  public void testIsAllowUserRegistration()  {
     assertFalse(metamaskLoginService.isAllowUserRegistration());
 
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.OPEN);
-    newService();
     assertTrue(metamaskLoginService.isAllowUserRegistration());
 
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.RESTRICTED);
-    newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration());
   }
 
   @Test
-  public void testIsAddressAllowedToRegister() throws Exception {
+  public void testIsAddressAllowedToRegister()  {
     String managerAddress = "managerAddress";
-    newService();
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
-    newService();
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.OPEN);
     assertTrue(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
-    newService();
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.RESTRICTED);
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
@@ -183,31 +164,24 @@ public class MetamaskLoginServiceTest {
   public void testGetUserWithWalletAddress() throws Exception {
     String managerAddress = "managerAddress";
 
-    newService();
     assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
-
-    when(params.containsKey(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)).thenReturn(true);
-    ValueParam secureRootAccessValueParam = new ValueParam();
-    secureRootAccessValueParam.setValue("true");
-    when(params.getValueParam(SECURE_ROOT_ACCESS_WITH_METAMASK_PARAM)).thenReturn(secureRootAccessValueParam);
     assertFalse(metamaskLoginService.isSuperUser(managerAddress));
 
-    newService();
-    assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
+    metamaskLoginService.setAllowedRootWallets(Collections.singletonList(managerAddress));
+    try {
+      assertEquals(SUPER_USER, metamaskLoginService.getUserWithWalletAddress(managerAddress));
+      assertTrue(metamaskLoginService.isSuperUser(managerAddress));
+      assertFalse(metamaskLoginService.isSuperUser("managerAddress2"));
+    } finally {
+      metamaskLoginService.setAllowedRootWallets(Collections.emptyList());
+    }
 
-    when(params.containsKey(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)).thenReturn(true);
-    ValueParam allowedWalletsValueParam = new ValueParam();
-    allowedWalletsValueParam.setValue(managerAddress);
-    when(params.getValueParam(ALLOWED_ROOT_ACCESS_WALLETS_PARAM)).thenReturn(allowedWalletsValueParam);
-
-    newService();
-    assertEquals(SUPER_USER, metamaskLoginService.getUserWithWalletAddress(managerAddress));
-    assertTrue(metamaskLoginService.isSuperUser(managerAddress));
-    assertFalse(metamaskLoginService.isSuperUser("managerAddress2"));
-
-    secureRootAccessValueParam.setValue("false");
-    newService();
-    assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
+    metamaskLoginService.setSecureRootAccessWithMetamask(false);
+    try {
+      assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
+    } finally {
+      metamaskLoginService.setSecureRootAccessWithMetamask(true);
+    }
 
     User user = mock(User.class);
     whenFindUserByName(managerAddress).thenReturn(user);
@@ -220,13 +194,11 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testValidateSignedMessage() throws Exception {
+  public void testValidateSignedMessage()  {
     String walletAddress = "0x927f51a2996Ff74d1C380F92DC9006b53A225CeF";
     String rawMessage = "-2037692822791791745-3891968992033463560-1384458414145506416";
     String signedMessage =
                          "0x92874882ac3b2292dc4a05af2f0eceac48fee97392a26d8bc9002159c35279ac0b72729cbdd6e864696782176a39a5cdfbca45c3eec5b34e1f82d2a906356a7d1c";
-
-    newService();
 
     assertFalse(metamaskLoginService.validateSignedMessage(null, rawMessage, signedMessage));
     assertFalse(metamaskLoginService.validateSignedMessage(walletAddress, null, signedMessage));
@@ -240,8 +212,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testGenerateLoginMessage() throws Exception {
-    newService();
+  public void testGenerateLoginMessage()  {
     mockSecureRandomService();
 
     assertNotNull(metamaskLoginService.generateLoginMessage(null));
@@ -263,19 +234,9 @@ public class MetamaskLoginServiceTest {
     verify(session, times(1)).setAttribute(LOGIN_MESSAGE_ATTRIBUTE_NAME, token2);
   }
 
-  private void newService() {
-    metamaskLoginService = new MetamaskLoginService(organizationService,
-                                                    userAcl,
-                                                    secureRandomService,
-                                                    tenantManagerService,
-                                                    mock(AccountSetupService.class),
-                                                    securitySettingService,
-                                                    params);
-  }
-
   private void mockSecureRandomService() {
     SecureRandom secureRandom = mock(SecureRandom.class);
-    when(secureRandomService.getSecureRandom()).thenReturn(secureRandom);
+    when(secureRandomProvider.getSecureRandom()).thenReturn(secureRandom);
 
     AtomicLong index = new AtomicLong();
     when(secureRandom.nextLong()).thenAnswer(new Answer<Long>() {
