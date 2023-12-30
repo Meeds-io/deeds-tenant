@@ -16,8 +16,7 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.*;
 
@@ -27,11 +26,11 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
@@ -39,7 +38,7 @@ import org.exoplatform.web.register.RegisterHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class MetamaskRegisterExtensionTest {
 
   @Mock
@@ -47,7 +46,7 @@ public class MetamaskRegisterExtensionTest {
 
   private MetamaskRegisterExtension metamaskRegisterExtension;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     reset(metamaskLoginService);
     metamaskRegisterExtension = new MetamaskRegisterExtension(metamaskLoginService);

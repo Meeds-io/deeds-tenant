@@ -15,43 +15,47 @@
  */
 package io.meeds.tenant;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.PropertySource;
 
-import io.meeds.tenant.integration.SpringContext;
+import io.meeds.spring.AvailableIntegration;
+import io.meeds.spring.kernel.PortalApplicationContextInitializer;
 
-@SpringBootApplication(
-   exclude = RedisAutoConfiguration.class,
-   scanBasePackages = {
-     "io.meeds.deeds",
-     "io.meeds.tenant"
-   }
-)
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+
+@SpringBootApplication(scanBasePackages = {
+    "io.meeds.deeds",
+    "io.meeds.tenant",
+    AvailableIntegration.KERNEL_MODULE,
+    AvailableIntegration.WEB_SECURITY_MODULE,
+    AvailableIntegration.WEB_TRANSACTION_MODULE,
+  }, exclude = {
+    RedisAutoConfiguration.class,
+    LiquibaseAutoConfiguration.class,
+    DataSourceAutoConfiguration.class,
+    DataSourceTransactionManagerAutoConfiguration.class,
+    HibernateJpaAutoConfiguration.class
+})
 @EnableCaching
 @PropertySource("classpath:tenant.properties")
 @PropertySource("classpath:application.properties")
-public class DeedTenantApplication extends SpringBootServletInitializer {
+public class DeedTenantApplication extends PortalApplicationContextInitializer {
 
   @Override
   public void onStartup(ServletContext servletContext) throws ServletException {
-    // Used to disable LogBack initialization in WebApp context after having
-    // initialized it already in Meeds Server globally
-    System.setProperty("org.springframework.boot.logging.LoggingSystem", "none");
     // Avoid creating Deed Tenants Indexes in Deed Tenant Elasticsearch
     // When the ES is misconfigured
     System.setProperty("meeds.elasticsearch.autoCreateIndex", "false");
     // Disable ListenerService until verifying whether the tenant is included in
     // WoM or not
     System.setProperty("meeds.listenerService.enabled", "false");
-    // Share ServletContext with Kernel based Services to integrate with Spring
-    // Beans
-    SpringContext.setServletContext(servletContext);
 
     super.onStartup(servletContext);
   }

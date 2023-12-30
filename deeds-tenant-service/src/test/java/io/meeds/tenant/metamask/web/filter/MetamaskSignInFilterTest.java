@@ -20,8 +20,7 @@ import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_TENANT_SETUP_FORM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.PASSWORD_REQUEST_PARAM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.lenient;
@@ -49,14 +48,16 @@ import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
@@ -77,7 +78,8 @@ import org.exoplatform.web.security.security.RemindPasswordTokenService;
 import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class MetamaskSignInFilterTest {
 
   @Mock
@@ -126,7 +128,7 @@ public class MetamaskSignInFilterTest {
 
   private MetamaskSignInFilter       filter;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpClass() throws Exception {
     // Try to not start a portal container statically
     // And register a fake StandaloneContainer as top container
@@ -139,7 +141,7 @@ public class MetamaskSignInFilterTest {
     }
   }
 
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Mockito.reset(metamaskLoginService,
                   request,
@@ -152,7 +154,6 @@ public class MetamaskSignInFilterTest {
     when(container.getPortalContext()).thenReturn(servletContext);
     when(servletContext.getRequestDispatcher(any())).thenReturn(requestDispatcher);
     when(request.getContextPath()).thenReturn("/portal");
-    when(request.getSession()).thenReturn(session);
     filter = spy(new MetamaskSignInFilter(container,
                                           remindPasswordTokenService,
                                           webAppController,
@@ -226,7 +227,7 @@ public class MetamaskSignInFilterTest {
 
   @Test
   public void testContinueFilterChainEvenWhenErrorOccurs() throws IOException, ServletException {
-    lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
+    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getParameter(any())).thenThrow(new FakeTestException());
     filter.doFilter(request, response, chain);
     verifyNoInteractions(servletContext);
