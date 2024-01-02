@@ -16,11 +16,6 @@
 package io.meeds.tenant;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.PropertySource;
 
@@ -31,17 +26,16 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
 @SpringBootApplication(scanBasePackages = {
-    "io.meeds.deeds",
     "io.meeds.tenant",
     AvailableIntegration.KERNEL_MODULE,
     AvailableIntegration.WEB_SECURITY_MODULE,
     AvailableIntegration.WEB_TRANSACTION_MODULE,
-  }, exclude = {
-    RedisAutoConfiguration.class,
-    LiquibaseAutoConfiguration.class,
-    DataSourceAutoConfiguration.class,
-    DataSourceTransactionManagerAutoConfiguration.class,
-    HibernateJpaAutoConfiguration.class
+  }, excludeName = {
+    "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
+    "org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration",
+    "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration",
+    "org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration",
+    "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
 })
 @EnableCaching
 @PropertySource("classpath:tenant.properties")

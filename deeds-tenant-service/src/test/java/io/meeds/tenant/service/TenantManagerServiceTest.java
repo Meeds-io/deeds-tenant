@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,28 +31,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import org.exoplatform.commons.exception.ObjectNotFoundException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.deeds.constant.TenantProvisioningStatus;
-import io.meeds.deeds.constant.TenantStatus;
-import io.meeds.deeds.elasticsearch.model.DeedTenant;
-import io.meeds.deeds.service.ListenerService;
-import io.meeds.deeds.service.TenantService;
 import io.meeds.tenant.model.DeedTenantHost;
 
 @SpringBootTest(classes = {
-                            TenantManagerService.class,
+  TenantManagerService.class,
 })
 public class TenantManagerServiceTest {
 
   protected static final Log LOG = ExoLogger.getLogger(TenantManagerServiceTest.class);
 
   @MockBean
-  private TenantService      tenantService;
-
-  @MockBean
-  private ListenerService    listenerService;
+  BlockchainService      blockchainService;
 
   @Autowired
   TenantManagerService       tenantManagerService;
@@ -62,31 +56,20 @@ public class TenantManagerServiceTest {
   }
 
   @Test
-  public void testStart() {
+  public void testStart() throws ObjectNotFoundException {
     tenantManagerService.start();
     assertNull(DeedTenantHost.getInstance());
 
     assertEquals(-1, tenantManagerService.getNftId());
     tenantManagerService.setNftId(3l);
     try {
+      when(blockchainService.getDeedCityIndex(tenantManagerService.getNftId())).thenThrow(new IllegalStateException());
       assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
       assertNull(DeedTenantHost.getInstance());
 
       assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
 
-      when(tenantService.getDeedTenant(tenantManagerService.getNftId())).thenReturn(new DeedTenant(tenantManagerService.getNftId(),
-                                                                                                   (short) 0,
-                                                                                                   (short) 0,
-                                                                                                   null,
-                                                                                                   null,
-                                                                                                   null,
-                                                                                                   null,
-                                                                                                   null,
-                                                                                                   TenantProvisioningStatus.STOP_CONFIRMED,
-                                                                                                   TenantStatus.UNDEPLOYED,
-                                                                                                   false,
-                                                                                                   null,
-                                                                                                   null));
+      reset(blockchainService);
       tenantManagerService.start();
       assertNotNull(DeedTenantHost.getInstance());
     } finally {

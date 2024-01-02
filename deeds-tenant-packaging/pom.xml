@@ -30,7 +30,7 @@
   <dependencies>
     <dependency>
       <groupId>io.meeds.deeds-dapp</groupId>
-      <artifactId>deeds-dapp-common</artifactId>
+      <artifactId>deeds-dapp-contract</artifactId>
       <scope>runtime</scope>
     </dependency>
 
