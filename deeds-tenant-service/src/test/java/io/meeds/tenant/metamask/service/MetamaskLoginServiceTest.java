@@ -46,6 +46,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
+import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.MembershipHandler;
@@ -103,6 +104,7 @@ public class MetamaskLoginServiceTest {
 
   @BeforeEach
   public void setUp() {
+    PortalContainer.getInstance();
     when(organizationService.getUserHandler()).thenReturn(userHandler);
     when(userAcl.getSuperUser()).thenReturn(SUPER_USER);
   }
