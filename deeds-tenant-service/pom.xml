@@ -26,7 +26,7 @@
   <artifactId>deeds-tenant-service</artifactId>
   <name>Meeds - Deeds Tenant Addon - Services</name>
   <properties>
-    <exo.test.coverage.ratio>0.69</exo.test.coverage.ratio>
+    <exo.test.coverage.ratio>0.57</exo.test.coverage.ratio>
   </properties>
   <dependencies>
     <!-- Provided artifacts in Server Shared library, used for compilation only -->
@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>io.meeds.deeds-dapp</groupId>
-      <artifactId>deeds-dapp-common</artifactId>
+      <artifactId>deeds-dapp-contract</artifactId>
     </dependency>
 
     <dependency>

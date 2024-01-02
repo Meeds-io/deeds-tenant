@@ -24,11 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import io.meeds.deeds.constant.ObjectNotFoundException;
-import io.meeds.deeds.constant.TenantProvisioningStatus;
-import io.meeds.deeds.elasticsearch.model.DeedTenant;
-import io.meeds.deeds.service.ListenerService;
-import io.meeds.deeds.service.TenantService;
+import org.exoplatform.commons.exception.ObjectNotFoundException;
+
 import io.meeds.tenant.model.DeedTenantHost;
 
 import jakarta.annotation.PostConstruct;
@@ -42,10 +39,7 @@ import lombok.Setter;
 public class TenantManagerService {
 
   @Autowired
-  private TenantService   tenantService;
-
-  @Autowired
-  private ListenerService listenerService;
+  private BlockchainService blockchainService;
 
   @Getter
   @Setter
@@ -59,13 +53,11 @@ public class TenantManagerService {
                                                                     "*:/platform/rewarding");
 
   @PostConstruct
-  public void start() {
+  public void start() throws ObjectNotFoundException {
     if (isTenant()) {
       DeedTenantHost deedTenantHost = retrieveDeedTenant();
       if (deedTenantHost == null) {
         throw new IllegalStateException("Can't get Deed Tenant from WoM Server");
-      } else {
-        initMetaverseIntegration();
       }
     }
   }
@@ -91,36 +83,34 @@ public class TenantManagerService {
     return nftId > -1;
   }
 
+  /**
+   * Checks if address is the provisioning manager of the DEED
+   * 
+   * @param  nftId   DEED NFT identifier
+   * @param  address Wallet or Contract Ethereum address
+   * @return         true if address is the provisioning manager of the DEED
+   *                 Tenant
+   */
   private boolean isTenantManager(String address, long nftId) {
-    return tenantService.isDeedManager(address, nftId);
+    return blockchainService.isDeedProvisioningManager(address, nftId);
   }
 
-  private DeedTenantHost retrieveDeedTenant() {// NOSONAR
+  /**
+   * Retrieve Deed Tenant information from blockchain
+   * 
+   * @param nftId DEED NFT id in the blockchain
+   * @return {@link DeedTenantHost}
+   * @throws ObjectNotFoundException when Deed NFT id is not recognized on
+   *           blockchain
+   */
+  private DeedTenantHost retrieveDeedTenant() throws ObjectNotFoundException {// NOSONAR
     if (nftId >= 0 && DeedTenantHost.getInstance() == null) {
-      DeedTenant deedTenant = tenantService.getDeedTenant(nftId);
-      if (deedTenant == null) {
-        try {
-          deedTenant = tenantService.buildDeedTenantFromBlockchain(nftId);
-        } catch (ObjectNotFoundException e) {
-          throw new IllegalStateException("Deed with NFT " + nftId + " doesn't exist on Blockchain");
-        }
-      }
-      if (deedTenant != null) {
-        boolean isProvisioned = deedTenant.getTenantProvisioningStatus() != null
-                                && deedTenant.getTenantProvisioningStatus() != TenantProvisioningStatus.STOP_CONFIRMED;
-        return DeedTenantHost.setInstance(deedTenant.getNftId(),
-                                          deedTenant.getCityIndex(),
-                                          deedTenant.getCardType(),
-                                          isProvisioned,
-                                          deedTenant.getManagerAddress(),
-                                          deedTenant.getManagerEmail());
-      }
+      short cityIndex = blockchainService.getDeedCityIndex(nftId);
+      short cardType = blockchainService.getDeedCardType(nftId);
+      boolean provisioned = blockchainService.isDeedStarted(nftId);
+      return DeedTenantHost.setInstance(nftId, cityIndex, cardType, provisioned, null, null);
     }
     return null;
-  }
-
-  private void initMetaverseIntegration() {
-    listenerService.enable();
   }
 
 }

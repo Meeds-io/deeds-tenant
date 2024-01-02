@@ -38,7 +38,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>/</outputDirectory>
       <includes>
-        <include>io.meeds.deeds-dapp:deeds-dapp-common:jar</include>
+        <include>io.meeds.deeds-dapp:deeds-dapp-contract:jar</include>
         <include>${project.groupId}:*:jar</include>
       </includes>
       <scope>runtime</scope>
