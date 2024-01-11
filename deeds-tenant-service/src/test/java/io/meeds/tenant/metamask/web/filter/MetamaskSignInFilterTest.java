@@ -20,8 +20,8 @@ import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_TENANT_SETUP_FORM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.PASSWORD_REQUEST_PARAM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.lenient;
@@ -34,34 +34,20 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
@@ -77,8 +63,21 @@ import org.exoplatform.web.security.security.RemindPasswordTokenService;
 import io.meeds.tenant.metamask.FakeTestException;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@RunWith(MockitoJUnitRunner.class)
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class MetamaskSignInFilterTest {
+
+  private static final String        PORTAL_CONTEXT = "/portal";
+
+  private static final String        FAKE_USER_NAME = "fakeUser";
 
   @Mock
   private WebAppController           webAppController;
@@ -126,20 +125,7 @@ public class MetamaskSignInFilterTest {
 
   private MetamaskSignInFilter       filter;
 
-  @BeforeClass
-  public static void setUpClass() throws Exception {
-    // Try to not start a portal container statically
-    // And register a fake StandaloneContainer as top container
-    Field topContainerField = ExoContainerContext.class.getDeclaredField("topContainer");
-    topContainerField.setAccessible(true);
-    if (topContainerField.get(null) == null) {
-      Method topContainerSetterMethod = ExoContainerContext.class.getDeclaredMethod("setTopContainer", ExoContainer.class);
-      topContainerSetterMethod.setAccessible(true);
-      topContainerSetterMethod.invoke(null, mock(StandaloneContainer.class));
-    }
-  }
-
-  @Before
+  @BeforeEach
   public void setUp() throws Exception {
     Mockito.reset(metamaskLoginService,
                   request,
@@ -151,8 +137,7 @@ public class MetamaskSignInFilterTest {
     container = mock(PortalContainer.class);
     when(container.getPortalContext()).thenReturn(servletContext);
     when(servletContext.getRequestDispatcher(any())).thenReturn(requestDispatcher);
-    when(request.getContextPath()).thenReturn("/portal");
-    when(request.getSession()).thenReturn(session);
+    when(request.getContextPath()).thenReturn(PORTAL_CONTEXT);
     filter = spy(new MetamaskSignInFilter(container,
                                           remindPasswordTokenService,
                                           webAppController,
@@ -177,9 +162,9 @@ public class MetamaskSignInFilterTest {
                                                                                          skinService,
                                                                                          metamaskLoginService,
                                                                                          params);
-    Filter filter = filterDefinition.getFilter();
-    assertNotNull(filter);
-    assertEquals(MetamaskSignInFilter.class, filter.getClass());
+    Filter webFilter = filterDefinition.getFilter();
+    assertNotNull(webFilter);
+    assertEquals(MetamaskSignInFilter.class, webFilter.getClass());
 
     List<FilterDefinition> filterDefinitions = filterDefinition.getFilterDefinitions();
     assertNotNull(filterDefinitions);
@@ -191,9 +176,9 @@ public class MetamaskSignInFilterTest {
   @Test
   public void testNotForwardToSetupWhenNotDeedOwner() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-    when(request.getContextPath()).thenReturn("/portal");
+    when(request.getContextPath()).thenReturn(PORTAL_CONTEXT);
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
-    when(request.getRemoteUser()).thenReturn("fakeUser");
+    when(request.getRemoteUser()).thenReturn(FAKE_USER_NAME);
     when(metamaskLoginService.isDeedTenant()).thenReturn(true);
     filter.doFilter(request, response, chain);
 
@@ -203,10 +188,10 @@ public class MetamaskSignInFilterTest {
   @Test
   public void testForwardToSetupWhenDeedOwner() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-    when(request.getContextPath()).thenReturn("/portal");
+    when(request.getContextPath()).thenReturn(PORTAL_CONTEXT);
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
-    when(request.getRemoteUser()).thenReturn("fakeUser");
-    when(metamaskLoginService.isTenantManager("fakeUser")).thenReturn(true);
+    when(request.getRemoteUser()).thenReturn(FAKE_USER_NAME);
+    when(metamaskLoginService.isTenantManager(FAKE_USER_NAME)).thenReturn(true);
     when(metamaskLoginService.isDeedTenant()).thenReturn(true);
     filter.doFilter(request, response, chain);
 
@@ -216,9 +201,9 @@ public class MetamaskSignInFilterTest {
   @Test
   public void testCannotDisplayRegisterFormWhenSingedIn() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn("fakeUser");
+    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(FAKE_USER_NAME);
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + "fakePassword");
-    when(request.getRemoteUser()).thenReturn("fakeUser");
+    when(request.getRemoteUser()).thenReturn(FAKE_USER_NAME);
     filter.doFilter(request, response, chain);
     verifyNoInteractions(servletContext);
     verify(chain, times(1)).doFilter(request, response);
@@ -226,7 +211,7 @@ public class MetamaskSignInFilterTest {
 
   @Test
   public void testContinueFilterChainEvenWhenErrorOccurs() throws IOException, ServletException {
-    lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
+    when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getParameter(any())).thenThrow(new FakeTestException());
     filter.doFilter(request, response, chain);
     verifyNoInteractions(servletContext);
@@ -234,8 +219,8 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testCannotDisplayRegisterFormWhenDisabled() throws Exception {
-    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn("fakeUser");
+  public void testCannotDisplayRegisterFormWhenDisabled() throws Exception { // NOSONAR
+    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(FAKE_USER_NAME);
     filter.doFilter(request, response, chain);
     verify(chain, times(1)).doFilter(request, response);
     verifyNoInteractions(servletContext);
@@ -243,8 +228,8 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testCannotDisplayRegisterFormWhenCredentialsNotValidated() throws Exception {
-    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn("fakeUser");
+  public void testCannotDisplayRegisterFormWhenCredentialsNotValidated() throws Exception { // NOSONAR
+    when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(FAKE_USER_NAME);
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn("fakePassword");
     filter.doFilter(request, response, chain);
     verify(chain, times(1)).doFilter(request, response);
@@ -253,8 +238,8 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testProceedToLoginWhenUserAlreadyRegistered() throws Exception {
-    String walletAddress = "fakeUser";
+  public void testProceedToLoginWhenUserAlreadyRegistered() throws Exception { // NOSONAR
+    String walletAddress = FAKE_USER_NAME;
     String rawMessageToSign = "rawMessage";
     String signedMessage = "signedMessage";
 
@@ -268,19 +253,18 @@ public class MetamaskSignInFilterTest {
     filter.doFilter(request, response, chain);
     verify(response, never()).sendRedirect(any());
     verify(servletContext, never()).getRequestDispatcher(any());
-    verify(chain, times(1)).doFilter(argThat(new ArgumentMatcher<>() {
-      public boolean matches(ServletRequest argument) {
-        return StringUtils.equals(walletAddress, argument.getParameter(USERNAME_REQUEST_PARAM))
-            && StringUtils.equals(compoundPassword, argument.getParameter(PASSWORD_REQUEST_PARAM));
-      }
-    }), any());
+    verify(chain,
+           times(1)).doFilter(argThat(servletRequest -> StringUtils.equals(walletAddress, servletRequest.getParameter(USERNAME_REQUEST_PARAM))
+                                                        && StringUtils.equals(compoundPassword,
+                                                                              servletRequest.getParameter(PASSWORD_REQUEST_PARAM))),
+                              any());
   }
 
   @Test
-  public void testFailToRegisterWhenNoUsernameInSession() throws Exception {
+  public void testFailToRegisterWhenNoUsernameInSession() throws Exception { // NOSONAR
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
-    String walletAddress = "fakeUser";
+    String walletAddress = FAKE_USER_NAME;
     String rawMessageToSign = "rawMessage";
     String signedMessage = "signedMessage";
 

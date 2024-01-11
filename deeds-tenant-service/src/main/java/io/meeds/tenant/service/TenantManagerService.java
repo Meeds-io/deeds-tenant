@@ -16,69 +16,57 @@
  */
 package io.meeds.tenant.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.picocontainer.Startable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import org.exoplatform.container.xml.InitParams;
+import org.exoplatform.commons.exception.ObjectNotFoundException;
 
-import io.meeds.tenant.integration.SpringContext;
-import io.meeds.tenant.integration.SpringIntegration;
-import io.meeds.tenant.integration.service.TenantServiceFacade;
 import io.meeds.tenant.model.DeedTenantHost;
+
+import jakarta.annotation.PostConstruct;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A service that allows to detect Deed Tenant Manager address
  */
-public class TenantManagerService implements Startable {
+@Service
+public class TenantManagerService {
 
-  public static final int         MAX_START_TENTATIVES        = 5;
+  @Autowired
+  private BlockchainService blockchainService;
 
-  public static final String      MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
+  @Getter
+  @Setter
+  @Value("${meeds.tenantManagement.nftId:-1}")
+  private long            nftId;
 
-  public static final String      NFT_ID_PARAM                = "nftId";
+  @Getter
+  private List<String>    tenantManagerDefaultRoles = Arrays.asList("*:/platform/users",
+                                                                    "*:/platform/administrators",
+                                                                    "*:/platform/analytics",
+                                                                    "*:/platform/rewarding");
 
-  protected TenantServiceFacade tenantServiceFacade;
-
-  private String                  nftId;
-
-  private List<String>            tenantManagerDefaultRoles   = new ArrayList<>();
-
-  public TenantManagerService(InitParams params) {
-    this.tenantManagerDefaultRoles = getParamValues(params, MANAGER_DEFAULT_ROLES_PARAM);
-    this.nftId = getParamValue(params, NFT_ID_PARAM);
-  }
-
-  @Override
-  public void start() {
+  @PostConstruct
+  public void start() throws ObjectNotFoundException {
     if (isTenant()) {
       DeedTenantHost deedTenantHost = retrieveDeedTenant();
       if (deedTenantHost == null) {
-        throw unreadyConfigurationException(null);
-      } else {
-        initMetaverseIntegration();
+        throw new IllegalStateException("Can't get Deed Tenant from WoM Server");
       }
     }
   }
 
-  @Override
-  public void stop() {
-    // Nothing to stop for now
-  }
-
-  public List<String> getTenantManagerDefaultRoles() {
-    return Collections.unmodifiableList(tenantManagerDefaultRoles);
-  }
-
-  @SpringIntegration
   public boolean isTenantManager(String address) {
     if (isTenant() && StringUtils.isNotBlank(address)) {
       DeedTenantHost deedTenantHost = DeedTenantHost.getInstance();
       if (deedTenantHost == null || StringUtils.isBlank(deedTenantHost.getManagerAddress())) {
-        boolean isTenantManager = getTenantServiceFacade().isTenantManager(address, getNftId());
+        boolean isTenantManager = isTenantManager(address, nftId);
         if (isTenantManager && deedTenantHost != null) {
           deedTenantHost.setManagerAddress(address);
         }
@@ -92,53 +80,37 @@ public class TenantManagerService implements Startable {
   }
 
   public boolean isTenant() {
-    return getNftId() > -1;
+    return nftId > -1;
   }
 
-  public long getNftId() {
-    return StringUtils.isBlank(nftId) ? -1 : Long.parseLong(nftId);
+  /**
+   * Checks if address is the provisioning manager of the DEED
+   * 
+   * @param  nftId   DEED NFT identifier
+   * @param  address Wallet or Contract Ethereum address
+   * @return         true if address is the provisioning manager of the DEED
+   *                 Tenant
+   */
+  private boolean isTenantManager(String address, long nftId) {
+    return blockchainService.isDeedProvisioningManager(address, nftId);
   }
 
-  protected TenantServiceFacade getTenantServiceFacade() {
-    if (tenantServiceFacade == null) {
-      try {
-        tenantServiceFacade = SpringContext.getSpringBean(TenantServiceFacade.class);
-      } catch (Exception e) {
-        throw unreadyConfigurationException(e);
-      }
-    }
-    if (tenantServiceFacade == null) {
-      throw unreadyConfigurationException(null);
-    }
-    return tenantServiceFacade;
-  }
-
-  @SpringIntegration
-  private DeedTenantHost retrieveDeedTenant() {// NOSONAR
-    return getTenantServiceFacade().getDeedTenant(getNftId());
-  }
-
-  @SpringIntegration
-  private void initMetaverseIntegration() {
-    getTenantServiceFacade().initMetaverseIntegration();
-  }
-
-  private String getParamValue(InitParams params, String paramName) {
-    if (params != null && params.containsKey(paramName)) {
-      return params.getValueParam(paramName).getValue();
+  /**
+   * Retrieve Deed Tenant information from blockchain
+   * 
+   * @param nftId DEED NFT id in the blockchain
+   * @return {@link DeedTenantHost}
+   * @throws ObjectNotFoundException when Deed NFT id is not recognized on
+   *           blockchain
+   */
+  private DeedTenantHost retrieveDeedTenant() throws ObjectNotFoundException {// NOSONAR
+    if (nftId >= 0 && DeedTenantHost.getInstance() == null) {
+      short cityIndex = blockchainService.getDeedCityIndex(nftId);
+      short cardType = blockchainService.getDeedCardType(nftId);
+      boolean provisioned = blockchainService.isDeedStarted(nftId);
+      return DeedTenantHost.setInstance(nftId, cityIndex, cardType, provisioned, null, null);
     }
     return null;
-  }
-
-  private List<String> getParamValues(InitParams params, String paramName) {
-    if (params != null && params.containsKey(paramName)) {
-      return params.getValuesParam(paramName).getValues();
-    }
-    return Collections.emptyList();
-  }
-
-  private IllegalStateException unreadyConfigurationException(Exception e) {
-    return new IllegalStateException("Can't Reach TenantService from Spring context, the Deed Tenant must shutdown until the correct configuration is set. (Deed Tenants ES configuration)", e);
   }
 
 }

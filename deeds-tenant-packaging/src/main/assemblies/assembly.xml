@@ -31,16 +31,17 @@
       <includes>
         <include>${project.groupId}:*:war</include>
       </includes>
-      <scope>provided</scope>
+      <scope>runtime</scope>
       <outputFileNameMapping>${artifact.build.finalName}.war</outputFileNameMapping>
     </dependencySet>
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>/</outputDirectory>
       <includes>
+        <include>io.meeds.deeds-dapp:deeds-dapp-contract:jar</include>
         <include>${project.groupId}:*:jar</include>
       </includes>
-      <scope>provided</scope>
+      <scope>runtime</scope>
       <outputFileNameMapping>${artifact.artifactId}.jar</outputFileNameMapping>
     </dependencySet>
   </dependencySets>

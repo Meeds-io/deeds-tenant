@@ -24,47 +24,11 @@
    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
 
   <component>
-    <type>io.meeds.tenant.service.TenantManagerService</type>
-    <init-params>
-      <value-param>
-        <name>nftId</name>
-        <description>Dedicated NFT for current Installation</description>
-        <value>${meeds.tenantManagement.nftId:}</value>
-      </value-param>
-      <values-param>
-        <name>managerDefaultRoles</name>
-        <value>*:/platform/users</value>
-        <value>*:/platform/administrators</value>
-        <value>*:/platform/analytics</value>
-        <value>*:/platform/rewarding</value>
-      </values-param>
-    </init-params>
-  </component>
-
-  <component>
     <type>io.meeds.tenant.metamask.web.MetamaskLoginExtension</type>
   </component>
 
   <component>
     <type>io.meeds.tenant.metamask.web.MetamaskRegisterExtension</type>
-  </component>
-
-  <component>
-    <type>io.meeds.tenant.metamask.service.MetamaskLoginService</type>
-    <init-params>
-      <value-param>
-        <name>allow.registration</name>
-        <value>${meeds.register.metamask.allowUserRegistration:false}</value>
-      </value-param>
-      <value-param>
-        <name>secureRootAccessWithMetamask</name>
-        <value>${meeds.login.metamask.secureRootAccessWithMetamask:true}</value>
-      </value-param>
-      <value-param>
-        <name>allowedRootAccessWallets</name>
-        <value>${meeds.login.metamask.allowedRootAccessWallets:}</value>
-      </value-param>
-    </init-params>
   </component>
 
   <external-component-plugins>

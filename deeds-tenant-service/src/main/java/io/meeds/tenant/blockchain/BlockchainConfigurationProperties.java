@@ -13,15 +13,26 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.integration;
+package io.meeds.tenant.blockchain;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-public @interface SpringIntegration {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Configuration
+@ConfigurationProperties(prefix = "meeds.blockchain", ignoreInvalidFields = true, ignoreUnknownFields = true)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class BlockchainConfigurationProperties {
+
+  private String networkUrl;
+
+  private String tenantProvisioningAddress = "0x49C0cF46C0Eb6FdF05A4E8C1FE344d510422E1F0";
+
+  private String deedAddress               = "0x0143b71443650aa8efa76bd82f35c22ebd558090";
 
 }

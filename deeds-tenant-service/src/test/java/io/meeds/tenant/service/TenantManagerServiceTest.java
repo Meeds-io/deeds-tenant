@@ -16,148 +16,87 @@
  */
 package io.meeds.tenant.service;
 
-import static io.meeds.tenant.service.TenantManagerService.MANAGER_DEFAULT_ROLES_PARAM;
-import static io.meeds.tenant.service.TenantManagerService.NFT_ID_PARAM;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-
-import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
-import org.exoplatform.container.xml.ValuesParam;
+import org.exoplatform.commons.exception.ObjectNotFoundException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.tenant.integration.service.TenantServiceFacade;
 import io.meeds.tenant.model.DeedTenantHost;
 
-@RunWith(MockitoJUnitRunner.class)
+@SpringBootTest(classes = {
+  TenantManagerService.class,
+})
 public class TenantManagerServiceTest {
 
   protected static final Log LOG = ExoLogger.getLogger(TenantManagerServiceTest.class);
 
+  @MockBean
+  BlockchainService      blockchainService;
+
+  @Autowired
   TenantManagerService       tenantManagerService;
 
-  @Mock
-  TenantServiceFacade        tenantServiceFacade;
-
-  @Before
-  public void teardown() throws Exception {
+  @BeforeEach
+  public void teardown() {
     DeedTenantHost.clear();
   }
 
   @Test
-  public void testStart() throws Exception {
-    tenantManagerService = newTenantManagerService(null);
+  public void testStart() throws ObjectNotFoundException {
     tenantManagerService.start();
     assertNull(DeedTenantHost.getInstance());
 
-    String nftId = "3";
+    assertEquals(-1, tenantManagerService.getNftId());
+    tenantManagerService.setNftId(3l);
+    try {
+      when(blockchainService.getDeedCityIndex(tenantManagerService.getNftId())).thenThrow(new IllegalStateException());
+      assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
+      assertNull(DeedTenantHost.getInstance());
 
-    InitParams params = mock(InitParams.class);
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
+      assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
 
-    tenantManagerService = newTenantManagerService(params);
-    assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
-    assertNull(DeedTenantHost.getInstance());
-
-    tenantManagerService.tenantServiceFacade = tenantServiceFacade;
-    assertThrows(IllegalStateException.class, () -> tenantManagerService.start());
-
-    when(tenantServiceFacade.getDeedTenant(tenantManagerService.getNftId())).thenAnswer(invocation -> {
-      return DeedTenantHost.setInstance(tenantManagerService.getNftId(), (short) 0, (short) 0, false, null, null);
-    });
-    tenantManagerService.start();
-    assertNotNull(DeedTenantHost.getInstance());
+      reset(blockchainService);
+      tenantManagerService.start();
+      assertNotNull(DeedTenantHost.getInstance());
+    } finally {
+      tenantManagerService.setNftId(-1);
+    }
   }
 
   @Test
-  public void testIsTenantManager() throws Exception {
-    String nftId = "2";
+  public void testIsTenantManager() {
+    long nftId = 2l;
     String walletAddress = "0xb82f8457fcf644803f4d74f677905f1d410cd395";
 
-    tenantManagerService = newTenantManagerService(null);
     assertFalse(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = newTenantManagerService(params);
-    assertFalse(tenantManagerService.isTenant());
-    assertFalse(tenantManagerService.isTenantManager(walletAddress));
-
-    when(params.containsKey(NFT_ID_PARAM)).thenReturn(true);
-    ValueParam nftIdValue = new ValueParam();
-    nftIdValue.setValue(nftId);
-    when(params.getValueParam(NFT_ID_PARAM)).thenReturn(nftIdValue);
-    tenantManagerService = newTenantManagerService(params);
+    tenantManagerService.setNftId(nftId);
     assertTrue(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
-    tenantManagerService.tenantServiceFacade = tenantServiceFacade;
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
     DeedTenantHost.setInstance(2l, (short) 0, (short) 0, false, "anotherWalletAddress", "managerWalletAddress");
-    tenantManagerService = newTenantManagerService(params);
     assertTrue(tenantManagerService.isTenant());
     assertFalse(tenantManagerService.isTenantManager(walletAddress));
 
     DeedTenantHost.setInstance(2l, (short) 0, (short) 0, false, walletAddress, "managerWalletAddress");
-    tenantManagerService = newTenantManagerService(params);
     assertTrue(tenantManagerService.isTenant());
     assertTrue(tenantManagerService.isTenantManager(walletAddress));
-  }
-
-  @Test
-  public void testGetTenantManagerDefaultRoles() {
-    tenantManagerService = newTenantManagerService(null);
-    List<String> tenantManagerDefaultRoles = tenantManagerService.getTenantManagerDefaultRoles();
-    assertNotNull(tenantManagerDefaultRoles);
-    assertEquals(0, tenantManagerDefaultRoles.size());
-
-    InitParams params = mock(InitParams.class);
-    tenantManagerService = newTenantManagerService(params);
-    tenantManagerDefaultRoles = tenantManagerService.getTenantManagerDefaultRoles();
-    assertNotNull(tenantManagerDefaultRoles);
-    assertEquals(0, tenantManagerDefaultRoles.size());
-
-    String adminRole = "/platform/administrators";
-    String rewardingRole = "/platform/rewarding";
-    when(params.containsKey(MANAGER_DEFAULT_ROLES_PARAM)).thenReturn(true);
-    ValuesParam managerDefaultRolesValues = new ValuesParam();
-    managerDefaultRolesValues.setValues(Arrays.asList(adminRole, rewardingRole));
-    when(params.getValuesParam(MANAGER_DEFAULT_ROLES_PARAM)).thenReturn(managerDefaultRolesValues);
-    tenantManagerService = newTenantManagerService(params);
-    tenantManagerDefaultRoles = tenantManagerService.getTenantManagerDefaultRoles();
-    assertNotNull(tenantManagerDefaultRoles);
-    assertEquals(adminRole, tenantManagerDefaultRoles.get(0));
-    assertEquals(rewardingRole, tenantManagerDefaultRoles.get(1));
-
-    List<String> tenantManagerDefaultRolesConstant = tenantManagerDefaultRoles;
-    assertThrows(UnsupportedOperationException.class, () -> tenantManagerDefaultRolesConstant.add("test"));
-  }
-
-  private TenantManagerService newTenantManagerService(InitParams params) {
-    return new TenantManagerService(params) {
-      protected TenantServiceFacade getTenantServiceFacade() {
-        return TenantManagerServiceTest.this.tenantServiceFacade;
-      }
-    };
   }
 
 }
