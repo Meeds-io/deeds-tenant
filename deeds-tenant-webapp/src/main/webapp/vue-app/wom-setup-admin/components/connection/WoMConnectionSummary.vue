@@ -26,7 +26,7 @@
     <template v-if="!loading">
       <template v-if="connected">
         <v-list-item-title class="text-subtitle-1 font-weight-bold">{{ $t('wom.connectedDeedToWoM') }}</v-list-item-title>
-        <wom-integration-hub-card
+        <wom-setup-hub-card
           :hub="hub"
           class="mx-auto"
           @edit="$refs.connectionDrawer.open()"
@@ -45,10 +45,10 @@
         </v-list-item-action>
       </v-list-item>
     </template>
-    <wom-integration-connection-drawer
+    <wom-setup-connection-drawer
       ref="connectionDrawer"
       :hub="hub" />
-    <wom-integration-disconnection-drawer
+    <wom-setup-disconnection-drawer
       ref="disconnectionDrawer" />
   </v-card>
 </template>
