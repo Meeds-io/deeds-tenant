@@ -17,7 +17,7 @@
  */
 
 export function getReports(offset, limit) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/reports?offset=${offset || 0}&limit=${limit || 10}`, {
+  return fetch(`/deeds-tenant/rest/reports?offset=${offset || 0}&limit=${limit || 10}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -32,7 +32,7 @@ export function getReports(offset, limit) {
 }
 
 export function getReport(id, refreshFromWoM) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/reports/${id}?refresh=${refreshFromWoM || false}`, {
+  return fetch(`/deeds-tenant/rest/reports/${id}?refresh=${refreshFromWoM || false}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -70,7 +70,7 @@ export function getLocalRewardDetails(date) {
 }
 
 export function sendReport(id) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/reports/${id}`, {
+  return fetch(`/deeds-tenant/rest/reports/${id}`, {
     method: 'PUT',
     credentials: 'include',
   }).then((resp) => {

@@ -17,40 +17,81 @@
 package io.meeds.tenant.metamask.listener;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
+import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.impl.UserImpl;
+import org.exoplatform.social.core.identity.model.Identity;
+import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.wallet.model.Wallet;
+import org.exoplatform.wallet.model.WalletProvider;
+import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.service.TenantManagerService;
-
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest(classes = {
+  NewMetamaskCreatedUserListener.class,
+})
 public class NewMetamaskCreatedUserListenerTest {
 
-  @Mock
-  TenantManagerService tenantManagerService;
+  @MockBean
+  OrganizationService            organizationService;
+
+  @MockBean
+  WalletAccountService           walletAccountService;
+
+  @MockBean
+  IdentityManager                identityManager;
+
+  @Autowired
+  NewMetamaskCreatedUserListener listener;
+
+  @Test
+  public void testNewMetamaskCreatedUserListenerWhenWalletExists() throws Exception {
+    String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
+    Wallet wallet = new Wallet();
+
+    when(walletAccountService.getWalletByAddress(username)).thenReturn(wallet);
+    User user = new UserImpl(username);
+    listener.postSave(user, true);
+    verifyNoInteractions(identityManager);
+    verify(walletAccountService, times(0)).saveWallet(any(), anyBoolean());
+  }
 
   @Test
   public void testNewMetamaskCreatedUserListener() throws Exception {
     String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
-    NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(tenantManagerService);
+    String identityId = "2554";
+
+    Identity identity = mock(Identity.class);
+    when(identity.getId()).thenReturn(identityId);
+    when(identityManager.getOrCreateUserIdentity(username)).thenReturn(identity);
+
+    Wallet wallet = mock(Wallet.class);
+    when(walletAccountService.createWalletInstance(WalletProvider.METAMASK,
+                                                   username,
+                                                   Long.valueOf(identity.getId()))).thenReturn(wallet);
+    when(walletAccountService.saveWallet(any(), anyBoolean())).thenAnswer(invocation -> invocation.getArgument(0));
 
     User user = new UserImpl("not an address");
     listener.postSave(user, true);
-    verify(tenantManagerService, times(0)).createUserWalletByAddress(any());
+    verify(walletAccountService, times(0)).saveWallet(any(), anyBoolean());
 
     user = new UserImpl(username);
     listener.postSave(user, false);
-    verify(tenantManagerService, times(0)).createUserWalletByAddress(any());
+    verify(walletAccountService, times(0)).saveWallet(any(), anyBoolean());
 
     listener.postSave(user, true);
-    verify(tenantManagerService, times(1)).createUserWalletByAddress(any());
+    verify(walletAccountService, times(1)).saveWallet(any(), anyBoolean());
   }
 
 }

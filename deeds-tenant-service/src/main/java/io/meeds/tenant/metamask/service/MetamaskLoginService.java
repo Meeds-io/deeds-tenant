@@ -33,8 +33,6 @@ import org.web3j.crypto.Sign.SignatureData;
 import org.web3j.utils.Numeric;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
-import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.RootContainer.PortalContainerPostInitTask;
 import org.exoplatform.portal.config.UserACL;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -45,11 +43,9 @@ import org.exoplatform.services.organization.UserHandler;
 import io.meeds.common.ContainerTransactional;
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
-import io.meeds.tenant.service.HubService;
-import io.meeds.tenant.service.TenantManagerService;
+import io.meeds.tenant.wom.service.WomService;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
 import lombok.Setter;
 
@@ -58,7 +54,7 @@ public class MetamaskLoginService {
 
   public static final String     LOGIN_MESSAGE_ATTRIBUTE_NAME = "metamask_login_message";
 
-  protected static final Log     LOG                          = ExoLogger.getLogger(MetamaskLoginService.class);
+  private static final Log       LOG                          = ExoLogger.getLogger(MetamaskLoginService.class);
 
   @Autowired
   private SecuritySettingService securitySettingService;
@@ -67,19 +63,16 @@ public class MetamaskLoginService {
   private OrganizationService    organizationService;
 
   @Autowired
-  private UserACL                userACL;
+  private UserACL                userAcl;
 
   @Autowired
   private SecureRandomProvider   secureRandomProvider;
 
   @Autowired
-  private TenantManagerService   tenantManagerService;
-
-  @Autowired
   private AccountSetupService    accountSetupService;
 
   @Autowired
-  private HubService             hubService;
+  private WomService             womService;
 
   @Setter
   @Value("${meeds.login.metamask.secureRootAccessWithMetamask:true}")
@@ -91,7 +84,7 @@ public class MetamaskLoginService {
 
   @PostConstruct
   @ContainerTransactional
-  public void start() {
+  public void init() {
     if (this.secureRootAccessWithMetamask) {
       // Avoid allowing to change root password
       accountSetupService.setSkipSetup(true);
@@ -117,7 +110,7 @@ public class MetamaskLoginService {
     if (isAllowUserRegistration()) {
       return true;
     } else {
-      return isTenantManager(walletAddress);
+      return isDeedManager(walletAddress);
     }
   }
 
@@ -125,8 +118,8 @@ public class MetamaskLoginService {
    * @param walletAddress to check if it's of Tenant Manager
    * @return true is wallet address is of the Tenant Manager else return false.
    */
-  public boolean isTenantManager(String walletAddress) {
-    return tenantManagerService.isTenantManager(walletAddress);
+  public boolean isDeedManager(String walletAddress) {
+    return womService.isDeedManager(walletAddress);
   }
 
   /**
@@ -148,7 +141,7 @@ public class MetamaskLoginService {
    */
   public String getUserWithWalletAddress(String walletAddress) {
     if (isSuperUser(walletAddress)) {
-      return userACL.getSuperUser();
+      return userAcl.getSuperUser();
     }
     try {
       User user = organizationService.getUserHandler().findUserByName(walletAddress.toLowerCase());
@@ -250,7 +243,7 @@ public class MetamaskLoginService {
    */
   public boolean isDeedHub() {
     try {
-      return hubService.isDeedHub();
+      return womService.isDeedHub();
     } catch (Exception e) {
       LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
       return false;
@@ -261,7 +254,7 @@ public class MetamaskLoginService {
    * @return DEED NFT identifier
    */
   public long getDeedId() {
-    return hubService.getDeedId();
+    return womService.getDeedId();
   }
 
   private String generateRandomToken() {
@@ -270,27 +263,12 @@ public class MetamaskLoginService {
   }
 
   private void secureRootPassword() {
-    PortalContainer container = PortalContainer.getInstanceIfPresent();
     UserHandler userHandler = organizationService.getUserHandler();
-    if (userHandler != null) {
-      if (container != null && container.isStarted()) {
-        secureRootPassword(userHandler);
-      } else if (container != null) {
-        PortalContainer.addInitTask(container.getPortalContext(), new PortalContainerPostInitTask() {
-          @Override
-          public void execute(ServletContext context, PortalContainer portalContainer) {
-            secureRootPassword(userHandler);
-          }
-        }, "portal");
-      } else {
-        throw new IllegalStateException("Can't secure root access due to missing Kernel container in current context");
-      }
+    if (userHandler == null) {
+      return;
     }
-  }
-
-  private void secureRootPassword(UserHandler userHandler) {
     try {
-      User rootUser = userHandler.findUserByName(userACL.getSuperUser());
+      User rootUser = userHandler.findUserByName(userAcl.getSuperUser());
       if (rootUser == null) {
         LOG.warn("Root user wasn't found, can't regenerate password.");
       } else {
