@@ -45,7 +45,7 @@
             </span>
           </v-stepper-step>
           <v-slide-y-transition>
-            <wom-integration-deed-manager-selector
+            <wom-setup-deed-manager-selector
               v-show="stepper === 1"
               ref="managerSelector"
               :raw-message="rawMessage"
@@ -64,7 +64,7 @@
             </span>
           </v-stepper-step>
           <v-slide-y-transition>
-            <wom-integration-deed-selector
+            <wom-setup-deed-selector
               v-show="stepper === 2"
               :value="hubDeedId"
               :address="deedManagerAddress"
@@ -89,7 +89,7 @@
               class="form-horizontal pt-0 pb-4 px-6"
               flat
               @submit.prevent="connect">
-              <wom-integration-rewarding-receiver
+              <wom-setup-rewarding-receiver
                 :address.sync="earnerAddress" />
 
               <translation-text-field
@@ -155,7 +155,7 @@
               <div class="subtitle-1 mt-4">
                 {{ $t('wom.hubAvatar') }}
               </div>
-              <wom-integration-image-selector
+              <wom-setup-image-selector
                 ref="hubAvatar"
                 v-model="hubAvatarUrl"
                 :max-upload-size="0.5"
@@ -165,7 +165,7 @@
               <div class="subtitle-1 mt-4">
                 {{ $t('wom.hubBanner') }}
               </div>
-              <wom-integration-image-selector
+              <wom-setup-image-selector
                 ref="hubBanner"
                 v-model="hubBannerUrl"
                 :max-upload-size="0.5"
@@ -175,7 +175,7 @@
               <div class="subtitle-1 mt-4">
                 {{ $t('wom.hubBrandingColor') }}
               </div>
-              <wom-integration-color-picker
+              <wom-setup-color-picker
                 v-model="hubColor" />
             </v-form>
           </v-slide-y-transition>

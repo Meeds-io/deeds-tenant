@@ -7,7 +7,7 @@ let config = {
   // set the entry point of the application
   // can use multiple entry
   entry: {
-    womIntegration: './src/main/webapp/vue-app/wom-integration/main.js',
+    womSetup: './src/main/webapp/vue-app/wom-setup-admin/main.js',
     metamaskLoginExtension: './src/main/webapp/vue-app/login/main.js',
     metamaskRegisterExtension: './src/main/webapp/vue-app/register-extension/main.js',
     metamaskSetupForm: './src/main/webapp/vue-app/register-deed-setup/main.js',

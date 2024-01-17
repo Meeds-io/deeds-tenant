@@ -1,6 +1,6 @@
 <template>
   <div>
-    <wom-integration-deed-chip
+    <wom-setup-deed-chip
       v-if="deed"
       :deed="deed"
       @clear="reset" />

@@ -5,7 +5,7 @@
     target="_blank"
     rel="nofollow noreferrer noopener"
     outlined>
-    <wom-integration-address-icon
+    <wom-setup-address-icon
       v-if="!transaction"
       :address="address"
       class="me-2 ms-n2" />

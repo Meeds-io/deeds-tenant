@@ -31,7 +31,7 @@
             sm="12"
             md="6"
             lg="4">
-            <wom-integration-hub-reward-item
+            <wom-setup-hub-reward-item
               :key="`report-${item.id}`"
               :report="item"
               :expand="expandedIndex === index"
