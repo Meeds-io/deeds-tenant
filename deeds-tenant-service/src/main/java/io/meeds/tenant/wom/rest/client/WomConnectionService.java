@@ -17,7 +17,7 @@
  */
 package io.meeds.tenant.wom.rest.client;
 
-import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
 
 import java.net.URI;
 
@@ -43,8 +43,8 @@ import org.springframework.stereotype.Component;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.deeds.api.constant.WomException;
-import io.meeds.deeds.api.model.WomErrorMessage;
+import io.meeds.wom.api.constant.WomException;
+import io.meeds.wom.api.model.WomErrorMessage;
 import io.meeds.tenant.wom.model.WomResponse;
 
 import lombok.SneakyThrows;
