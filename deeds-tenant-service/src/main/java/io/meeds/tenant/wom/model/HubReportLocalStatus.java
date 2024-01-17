@@ -23,8 +23,8 @@ import java.util.SortedSet;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.meeds.deeds.api.constant.HubReportStatusType;
-import io.meeds.deeds.api.model.HubReport;
+import io.meeds.wom.api.constant.HubReportStatusType;
+import io.meeds.wom.api.model.HubReport;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

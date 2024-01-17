@@ -16,8 +16,8 @@
  */
 package io.meeds.tenant.wom.service;
 
-import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
-import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 import static io.meeds.tenant.wom.utils.EntityMapper.toHubLocalReport;
 import static io.meeds.tenant.wom.utils.EntityMapper.toHubReport;
 
@@ -39,14 +39,14 @@ import org.exoplatform.wallet.model.reward.RewardPeriod;
 import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.reward.service.RewardReportService;
 
-import io.meeds.deeds.api.constant.HubReportStatusType;
-import io.meeds.deeds.api.constant.WomException;
-import io.meeds.deeds.api.constant.WomParsingException;
-import io.meeds.deeds.api.model.Hub;
-import io.meeds.deeds.api.model.HubReport;
-import io.meeds.deeds.api.model.HubReportPayload;
-import io.meeds.deeds.api.model.HubReportVerifiableData;
-import io.meeds.deeds.api.model.WomErrorMessage;
+import io.meeds.wom.api.constant.HubReportStatusType;
+import io.meeds.wom.api.constant.WomException;
+import io.meeds.wom.api.constant.WomParsingException;
+import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.HubReport;
+import io.meeds.wom.api.model.HubReportPayload;
+import io.meeds.wom.api.model.HubReportVerifiableData;
+import io.meeds.wom.api.model.WomErrorMessage;
 import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
 import io.meeds.gamification.model.filter.RealizationFilter;

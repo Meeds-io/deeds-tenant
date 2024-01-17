@@ -17,8 +17,8 @@
  */
 package io.meeds.tenant.wom.rest.client;
 
-import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
-import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
 import java.io.File;
 import java.net.URI;
@@ -32,12 +32,12 @@ import org.springframework.stereotype.Component;
 
 import org.exoplatform.upload.UploadResource;
 
-import io.meeds.deeds.api.constant.WomException;
-import io.meeds.deeds.api.model.Hub;
-import io.meeds.deeds.api.model.HubReport;
-import io.meeds.deeds.api.model.HubReportVerifiableData;
-import io.meeds.deeds.api.model.WomConnectionRequest;
-import io.meeds.deeds.api.model.WomDisconnectionRequest;
+import io.meeds.wom.api.constant.WomException;
+import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.HubReport;
+import io.meeds.wom.api.model.HubReportVerifiableData;
+import io.meeds.wom.api.model.WomConnectionRequest;
+import io.meeds.wom.api.model.WomDisconnectionRequest;
 
 @Component
 public class WoMServiceClient {
