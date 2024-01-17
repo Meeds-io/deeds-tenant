@@ -16,7 +16,7 @@
  */
 package io.meeds.tenant.wom.service;
 
-import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -39,10 +39,10 @@ import org.exoplatform.wallet.model.reward.RewardSettings;
 import org.exoplatform.wallet.reward.service.RewardSettingsService;
 import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.deeds.api.constant.WomException;
-import io.meeds.deeds.api.model.Hub;
-import io.meeds.deeds.api.model.WomConnectionRequest;
-import io.meeds.deeds.api.model.WomDisconnectionRequest;
+import io.meeds.wom.api.constant.WomException;
+import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.WomConnectionRequest;
+import io.meeds.wom.api.model.WomDisconnectionRequest;
 import io.meeds.tenant.wom.model.HubConfiguration;
 import io.meeds.tenant.wom.rest.client.WoMServiceClient;
 import io.meeds.tenant.wom.storage.HubIdentityStorage;

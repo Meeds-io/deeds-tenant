@@ -33,7 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.deeds.api.constant.WomException;
+import io.meeds.wom.api.constant.WomException;
 import io.meeds.tenant.wom.model.HubReportLocalStatus;
 import io.meeds.tenant.wom.service.WomReportService;
 

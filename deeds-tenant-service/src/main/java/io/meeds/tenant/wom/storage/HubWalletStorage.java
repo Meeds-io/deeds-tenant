@@ -17,8 +17,8 @@
  */
 package io.meeds.tenant.wom.storage;
 
-import static io.meeds.deeds.api.utils.JsonUtils.fromJsonString;
-import static io.meeds.deeds.api.utils.JsonUtils.toJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 import static org.exoplatform.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +36,7 @@ import org.exoplatform.wallet.service.WalletAccountService;
 import org.exoplatform.web.security.codec.CodecInitializer;
 import org.exoplatform.web.security.security.TokenServiceInitializationException;
 
-import io.meeds.deeds.api.constant.WomException;
+import io.meeds.wom.api.constant.WomException;
 
 import lombok.SneakyThrows;
 

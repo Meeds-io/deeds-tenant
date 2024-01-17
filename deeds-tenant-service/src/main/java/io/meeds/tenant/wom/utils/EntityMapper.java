@@ -34,10 +34,10 @@ import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.model.reward.WalletReward;
 import org.exoplatform.wallet.model.transaction.TransactionDetail;
 
-import io.meeds.deeds.api.constant.HubReportStatusType;
-import io.meeds.deeds.api.model.Hub;
-import io.meeds.deeds.api.model.HubReport;
-import io.meeds.deeds.api.model.HubReportPayload;
+import io.meeds.wom.api.constant.HubReportStatusType;
+import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.HubReport;
+import io.meeds.wom.api.model.HubReportPayload;
 import io.meeds.tenant.wom.model.HubReportLocalStatus;
 
 public class EntityMapper {

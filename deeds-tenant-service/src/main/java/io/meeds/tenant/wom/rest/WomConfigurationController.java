@@ -33,10 +33,10 @@ import org.exoplatform.commons.exception.ObjectNotFoundException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.deeds.api.constant.WomException;
-import io.meeds.deeds.api.model.Hub;
-import io.meeds.deeds.api.model.WomConnectionRequest;
-import io.meeds.deeds.api.model.WomDisconnectionRequest;
+import io.meeds.wom.api.constant.WomException;
+import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.WomConnectionRequest;
+import io.meeds.wom.api.model.WomDisconnectionRequest;
 import io.meeds.tenant.wom.model.HubConfiguration;
 import io.meeds.tenant.wom.service.WomService;
 
