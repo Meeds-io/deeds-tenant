@@ -16,46 +16,42 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.service.HubService;
+import io.meeds.tenant.wom.service.WomService;
 
-@ExtendWith(MockitoExtension.class)
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
+@SpringBootTest(classes = {
+  MetamaskLoginExtension.class,
+})
 public class MetamaskLoginExtensionTest {
 
-  @Mock
+  @MockBean
   private MetamaskLoginService   metamaskLoginService;
 
-  @Mock
-  private HubService             hubService;
+  @MockBean
+  private WomService             womService;
 
+  @Autowired
   private MetamaskLoginExtension metamaskLoginExtension;
-
-  @BeforeEach
-  public void setUp() {
-    reset(metamaskLoginService);
-    metamaskLoginExtension = new MetamaskLoginExtension(hubService, metamaskLoginService);
-  }
 
   @Test
   public void testGetExtensionName() {
