@@ -42,7 +42,7 @@
         </v-list-item-subtitle>
       </v-list-item-content>
     </v-list-item>
-    <wom-integration-color-picker-drawer
+    <wom-setup-color-picker-drawer
       ref="colorDrawer"
       :value="value"
       @input="$emit('input', $event)" />
