@@ -21,29 +21,43 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.exoplatform.container.PortalContainer;
-import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
+import org.exoplatform.web.filter.ExtensibleFilter;
 import org.exoplatform.web.filter.Filter;
 import org.exoplatform.web.filter.FilterDefinition;
 import org.exoplatform.web.filter.FilterDefinitionPlugin;
 import org.exoplatform.web.security.security.RemindPasswordTokenService;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
+
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 
 /**
  * A Login extension to submit Login parameters to UI for used network, contract
  * adresses ...
  */
+@Component
 public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
 
+  @Autowired
+  private ExtensibleFilter extensibleFilter;
+
+  @PostConstruct
+  public void init() {
+    extensibleFilter.addFilterDefinitions(this);
+  }
+
   @Getter
-  private Filter filter;
+  private Filter           filter;
 
   public MetamaskSignInFilterDefinition(PortalContainer container, // NOSONAR
                                         RemindPasswordTokenService remindPasswordTokenService,
@@ -52,9 +66,8 @@ public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
                                         BrandingService brandingService,
                                         JavascriptConfigService javascriptConfigService,
                                         SkinService skinService,
-                                        MetamaskLoginService metamaskLoginService,
-                                        InitParams params) {
-    super(params);
+                                        MetamaskLoginService metamaskLoginService) {
+    super(null);
     this.filter = new MetamaskSignInFilter(container,
                                            remindPasswordTokenService,
                                            webAppController,
