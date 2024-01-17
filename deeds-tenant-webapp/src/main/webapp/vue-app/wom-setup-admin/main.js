@@ -1,11 +1,13 @@
 /*
  * This file is part of the Meeds project (https://meeds.io/).
- * Copyright (C) 2022 Meeds Association
- * contact@meeds.io
+ * 
+ * Copyright (C) 2020 - 2024 Meeds Association contact@meeds.io
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3 of the License, or (at your option) any later version.
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -20,10 +22,10 @@ import './services.js';
 
 const lang = eXo && eXo.env && eXo.env.portal && eXo.env.portal.language || 'en';
 const urls = [
-  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.WoMIntegration-${lang}.json`
+  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.WoMSetupAdmin-${lang}.json`
 ];
 
-const appId = 'WoMIntegration';
+const appId = 'WoMSetupAdmin';
 
 export function init() {
   exoi18n.loadLanguageAsync(lang, urls)
@@ -71,9 +73,9 @@ export function init() {
           this.$hubService.getConfiguration()
             .then(configuration => this.configuration = configuration);
         },
-        template: `<wom-integration id="${appId}" />`,
+        template: `<wom-setup-admin id="${appId}" />`,
         i18n,
         vuetify: Vue.prototype.vuetifyOptions,
-      }, `#${appId}`, 'WoM Integration');
+      }, `#${appId}`, 'WoM Setup administration');
     });
 }

@@ -17,12 +17,41 @@
   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 -->
 <template>
-  <v-app>
-    <v-main>
+  <exo-drawer
+    ref="drawer"
+    v-model="drawer"
+    :loading="loading"
+    allow-expand
+    right
+    @expand-updated="expanded = $event">
+    <template #title>
+      {{ $t('wom.setup.drawer.title') }}
+    </template>
+    <template v-if="drawer" #content>
       <v-card class="pa-4" flat>
-        <wom-integration-connection-summary />
-        <wom-integration-hub-rewards class="mt-4" />
+        <wom-setup-connection-summary />
+        <wom-setup-hub-rewards
+          v-if="expanded"
+          class="mt-4" />
       </v-card>
-    </v-main>
-  </v-app>
+    </template>
+  </exo-drawer>
 </template>
+<script>
+export default {
+  data: () => ({
+    modified: false,
+    loading: false,
+    drawer: false,
+    expanded: false,
+  }),
+  methods: {
+    open() {
+      this.$refs.drawer.open();
+    },
+    close() {
+      this.$refs.drawer.close();
+    },
+  },
+};
+</script>

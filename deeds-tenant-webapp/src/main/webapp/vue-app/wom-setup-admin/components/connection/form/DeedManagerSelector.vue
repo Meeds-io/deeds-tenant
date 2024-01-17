@@ -4,7 +4,7 @@
       <div>
         {{ $t('wom.deedManager') }}
       </div>
-      <wom-integration-address
+      <wom-setup-address
         :address="address"
         clearable
         class="ms-auto"
@@ -12,7 +12,7 @@
     </div>
     <div v-else>
       <div v-sanitized-html="signMessageTitle" class="mb-4"></div>
-      <wom-integration-metamask-button
+      <wom-setup-metamask-button
         :message="rawMessage"
         :disabled="!rawMessage"
         :address.sync="address"

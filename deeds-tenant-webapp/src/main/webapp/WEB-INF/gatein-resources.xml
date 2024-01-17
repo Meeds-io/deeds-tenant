@@ -33,17 +33,17 @@
 
   <portlet-skin>
     <application-name>deeds-tenant</application-name>
-    <portlet-name>WoMIntegration</portlet-name>
+    <portlet-name>WoMSetupAdmin</portlet-name>
     <skin-name>Enterprise</skin-name>
-    <css-path>/css/womIntegration.css</css-path>
+    <css-path>/css/womSetupAdmin.css</css-path>
   </portlet-skin>
 
   <portlet>
-    <name>WoMIntegration</name>
+    <name>WoMSetupAdmin</name>
     <module>
       <script>
         <minify>false</minify>
-        <path>/js/womIntegration.js</path>
+        <path>/js/womSetup.js</path>
       </script>
       <depends>
         <module>vue</module>

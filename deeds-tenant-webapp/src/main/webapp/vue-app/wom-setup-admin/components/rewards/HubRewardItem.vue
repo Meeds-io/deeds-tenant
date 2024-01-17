@@ -17,7 +17,7 @@
             <span class="mx-2 text-no-wrap">{{ $t('wom.toDate') }}</span>
             <date-format :value="toDate" class="text-break" />
           </div>
-          <wom-integration-hub-reward-item-menu
+          <wom-setup-hub-reward-item-menu
             :report="report"
             :loading="loading"
             :expanded="expand"
@@ -29,13 +29,13 @@
         <v-card-text
           :class="expand && 'mt-4 pb-6' || 'mt-n2 pb-2'"
           class="d-flex flex-wrap">
-          <wom-integration-hub-reward-status
+          <wom-setup-hub-reward-status
             :report="report"
             class="me-2 mt-2" />
-          <wom-integration-hub-blockchain-chip
+          <wom-setup-hub-blockchain-chip
             :network-id="blockchainNetworkId"
             class="mt-2 me-2" />
-          <wom-integration-address
+          <wom-setup-address
             :title="$t('wom.tokenAddress')"
             :address="tokenAddress"
             :network-id="blockchainNetworkId"
@@ -90,7 +90,7 @@
             </v-col>
           </v-row>
         </v-list>
-        <wom-integration-hub-reward-users-list
+        <wom-setup-hub-reward-users-list
           v-if="expand"
           :from-date="fromDate"
           :to-date="toDate"

@@ -8,7 +8,7 @@
         <div class="text-subtitle-1 pt-2px">{{ $t('wom.hubWallet') }}</div>
         <div class="caption text-light-color">{{ $t('wom.selectEarningsReceiverAddress') }}</div>
       </div>
-      <wom-integration-address
+      <wom-setup-address
         :address="specificAddress"
         clearable
         class="flex-shrink-0 ms-auto"
