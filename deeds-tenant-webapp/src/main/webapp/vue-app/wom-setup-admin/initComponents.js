@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-import WoMIntegration from './components/WoMIntegration.vue';
+import WoMAdminSetup from './components/WoMAdminSetup.vue';
 
 import WoMConnectionSummary from './components/connection/WoMConnectionSummary.vue';
 
@@ -28,6 +28,7 @@ import ColorPicker from './components/connection/form/ColorPicker.vue';
 import ImageSelector from './components/connection/form/ImageSelector.vue';
 import ImageSelectorButtons from './components/connection/form/ImageSelectorButtons.vue';
 
+import WoMSetupDrawer from './components/connection/drawer/WoMSetupDrawer.vue';
 import WoMConnectionDrawer from './components/connection/drawer/WoMConnectionDrawer.vue';
 import WoMDisconnectionDrawer from './components/connection/drawer/WoMDisconnectionDrawer.vue';
 import ColorPickerDrawer from './components/connection/drawer/ColorPickerDrawer.vue';
@@ -46,30 +47,31 @@ import Address from './components/common/Address.vue';
 import BlockchainChip from './components/common/BlockchainChip.vue';
 
 const components = {
-  'wom-integration': WoMIntegration,
-  'wom-integration-connection-summary': WoMConnectionSummary,
-  'wom-integration-connection-drawer': WoMConnectionDrawer,
-  'wom-integration-disconnection-drawer': WoMDisconnectionDrawer,
-  'wom-integration-deed-manager-selector': DeedManagerSelector,
-  'wom-integration-rewarding-receiver': RewardingReceiverSelector,
-  'wom-integration-image-selector': ImageSelector,
-  'wom-integration-image-selector-buttons': ImageSelectorButtons,
-  'wom-integration-metamask-button': MetamaskButton,
-  'wom-integration-color-picker': ColorPicker,
-  'wom-integration-color-picker-drawer': ColorPickerDrawer,
-  'wom-integration-deed-chip': DeedChip,
-  'wom-integration-hub-card': HubCard,
+  'wom-setup-admin': WoMAdminSetup,
+  'wom-setup-drawer': WoMSetupDrawer,
+  'wom-setup-connection-summary': WoMConnectionSummary,
+  'wom-setup-connection-drawer': WoMConnectionDrawer,
+  'wom-setup-disconnection-drawer': WoMDisconnectionDrawer,
+  'wom-setup-deed-manager-selector': DeedManagerSelector,
+  'wom-setup-rewarding-receiver': RewardingReceiverSelector,
+  'wom-setup-image-selector': ImageSelector,
+  'wom-setup-image-selector-buttons': ImageSelectorButtons,
+  'wom-setup-metamask-button': MetamaskButton,
+  'wom-setup-color-picker': ColorPicker,
+  'wom-setup-color-picker-drawer': ColorPickerDrawer,
+  'wom-setup-deed-chip': DeedChip,
+  'wom-setup-hub-card': HubCard,
 
-  'wom-integration-hub-rewards': HubRewards,
-  'wom-integration-hub-reward-item': HubRewardItem,
-  'wom-integration-hub-reward-item-menu': HubRewardItemMenu,
-  'wom-integration-hub-reward-status': HubRewardStatus,
-  'wom-integration-hub-reward-users-list': HubRewardUsersList,
+  'wom-setup-hub-rewards': HubRewards,
+  'wom-setup-hub-reward-item': HubRewardItem,
+  'wom-setup-hub-reward-item-menu': HubRewardItemMenu,
+  'wom-setup-hub-reward-status': HubRewardStatus,
+  'wom-setup-hub-reward-users-list': HubRewardUsersList,
 
-  'wom-integration-address': Address,
-  'wom-integration-address-icon': AddressIcon,
-  'wom-integration-deed-selector': DeedSelector,
-  'wom-integration-hub-blockchain-chip': BlockchainChip,
+  'wom-setup-address': Address,
+  'wom-setup-address-icon': AddressIcon,
+  'wom-setup-deed-selector': DeedSelector,
+  'wom-setup-hub-blockchain-chip': BlockchainChip,
 };
 
 for (const key in components) {

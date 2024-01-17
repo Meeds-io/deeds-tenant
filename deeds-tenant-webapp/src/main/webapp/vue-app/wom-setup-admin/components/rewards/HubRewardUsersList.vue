@@ -25,7 +25,7 @@
               <v-list-item>
                 <v-list-item-content>{{ headers[1].text }}:</v-list-item-content>
                 <v-list-item-content class="align-end">
-                  <wom-integration-address
+                  <wom-setup-address
                     v-if="item.address"
                     :network-id="networkId"
                     :address="item.address" />
@@ -52,13 +52,13 @@
       {{ item.tokensSent }} Ɱ
     </template>
     <template v-if="!$vuetify.breakpoint.mobile" #[`item.address`]="{item}">
-      <wom-integration-address
+      <wom-setup-address
         v-if="item.address"
         :network-id="networkId"
         :address="item.address" />
     </template>
     <template v-if="!$vuetify.breakpoint.mobile" #[`item.transactionHash`]="{item}">
-      <wom-integration-address
+      <wom-setup-address
         v-if="item.transactionHash"
         :network-id="networkId"
         :address="item.transactionHash"

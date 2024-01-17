@@ -32,7 +32,7 @@
         <span class="font-weight-bold dark-grey-color text-subtitle-1">
           {{ $t('wom.connectWallet') }}
         </span>
-        <wom-integration-deed-manager-selector
+        <wom-setup-deed-manager-selector
           ref="managerSelector"
           :raw-message="rawMessage"
           :address.sync="deedManagerAddress"
