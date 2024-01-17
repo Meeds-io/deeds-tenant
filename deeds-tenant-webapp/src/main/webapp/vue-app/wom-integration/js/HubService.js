@@ -22,7 +22,7 @@ export function getHub(nftId) {
     formData.append('nftId', nftId);
   }
   const params = new URLSearchParams(formData).toString();
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant?${params}`, {
+  return fetch(`/deeds-tenant/rest/hub?${params}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -37,7 +37,7 @@ export function getHub(nftId) {
 }
 
 export function isTenantManager(address, nftId) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/manager?address=${address}&nftId=${nftId}`, {
+  return fetch(`/deeds-tenant/rest/hub/manager?address=${address}&nftId=${nftId}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -51,7 +51,7 @@ export function isTenantManager(address, nftId) {
 }
 
 export function connectToWoM(request) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/connect`, {
+  return fetch('/deeds-tenant/rest/hub/connect', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -66,7 +66,7 @@ export function connectToWoM(request) {
 }
 
 export function disconnectFromWoM(request) {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/disconnect`, {
+  return fetch('/deeds-tenant/rest/hub/disconnect', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -81,7 +81,7 @@ export function disconnectFromWoM(request) {
 }
 
 export function generateToken() {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/token`, {
+  return fetch('/deeds-tenant/rest/hub/token', {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -94,7 +94,7 @@ export function generateToken() {
 }
 
 export function getConfiguration() {
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/configuration`, {
+  return fetch('/deeds-tenant/rest/hub/configuration', {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -119,7 +119,7 @@ export function saveHubAvatar(paramsObj) {
     });
   }
   const params = new URLSearchParams(formData).toString();
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/avatar`, {
+  return fetch('/deeds-tenant/rest/hub/avatar', {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -146,7 +146,7 @@ export function saveHubBanner(paramsObj) {
     });
   }
   const params = new URLSearchParams(formData).toString();
-  return fetch(`${eXo.env.portal.context}/${eXo.env.portal.rest}/deed/tenant/banner`, {
+  return fetch('/deeds-tenant/rest/hub/banner', {
     method: 'POST',
     credentials: 'include',
     headers: {

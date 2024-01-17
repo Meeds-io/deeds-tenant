@@ -16,44 +16,27 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpSession;
-
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
-import org.exoplatform.web.login.UIParamsExtension;
 
-import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.service.HubService;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * A Login extension to submit Login parameters to UI
  */
-public class MetamaskLoginExtension implements UIParamsExtension {
-
-  private static final List<String> EXTENSION_NAMES = Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
-
-  protected MetamaskLoginService    metamaskLoginService;
-
-  protected HubService              hubService;
-
-  public MetamaskLoginExtension(HubService hubService,
-                                MetamaskLoginService metamaskLoginService) {
-    this.metamaskLoginService = metamaskLoginService;
-    this.hubService = hubService;
-  }
+@Service
+public class MetamaskLoginExtension extends BaseMetamaskExtension {
 
   @Override
   public List<String> getExtensionNames() {
-    return EXTENSION_NAMES;
+    return Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
   }
 
   @Override
@@ -66,24 +49,6 @@ public class MetamaskLoginExtension implements UIParamsExtension {
 
     addDeedTenantParameters(httpSession, params);
     return params;
-  }
-
-  protected void addDeedTenantParameters(HttpSession httpSession, Map<String, Object> params) {
-    if (metamaskLoginService.isDeedHub()) {
-      long deedId = metamaskLoginService.getDeedId();
-      params.put("nftId", deedId);
-      params.put("isDeedTenant", true);
-
-      if (deedId > -1) {
-        params.put("cityIndex", hubService.getDeedCity());
-        params.put("cardTypeIndex", hubService.getDeedType());
-        String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
-        if (StringUtils.isNotBlank(walletAddress)
-            && metamaskLoginService.isTenantManager(walletAddress)) {
-          params.put("isTenantManager", true);
-        }
-      }
-    }
   }
 
 }

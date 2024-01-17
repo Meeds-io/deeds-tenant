@@ -16,23 +16,42 @@
  */
 package io.meeds.tenant.metamask.listener;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.web3j.crypto.WalletUtils;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserEventListener;
+import org.exoplatform.social.core.identity.model.Identity;
+import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.wallet.model.Wallet;
+import org.exoplatform.wallet.model.WalletProvider;
+import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.service.TenantManagerService;
+import jakarta.annotation.PostConstruct;
 
+@Component
 public class NewMetamaskCreatedUserListener extends UserEventListener {
 
   private static final Log     LOG = ExoLogger.getLogger(NewMetamaskCreatedUserListener.class);
 
-  private TenantManagerService tenantManagerService;
+  @Autowired
+  private OrganizationService  organizationService;
 
-  public NewMetamaskCreatedUserListener(TenantManagerService tenantManagerService) {
-    this.tenantManagerService = tenantManagerService;
+  @Autowired
+  private WalletAccountService walletAccountService;
+
+  @Autowired
+  private IdentityManager      identityManager;
+
+  @PostConstruct
+  public void init() {
+    if (organizationService.getUserHandler() != null) {
+      organizationService.getUserHandler().addUserEventListener(this);
+    }
   }
 
   @Override
@@ -40,16 +59,30 @@ public class NewMetamaskCreatedUserListener extends UserEventListener {
     String address = user.getUserName();
     if (isNew && user.isEnabled() && WalletUtils.isValidAddress(address)) {
       try {
-        tenantManagerService.createUserWalletByAddress(address);
+        createUserWalletByAddress(address);
       } catch (Exception e) {
         LOG.warn("Error while associating Metamask wallet for user {}", address, e);
       }
-      try {
-        tenantManagerService.setTenantManagerRoles(address);
-      } catch (Exception e) {
-        LOG.warn("Error while setting admin roles for user {}", address, e);
-      }
     }
+  }
+
+  public Wallet createUserWalletByAddress(String address) {
+    if (!WalletUtils.isValidAddress(address)) {
+      return null;
+    }
+    Wallet wallet = walletAccountService.getWalletByAddress(address);
+    if (wallet != null) {
+      LOG.warn("Wallet with address {} is already associated to identity id {}." +
+          "The used Metamask address will not be associated to current user account.",
+               address,
+               wallet.getTechnicalId());
+      return null;
+    }
+    Identity identity = identityManager.getOrCreateUserIdentity(address);
+    Wallet userWallet = walletAccountService.createWalletInstance(WalletProvider.METAMASK,
+                                                                  address,
+                                                                  Long.valueOf(identity.getId()));
+    return walletAccountService.saveWallet(userWallet, true);
   }
 
 }
