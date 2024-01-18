@@ -66,7 +66,7 @@ export default {
       return this.status === 'ERROR_SENDING';
     },
     errorMessage() {
-      const messageKey = this.isErrorSending && this.$hubReportService.getErrorKey(this.report?.error);
+      const messageKey = this.isErrorSending && this.$womReportService.getErrorKey(this.report?.error);
       return this.isErrorSending && (this.$te(messageKey) ? this.$t(messageKey) : this.statusTitle) || null;
     },
     hubJoinDate() {

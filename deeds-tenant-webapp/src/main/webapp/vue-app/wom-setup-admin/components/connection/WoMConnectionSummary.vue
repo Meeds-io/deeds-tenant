@@ -82,7 +82,7 @@ export default {
   methods: {
     refresh() {
       this.loading = true;
-      return this.$hubService.getHub()
+      return this.$womService.getHub()
         .then(hub => this.hub = hub)
         .finally(() => this.loading = false);
     },

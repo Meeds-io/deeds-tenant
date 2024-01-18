@@ -26,7 +26,7 @@ export function getReports(offset, limit) {
     } else if (resp?.status === 404) {
       return null;
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -41,7 +41,7 @@ export function getReport(id, refreshFromWoM) {
     } else if (resp?.status === 404) {
       return null;
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -79,22 +79,7 @@ export function sendReport(id) {
     } else if (resp?.status === 404) {
       return null;
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
-}
-
-export function getErrorKey(error) {
-  try {
-    return JSON.parse(error).messageKey.split(':')[0];
-  } catch (e) {
-    return String(error).split(':')[0];
-  }
-}
-
-function handleResponseError(resp) {
-  return resp.text()
-    .then(error => {
-      throw new Error(getErrorKey(error));
-    });
 }

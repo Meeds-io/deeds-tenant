@@ -101,7 +101,7 @@ export default {
     },
     init() {
       this.loading = true;
-      this.$hubService.generateToken()
+      this.$womService.generateToken()
         .then(token => this.token = token)
         .finally(() => this.loading = false);
     },
@@ -119,7 +119,7 @@ export default {
     },
     disconnect() {
       this.disconnecting = true;
-      this.$hubService.disconnectFromWoM({
+      this.$womService.disconnectFromWoM({
         deedManagerAddress: this.deedManagerAddress,
         signedMessage: this.signedMessage,
         rawMessage: this.rawMessage,

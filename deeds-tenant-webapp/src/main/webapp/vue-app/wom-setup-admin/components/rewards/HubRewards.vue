@@ -79,7 +79,7 @@ export default {
     loadMore() {
       this.page++;
       this.loading = true;
-      return this.$hubReportService.getReports(this.offset, this.limit + 1)
+      return this.$womReportService.getReports(this.offset, this.limit + 1)
         .then(reports => {
           if (reports?.length) {
             this.reports.push(...reports.slice(0, this.limit));
