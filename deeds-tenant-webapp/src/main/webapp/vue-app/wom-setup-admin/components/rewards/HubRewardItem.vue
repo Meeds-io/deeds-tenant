@@ -179,7 +179,7 @@ export default {
   methods: {
     send() {
       this.loading = true;
-      return this.$hubReportService.sendReport(this.report?.id)
+      return this.$womReportService.sendReport(this.report?.id)
         .then(report => this.$emit('refresh', report))
         .then(() => this.$root.$emit('alert-message', this.$t('wom.reportSentSuccessfully'), 'success'))
         .catch(e => {
@@ -191,7 +191,7 @@ export default {
     },
     refresh() {
       this.loading = true;
-      return this.$hubReportService.getReport(this.report?.id, true)
+      return this.$womReportService.getReport(this.report?.id, true)
         .then(report => this.$emit('refresh', report))
         .then(() => this.$root.$emit('alert-message', this.$t('wom.reportRefreshedSuccessfully'), 'success'))
         .catch(e => {
@@ -199,7 +199,7 @@ export default {
           const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1]}` || error;
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
 
-          return this.$hubReportService.getReport(this.report?.id)
+          return this.$womReportService.getReport(this.report?.id)
             .then(report => this.$emit('refresh', report))
             .catch(() => this.$emit('report-not-found', this.report?.id));
         })

@@ -1,9 +1,8 @@
 /**
- *
  * This file is part of the Meeds project (https://meeds.io/).
- *
+ * 
  * Copyright (C) 2023 Meeds Association contact@meeds.io
- *
+ * 
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -15,32 +14,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
  */
-import * as metamaskUtils from '../js/MetamaskUtils.js';
-if (!Vue.prototype.$metamaskUtils) {
-  window.Object.defineProperty(Vue.prototype, '$metamaskUtils', {
-    value: metamaskUtils,
-  });
-}
 
-import * as tenantUtils from './js/Utils.js';
-if (!Vue.prototype.$tenantUtils) {
-  window.Object.defineProperty(Vue.prototype, '$tenantUtils', {
-    value: tenantUtils,
-  });
-}
-
-import * as womService from './js/WomService.js';
-if (!Vue.prototype.$womService) {
-  window.Object.defineProperty(Vue.prototype, '$womService', {
-    value: womService,
-  });
-}
-
-import * as womReportService from './js/WomReportService.js';
-if (!Vue.prototype.$womReportService) {
-  window.Object.defineProperty(Vue.prototype, '$womReportService', {
-    value: womReportService,
-  });
+export function handleResponseError(resp) {
+  if (resp.status === 503 || resp.status === 400 || resp.status === 401) {
+    return resp.text()
+      .then(error => {
+        let messageKey = '';
+        if (error?.includes('{') && error?.includes('}')) {
+          error = JSON.parse(error);
+          messageKey = error?.message || '';
+        } else if (error) {
+          messageKey = error.split(':')[0];
+        }
+        throw new Error(messageKey);
+      });
+  } else {
+    throw new Error('wom.errorResponse');
+  }
 }
