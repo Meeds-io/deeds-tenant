@@ -343,7 +343,7 @@ export default {
       this.stepper = 1;
 
       this.loading = true;
-      return this.$hubService.generateToken()
+      return this.$womService.generateToken()
         .then(token => this.token = token)
         .finally(() => this.loading = false);
     },
@@ -398,7 +398,7 @@ export default {
       }
 
       this.connecting = true;
-      this.$hubService.connectToWoM({
+      this.$womService.connectToWoM({
         deedId: this.deedId,
         deedManagerAddress: this.deedManagerAddress,
         name: this.hubNameTranslations,
@@ -415,7 +415,7 @@ export default {
       })
         .then(() => {
           if (this.hubAvatarUploadId) {
-            return this.$hubService.saveHubAvatar({
+            return this.$womService.saveHubAvatar({
               uploadId: this.hubAvatarUploadId,
               signedMessage: this.signedMessage,
               rawMessage: this.rawMessage,
@@ -425,7 +425,7 @@ export default {
         })
         .then(() => {
           if (this.hubBannerUploadId) {
-            return this.$hubService.saveHubBanner({
+            return this.$womService.saveHubBanner({
               uploadId: this.hubBannerUploadId,
               signedMessage: this.signedMessage,
               rawMessage: this.rawMessage,
