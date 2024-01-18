@@ -40,6 +40,7 @@ import io.meeds.spring.kernel.PortalApplicationContextInitializer;
 @EnableCaching
 @PropertySource("classpath:application.properties")
 @PropertySource("classpath:application-common.properties")
+@PropertySource("classpath:tenant.properties")
 public class DeedTenantApplication extends PortalApplicationContextInitializer {
 
 }

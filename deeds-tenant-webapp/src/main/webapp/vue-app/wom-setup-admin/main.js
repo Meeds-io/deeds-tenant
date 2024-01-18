@@ -70,7 +70,7 @@ export function init() {
         },
         created() {
           this.$root.$on('wom-hub-changed', hub => this.hub = hub);
-          this.$hubService.getConfiguration()
+          this.$womService.getConfiguration()
             .then(configuration => this.configuration = configuration);
         },
         template: `<wom-setup-admin id="${appId}" />`,

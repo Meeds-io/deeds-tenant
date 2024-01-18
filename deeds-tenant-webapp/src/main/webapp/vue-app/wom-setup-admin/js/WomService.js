@@ -31,7 +31,7 @@ export function getHub(nftId) {
     } else if (resp?.status === 404) {
       return null;
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -45,7 +45,7 @@ export function isTenantManager(address, nftId) {
       return resp.text()
         .then(data => data === 'true');
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -60,7 +60,7 @@ export function connectToWoM(request) {
     body: JSON.stringify(request),
   }).then((resp) => {
     if (!resp?.ok) {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -75,7 +75,7 @@ export function disconnectFromWoM(request) {
     body: JSON.stringify(request),
   }).then((resp) => {
     if (!resp?.ok) {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -88,7 +88,7 @@ export function generateToken() {
     if (resp?.ok) {
       return resp.text();
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -101,7 +101,7 @@ export function getConfiguration() {
     if (resp?.ok) {
       return resp.json();
     } else {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -128,7 +128,7 @@ export function saveHubAvatar(paramsObj) {
     body: params,
   }).then((resp) => {
     if (!resp?.ok) {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
 }
@@ -155,24 +155,7 @@ export function saveHubBanner(paramsObj) {
     body: params,
   }).then((resp) => {
     if (!resp?.ok) {
-      return handleResponseError(resp);
+      return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }
   });
-}
-
-function handleResponseError(resp) {
-  if (resp.status === 503 || resp.status === 400 || resp.status === 401) {
-    return resp.text()
-      .then(error => {
-        let messageKey = null;
-        try {
-          messageKey = JSON.parse(error).messageKey.split(':')[0];
-        } catch (e) {
-          messageKey = error.split(':')[0];
-        }
-        throw new Error(messageKey.split(':')[0]);
-      });
-  } else {
-    throw new Error('wom.errorResponse');
-  }
 }
