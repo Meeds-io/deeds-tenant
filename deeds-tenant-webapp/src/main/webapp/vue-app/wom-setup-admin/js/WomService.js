@@ -133,6 +133,52 @@ export function saveHubAvatar(paramsObj) {
   });
 }
 
+export function getOwnedDeeds(womServerUrl, address) {
+  const formData = new FormData();
+  formData.append('address', address);
+  const params = new URLSearchParams(formData).toString();
+  const url = `${womServerUrl}/api/tenants?${params}`.replace(/\/\//g, '/').replace(':/', '://');
+  return fetch(url, {method: 'Get'})
+    .then((resp) => {
+      if (resp?.ok) {
+        return resp.json();
+      } else {
+        return Vue.prototype.$tenantUtils.handleResponseError(resp);
+      }
+    });
+}
+
+export function getDeed(womServerUrl, deedId) {
+  const url = `${womServerUrl}/api/deeds/${deedId}`.replace(/\/\//g, '/').replace(':/', '://');
+  return fetch(url, {method: 'Get'})
+    .then((resp) => {
+      if (resp?.ok) {
+        return resp.json();
+      } else {
+        return Vue.prototype.$tenantUtils.handleResponseError(resp);
+      }
+    });
+}
+
+export function getLeases(womServerUrl, address, page, size) {
+  const formData = new FormData();
+  formData.append('address', address);
+  formData.append('onlyConfirmed', true);
+  formData.append('owner', false);
+  formData.append('page', page || 0);
+  formData.append('size', size || 50);
+  const params = new URLSearchParams(formData).toString();
+  const url = `${womServerUrl}/api/leases?${params}`.replace(/\/\//g, '/').replace(':/', '://');
+  return fetch(url, {method: 'Get'})
+    .then((resp) => {
+      if (resp?.ok) {
+        return resp.json();
+      } else {
+        return Vue.prototype.$tenantUtils.handleResponseError(resp);
+      }
+    });
+}
+
 export function saveHubBanner(paramsObj) {
   const formData = new FormData();
   if (paramsObj) {

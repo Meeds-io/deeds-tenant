@@ -1,4 +1,5 @@
 <!--
+
   This file is part of the Meeds project (https://meeds.io/).
 
   Copyright (C) 2023 Meeds Association contact@meeds.io
@@ -15,24 +16,41 @@
   You should have received a copy of the GNU Lesser General Public License
   along with this program; if not, write to the Free Software Foundation,
   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 -->
 <template>
   <exo-drawer
     ref="drawer"
     v-model="drawer"
     :loading="loading"
+    :close-confirm="modified"
+    :confirm-close-labels="confirmCloseLabels"
     allow-expand
     right
-    @expand-updated="expanded = $event">
+    @expand-updated="expanded = $event"
+    @closed="modified = false">
     <template #title>
       {{ $t('wom.setup.drawer.title') }}
     </template>
-    <template v-if="drawer" #content>
-      <v-card class="pa-4" flat>
-        <wom-setup-connection-summary />
-        <wom-setup-hub-rewards
-          v-if="expanded"
-          class="mt-4" />
+    <template v-if="drawer && initialized" #content>
+      <v-card
+        v-if="!connected"
+        class="pa-5"
+        flat>
+        <template v-if="!modified">
+          <p>
+            {{ $t('wom.connect.parapgraph1') }}
+          </p>
+          <p>
+            {{ $t('wom.connect.parapgraph2') }}
+          </p>
+          <p>
+            {{ $t('wom.connect.parapgraph3') }}
+          </p>
+        </template>
+        <wom-setup-connection-stepper
+          :hub="hub"
+          @modified="modified = $event" />
       </v-card>
     </template>
   </exo-drawer>
@@ -40,17 +58,53 @@
 <script>
 export default {
   data: () => ({
+    drawer: false,
     modified: false,
     loading: false,
-    drawer: false,
+    initialized: false,
     expanded: false,
+    hub: null,
   }),
+  computed: {
+    connected() {
+      return !!this.hub?.address && this.hub.deedId >= 0;
+    },
+    confirmCloseLabels() {
+      return {
+        title: this.$t('wom.confirmCancelConnect'),
+        message: this.$t('wom.confirmCancelConnectMessage'),
+        ok: this.$t('wom.yes'),
+        cancel: this.$t('wom.no'),
+      };
+    },
+  },
+  watch: {
+    hub() {
+      this.$root.$emit('wom-hub-changed', this.hub);
+    },
+    loading() {
+      if (!this.loading && !this.initialized) {
+        this.initialized = true;
+      }
+    },
+  },
+  created() {
+    this.$root.$on('wom-connection-success', this.refresh);
+    this.$root.$on('wom-disconnection-success', this.refresh);
+  },
   methods: {
     open() {
       this.$refs.drawer.open();
+      this.refresh();
     },
     close() {
       this.$refs.drawer.close();
+    },
+    refresh() {
+      this.loading = true;
+      return this.$womService.getHub()
+        .then(hub => this.hub = hub)
+        .finally(() => this.loading = false);
     },
   },
 };

@@ -1,13 +1,12 @@
 <template>
   <div>
     <div v-if="address" class="d-flex align-center">
-      <div>
-        {{ $t('wom.deedManager') }}
+      <div class="flex-grow-1 text-start">
+        {{ $t('wom.welcome') }}
       </div>
       <wom-setup-address
         :address="address"
         clearable
-        class="ms-auto"
         @clear="reset" />
     </div>
     <div v-else>
@@ -16,7 +15,9 @@
         :message="rawMessage"
         :disabled="!rawMessage"
         :address.sync="address"
-        :signature.sync="signature" />
+        :signature.sync="signature"
+        label="wom.start"
+        primary />
     </div>
   </div>
 </template>
