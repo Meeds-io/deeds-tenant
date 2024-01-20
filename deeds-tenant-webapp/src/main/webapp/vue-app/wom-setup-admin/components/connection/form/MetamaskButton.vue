@@ -26,7 +26,7 @@
       :class="primary && 'primary' || 'white-background primary-border-color'"
       target="_blank"
       rel="nofollow noreferrer noopener"
-      class="mx-auto d-block rounded-lg"
+      class="mx-auto d-block"
       elevation="0">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
@@ -38,7 +38,7 @@
       v-else
       :disabled="disabled"
       :class="primary && 'primary' || 'white-background primary-border-color'"
-      class="mx-auto d-block rounded-lg"
+      class="mx-auto d-block"
       elevation="0"
       @click="signInWithMetamask()">
       <v-img

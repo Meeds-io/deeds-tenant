@@ -52,21 +52,25 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
   public static final String EARNER_ADDRESS         = "HUB_EARNER_ADDRESS";
 
-  public static final String DEED_ID                = "HUB_DEED_ID";
-
-  public static final String DEED_CITY              = "HUB_CITY";
-
-  public static final String DEED_TYPE              = "HUB_TYPE";
-
-  public static final String DEED_MANAGER_ADDRESS   = "HUB_MANAGER_ADDRESS";
-
-  public static final String DEED_OWNER_ADDRESS     = "HUB_OWNER_ADDRESS";
+  public static final String HUB_OWNER_ADDRESS      = "HUB_OWNER_ADDRESS";
 
   public static final String REWARD_PERIOD_TYPE     = "HUB_PERIOD_TYPE";
 
   public static final String REWARD_AMOUNT          = "HUB_REWARDS_AMOUNT";
 
   public static final String USERS_COUNT            = "HUB_USERS_COUNT";
+
+  public static final String HUB_ENABLED            = "HUB_ENABLED";
+
+  public static final String DEED_ID                = "DEED_ID";
+
+  public static final String DEED_CITY              = "DEED_CITY";
+
+  public static final String DEED_TYPE              = "DEED_TYPE";
+
+  public static final String DEED_OWNER_ADDRESS     = "DEED_OWNER_ADDRESS";
+
+  public static final String DEED_MANAGER_ADDRESS   = "DEED_MANAGER_ADDRESS";
 
   @Autowired
   private IdentityManager    identityManager;

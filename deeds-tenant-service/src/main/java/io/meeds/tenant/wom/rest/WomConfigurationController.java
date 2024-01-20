@@ -29,16 +29,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import org.exoplatform.commons.exception.ObjectNotFoundException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import io.meeds.tenant.wom.model.HubConfiguration;
+import io.meeds.tenant.wom.service.WomService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.WomConnectionRequest;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
-import io.meeds.tenant.wom.model.HubConfiguration;
-import io.meeds.tenant.wom.service.WomService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -176,64 +175,6 @@ public class WomConfigurationController {
     } catch (WomException e) {
       logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
-    }
-  }
-
-  @PostMapping("avatar")
-  @Secured("rewarding")
-  @Operation(summary = "Changes Hub Avatar in the WoM", method = "POST")
-  @ApiResponse(responseCode = "200", description = "Request fulfilled")
-  @ApiResponse(responseCode = "400", description = "Bad request")
-  @ApiResponse(responseCode = "503", description = "Service Unavailable")
-  public void saveHubAvatar(
-                            @Parameter(description = "Signed Message by Hub Manager", required = true)
-                            @RequestParam("signedMessage")
-                            String signedMessage,
-                            @Parameter(description = "Raw Message used to sign by Hub Manager", required = true)
-                            @RequestParam("rawMessage")
-                            String rawMessage,
-                            @Parameter(description = "WoM generated token used to sign by Hub Manager", required = true)
-                            @RequestParam("token")
-                            String token,
-                            @Parameter(description = "Uploaded file resource identifier", required = true)
-                            @RequestParam("uploadId")
-                            String uploadId) {
-    try {
-      womService.saveHubAvatar(uploadId, signedMessage, rawMessage, token);
-    } catch (WomException e) {
-      logWomException(e);
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
-    } catch (ObjectNotFoundException e) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-    }
-  }
-
-  @PostMapping("banner")
-  @Secured("rewarding")
-  @Operation(summary = "Changes Hub Banner in the WoM", method = "POST")
-  @ApiResponse(responseCode = "200", description = "Request fulfilled")
-  @ApiResponse(responseCode = "400", description = "Bad request")
-  @ApiResponse(responseCode = "503", description = "Service Unavailable")
-  public void saveHubBanner(
-                            @Parameter(description = "Signed Message by Hub Manager", required = true)
-                            @RequestParam("signedMessage")
-                            String signedMessage,
-                            @Parameter(description = "Raw Message used to sign by Hub Manager", required = true)
-                            @RequestParam("rawMessage")
-                            String rawMessage,
-                            @Parameter(description = "WoM generated token used to sign by Hub Manager", required = true)
-                            @RequestParam("token")
-                            String token,
-                            @Parameter(description = "Uploaded file resource identifier", required = true)
-                            @RequestParam("uploadId")
-                            String uploadId) {
-    try {
-      womService.saveHubBanner(uploadId, signedMessage, rawMessage, token);
-    } catch (WomException e) {
-      logWomException(e);
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
-    } catch (ObjectNotFoundException e) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
     }
   }
 

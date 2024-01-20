@@ -23,7 +23,7 @@
     ref="drawer"
     v-model="drawer"
     :loading="loading"
-    :close-confirm="modified"
+    :confirm-close="modified"
     :confirm-close-labels="confirmCloseLabels"
     allow-expand
     right
@@ -49,9 +49,34 @@
           </p>
         </template>
         <wom-setup-connection-stepper
+          ref="womConnection"
           :hub="hub"
-          @modified="modified = $event" />
+          @modified="modified = $event"
+          @validated="canConnect = $event" />
       </v-card>
+    </template>
+    <template v-if="modified" #footer>
+      <div class="d-flex">
+        <v-spacer />
+        <v-btn
+          class="btn me-4"
+          @click="close">
+          {{ $t('wom.cancel') }}
+        </v-btn>
+        <v-btn
+          v-if="connected"
+          class="btn btn-primary"
+          @click="connect">
+          {{ $t('wom.disconnect') }}
+        </v-btn>
+        <v-btn
+          v-else
+          :disabled="!canConnect"
+          class="btn btn-primary"
+          @click="$refs.womConnection.connect()">
+          {{ $t('wom.connect') }}
+        </v-btn>
+      </div>
     </template>
   </exo-drawer>
 </template>
@@ -63,6 +88,7 @@ export default {
     loading: false,
     initialized: false,
     expanded: false,
+    canConnect: false,
     hub: null,
   }),
   computed: {
@@ -93,12 +119,20 @@ export default {
     this.$root.$on('wom-disconnection-success', this.refresh);
   },
   methods: {
+    reset() {
+      this.canConnect = false;
+      this.modified = false;
+    },
     open() {
+      this.reset();
       this.$refs.drawer.open();
       this.refresh();
     },
     close() {
-      this.$refs.drawer.close();
+      this.reset();
+      this.$nextTick(() => {
+        window.setTimeout(() => this.$refs.drawer.close(), 50);
+      });
     },
     refresh() {
       this.loading = true;

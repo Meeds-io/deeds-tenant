@@ -17,8 +17,6 @@
  */
 package io.meeds.tenant.wom.storage;
 
-import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
-import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.ADDRESS;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.COLOR;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.DEED_CITY;
@@ -28,6 +26,8 @@ import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.DEED_OWNER_AD
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.DEED_TYPE;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.DESCRIPTION;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.EARNER_ADDRESS;
+import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.HUB_ENABLED;
+import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.HUB_OWNER_ADDRESS;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.IDENTITY_REMOTE_ID;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.JOIN_DATE;
@@ -38,6 +38,8 @@ import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.UPDATED_DATE;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.URL;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.USERS_COUNT;
 import static io.meeds.tenant.wom.plugin.WalletHubIdentityProvider.WALLET;
+import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
+import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -51,10 +53,10 @@ import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
 
+import io.meeds.tenant.wom.rest.client.WoMServiceClient;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.constant.WomParsingException;
 import io.meeds.wom.api.model.Hub;
-import io.meeds.tenant.wom.rest.client.WoMServiceClient;
 
 @Component
 public class HubIdentityStorage {
@@ -138,10 +140,12 @@ public class HubIdentityStorage {
     hubProfile.setProperty(USERS_COUNT, String.valueOf(hub.getUsersCount()));
     hubProfile.setProperty(COLOR, hub.getColor());
     hubProfile.setProperty(EARNER_ADDRESS, hub.getEarnerAddress());
+    hubProfile.setProperty(HUB_OWNER_ADDRESS, hub.getHubOwnerAddress());
+    hubProfile.setProperty(DEED_OWNER_ADDRESS, hub.getDeedOwnerAddress());
     hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
-    hubProfile.setProperty(DEED_OWNER_ADDRESS, hub.getOwnerAddress());
     hubProfile.setProperty(JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
     hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
+    hubProfile.setProperty(HUB_ENABLED, String.valueOf(hub.isEnabled()));
     identityManager.updateProfile(hubProfile);
   }
 
@@ -158,27 +162,31 @@ public class HubIdentityStorage {
     String usersCount = (String) hubProfile.getProperty(USERS_COUNT);
     String color = (String) hubProfile.getProperty(COLOR);
     String earnerAddress = (String) hubProfile.getProperty(EARNER_ADDRESS);
+    String hubOwnerAddress = (String) hubProfile.getProperty(HUB_OWNER_ADDRESS);
+    String deedOwnerAddress = (String) hubProfile.getProperty(DEED_OWNER_ADDRESS);
     String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
-    String ownerAddress = (String) hubProfile.getProperty(DEED_OWNER_ADDRESS);
     Instant joinDate = parseInstant(hubProfile, JOIN_DATE);
     Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
+    boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), true);
 
     return new Hub(Long.parseLong(deedId),
                    Short.parseShort(city),
                    Short.parseShort(type),
                    address,
-                   parseToMap(name),
-                   parseToMap(description),
+                   parseMap(name),
+                   parseMap(description),
                    url,
                    color,
-                   ownerAddress,
+                   hubOwnerAddress,
+                   deedOwnerAddress,
                    deedManagerAddress,
                    earnerAddress,
                    joinDate,
                    updatedDate,
-                   parseToLong(usersCount),
+                   parseLong(usersCount),
                    rewardsPeriodType,
-                   parseToDouble(rewardsAmount));
+                   parseDouble(rewardsAmount),
+                   enabled);
   }
 
   private void clearHubProperties(Profile hubProfile) {
@@ -191,19 +199,21 @@ public class HubIdentityStorage {
       hubProfile.removeProperty(URL);
       hubProfile.removeProperty(COLOR);
       hubProfile.removeProperty(EARNER_ADDRESS);
-      hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
+      hubProfile.removeProperty(HUB_OWNER_ADDRESS);
       hubProfile.removeProperty(DEED_OWNER_ADDRESS);
+      hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
       hubProfile.removeProperty(JOIN_DATE);
       hubProfile.removeProperty(UPDATED_DATE);
       hubProfile.removeProperty(REWARD_PERIOD_TYPE);
       hubProfile.removeProperty(REWARD_AMOUNT);
       hubProfile.removeProperty(USERS_COUNT);
+      hubProfile.removeProperty(HUB_ENABLED);
       identityManager.updateProfile(hubProfile);
     }
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, String> parseToMap(String value) {
+  private Map<String, String> parseMap(String value) {
     try {
       return StringUtils.isBlank(value) ? Collections.emptyMap() : (Map<String, String>) fromJsonString(value, Map.class);
     } catch (Exception e) {
@@ -216,12 +226,16 @@ public class HubIdentityStorage {
     return StringUtils.isBlank(propDateMillis) ? null : Instant.ofEpochMilli(Long.parseLong(propDateMillis));
   }
 
-  private double parseToDouble(String value) {
+  private double parseDouble(String value) {
     return StringUtils.isBlank(value) ? 0 : Double.parseDouble(value);
   }
 
-  private long parseToLong(String value) {
+  private long parseLong(String value) {
     return StringUtils.isBlank(value) ? 0 : Long.parseLong(value);
+  }
+
+  private boolean parseBoolean(String value, boolean defaulValue) {
+    return StringUtils.isBlank(value) ? defaulValue : StringUtils.equals(value, "true");
   }
 
 }

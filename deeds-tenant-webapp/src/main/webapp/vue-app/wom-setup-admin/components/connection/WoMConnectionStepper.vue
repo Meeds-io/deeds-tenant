@@ -27,9 +27,9 @@
       class="mx-auto" />
     <wom-setup-deed-selector
       v-if="stepper === 2"
-      :value="hubDeedId"
+      v-model="deedId"
       :address="deedManagerAddress"
-      :deed-id.sync="deedId"
+      :owner.sync="deedOwnerAddress"
       class="mt-5" />
   </div>
 </template>
@@ -46,6 +46,7 @@ export default {
     loading: false,
     connecting: false,
     stepper: 1,
+    deedOwnerAddress: null,
     deedManagerAddress: null,
     earnerAddress: null,
     hubUrl: null,
@@ -53,10 +54,6 @@ export default {
     signedMessage: null,
     deedId: null,
     validateEmpty: false,
-    supportedLanguages: {
-      'en': 'English',
-      'fr': 'French / Français',
-    },
   }),
   computed: {
     step1Valid() {
@@ -68,33 +65,21 @@ export default {
     step3Valid() {
       return this.stepper !== 3 || this.earnerAddress;
     },
-    modified() {
-      return !!this.deedManagerAddress;
-    },
     rawMessage() {
       return this.token && this.$t('wom.signConnectMessage', {
         0: this.token,
       }).replace(/\\n/g, '\n') || null;
     },
-    hubDeedId() {
-      return this.hub?.deedId;
+    modified() {
+      return !!this.deedManagerAddress;
     },
-    rules() {
-      return {
-        hubName: [
-          () => !!this.hubName || !this.validateEmpty || this.$t('wom.emptyHubName'),
-          () => !this.hubName || this.hubName?.length <= this.hubNameMaxLength || this.$t('wom.tooLongHubName')
-        ],
-        hubDescription: [
-          () => !!this.hubDescription || !this.validateEmpty || this.$t('wom.emptyHubDesription'),
-          () => !this.hubDescription || this.hubDescription?.length <= this.hubDescriptionMaxLength || this.$t('wom.tooLongHubDescription')
-        ],
-        hubUrl: [
-          () => !!this.hubUrl || !this.validateEmpty || this.$t('wom.emptyHubUrl'),
-          () => !this.hubUrl || this.hubUrl?.length <= 100 || this.$t('wom.tooLongHubUrl'),
-          () => !this.hubUrl || !this.validateEmpty || this.isValidUrl(this.hubUrl) || this.$t('wom.invalidHubUrl')
-        ],
-      };
+    valid() {
+      return this.deedId
+        && this.deedOwnerAddress
+        && this.deedManagerAddress
+        && this.signedMessage
+        && this.rawMessage
+        && this.token;
     },
   },
   watch: {
@@ -114,29 +99,16 @@ export default {
         this.stepper = 1;
       }
     },
-    hubDescription() {
-      if (this.$refs.hubDescriptionTranslation) {
-        this.$refs.hubDescriptionTranslation.setValue(this.hubDescription);
-      }
+    valid() {
+      this.$emit('validated', this.valid);
     },
   },
   created() {
     this.init();
   },
   methods: {
-    open() {
-      this.reset();
-      this.$translationService.getTranslationConfiguration()
-        .then(configuration => {
-          if (configuration?.supportedLanguages) {
-            const supportedLanguages = configuration?.supportedLanguages || this.supportedLanguages;
-            Object.keys(this.supportedLanguages).forEach(lang => this.supportedLanguages[lang] = supportedLanguages[lang]);
-          }
-        });
-      this.$refs.drawer.open();
-    },
     init() {
-      this.stepper = 1;
+      this.reset();
 
       this.loading = true;
       return this.$womService.generateToken()
@@ -144,91 +116,33 @@ export default {
         .finally(() => this.loading = false);
     },
     reset() {
+      this.stepper = 1;
       this.deedId = null;
-      this.earnerAddress = this.hub?.earnerAddress || this.$root?.configuration?.adminWallet || null;
-      this.hubNameTranslations = this.hub?.name || null;
-      this.hubName = this.hubNameTranslations?.en || null;
-      this.hubDescriptionTranslations = this.hub?.description || null;
-      this.hubDescription = this.hubDescriptionTranslations?.en || null;
-      this.hubUrl = this.hub?.url || window.location.origin;
-      this.hubColor = this.hub?.color || '#707070';
-      this.hubAvatarUploadId = null;
-      this.hubBannerUploadId = null;
-
-      const womServerUrl = this.$root.configuration?.womServerUrl;
-      const hubUpdateTime = this.hub?.updatedDate && new Date(this.hub?.updatedDate).getTime();
-      const hubAddress = this.hub?.address;
-
-      this.hubAvatarUrl = hubAddress && `${womServerUrl}/api/hubs/${hubAddress}/avatar?v=${hubUpdateTime || 0}` || null;
-      this.hubBannerUrl = hubAddress && `${womServerUrl}/api/hubs/${hubAddress}/banner?v=${hubUpdateTime || 0}` || null;
-
+      this.earnerAddress = this.hub?.earnerAddress || this.$root?.configuration?.adminWallet;
+      this.hubUrl = window.location.origin;
       this.validateEmpty = false;
+      this.deedOwnerAddress = null;
       this.deedManagerAddress = null;
       this.signedMessage = null;
       this.token = null;
-
       this.$refs?.managerSelector?.reset();
     },
-    close() {
-      this.reset();
-      this.$nextTick(() => {
-        window.setTimeout(() => this.$refs.drawer.close(), 50);
-      });
-    },
-    next() {
-      if (this.stepper === 1 && this.step1Valid) {
-        this.stepper = 2;
-      } else if (this.stepper === 2 && this.step2Valid) {
-        this.stepper = 3;
-      }
-    },
-    previous() {
-      if (this.stepper > 1) {
-        this.stepper--;
-      }
-    },
     connect() {
-      this.validateEmpty = true;
-      if (!this.$refs.hubForm.validate()) {
+      if (!this.valid) {
         return;
       }
 
       this.connecting = true;
       this.$womService.connectToWoM({
         deedId: this.deedId,
+        deedOwnerAddress: this.deedOwnerAddress,
         deedManagerAddress: this.deedManagerAddress,
-        name: this.hubNameTranslations,
-        description: this.hubDescriptionTranslations,
         url: this.hubUrl,
-        color: this.hubColor,
         earnerAddress: this.earnerAddress,
-        usersCount: this.$root?.configuration?.usersCount,
-        rewardsPeriodType: this.$root?.configuration?.rewardsPeriodType,
-        rewardsPerPeriod: this.$root?.configuration?.rewardsPerPeriod,
         signedMessage: this.signedMessage,
         rawMessage: this.rawMessage,
         token: this.token,
       })
-        .then(() => {
-          if (this.hubAvatarUploadId) {
-            return this.$womService.saveHubAvatar({
-              uploadId: this.hubAvatarUploadId,
-              signedMessage: this.signedMessage,
-              rawMessage: this.rawMessage,
-              token: this.token,
-            });
-          }
-        })
-        .then(() => {
-          if (this.hubBannerUploadId) {
-            return this.$womService.saveHubBanner({
-              uploadId: this.hubBannerUploadId,
-              signedMessage: this.signedMessage,
-              rawMessage: this.rawMessage,
-              token: this.token,
-            });
-          }
-        })
         .then(() => {
           this.connecting = false;
           this.close();
@@ -245,16 +159,6 @@ export default {
           const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1]}` || error;
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
         });
-    },
-    isValidUrl(url) {
-      try {
-        return !!new URL(url).origin.length;
-      } catch (e) {
-        return false;
-      }
-    },
-    hubDescriptionCounterValue(value) {
-      return `${value && value.length || 0} / ${this.hubDescriptionMaxLength}`;
     },
   },
 };

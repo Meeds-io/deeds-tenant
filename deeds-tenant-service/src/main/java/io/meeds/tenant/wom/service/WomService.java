@@ -20,6 +20,8 @@ import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +29,13 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.Sign;
 import org.web3j.utils.Numeric;
 
-import org.exoplatform.commons.exception.ObjectNotFoundException;
+import org.exoplatform.commons.file.services.FileService;
+import org.exoplatform.portal.branding.BrandingService;
+import org.exoplatform.portal.branding.model.Logo;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.UserStatus;
-import org.exoplatform.upload.UploadResource;
-import org.exoplatform.upload.UploadService;
 import org.exoplatform.wallet.model.reward.RewardPeriodType;
 import org.exoplatform.wallet.model.reward.RewardSettings;
 import org.exoplatform.wallet.reward.service.RewardSettingsService;
@@ -43,6 +45,9 @@ import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.WomConnectionRequest;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
+
+import lombok.SneakyThrows;
+
 import io.meeds.tenant.wom.model.HubConfiguration;
 import io.meeds.tenant.wom.rest.client.WoMServiceClient;
 import io.meeds.tenant.wom.storage.HubIdentityStorage;
@@ -67,13 +72,16 @@ public class WomService {
   private WalletAccountService  walletAccountService;
 
   @Autowired
-  private UploadService         uploadService;
-
-  @Autowired
   private HubIdentityStorage    hubIdentityStorage;
 
   @Autowired
   private HubWalletStorage      hubWalletStorage;
+
+  @Autowired
+  private BrandingService       brandingService;
+
+  @Autowired
+  private FileService           fileService;
 
   @Autowired
   private WoMServiceClient      womServiceClient;
@@ -144,11 +152,30 @@ public class WomService {
 
   public String connectToWoM(WomConnectionRequest connectionRequest) throws WomException {
     try {
-      String hubAddress = hubWalletStorage.getOrCreateHubAddress();
-      connectionRequest.setAddress(hubAddress);
+      connectionRequest.setAddress(hubWalletStorage.getOrCreateHubAddress());
       connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
-      womServiceClient.connectToWoM(connectionRequest);
-      return hubAddress;
+
+      connectionRequest.setName(Collections.singletonMap(Locale.ENGLISH.toLanguageTag(), brandingService.getCompanyName()));
+      connectionRequest.setDescription(brandingService.getLoginSubtitle());
+      connectionRequest.setUrl(brandingService.getCompanyLink());
+      connectionRequest.setColor(brandingService.getThemeStyle().get("primaryColor"));
+
+      if (StringUtils.isBlank(connectionRequest.getEarnerAddress())) {
+        connectionRequest.setEarnerAddress(walletAccountService.getAdminWallet().getAddress());
+      }
+      connectionRequest.setUsersCount(computeUsersCount());
+
+      if (StringUtils.contains(connectionRequest.getUrl(), "localhost:8080")) {
+        throw new WomException("wom.missingHubUrlConfiguration");
+      }
+      String womAddress = womServiceClient.connectToWoM(connectionRequest);
+      try {
+        saveHubAvatar();
+      } catch (Exception e) {
+        LOG.warn("Error while saving Hub Avatar. This isn't be blocker, thus continue processing WoM Connection",
+                 e);
+      }
+      return womAddress;
     } finally {
       hubIdentityStorage.refreshHubIdentity();
     }
@@ -166,44 +193,6 @@ public class WomService {
     }
   }
 
-  public void saveHubAvatar(String uploadId,
-                            String signedMessage,
-                            String rawMessage,
-                            String token) throws ObjectNotFoundException, WomException {
-    UploadResource uploadResource = uploadService.getUploadResource(uploadId);
-    if (uploadResource == null) {
-      throw new ObjectNotFoundException("wom.uploadedFileNotFound");
-    }
-    String hubAddress = getHubAddress();
-    if (StringUtils.isBlank(hubAddress)) {
-      throw new WomException("wom.notConnected");
-    }
-    womServiceClient.saveHubAvatar(hubAddress,
-                                   signedMessage,
-                                   rawMessage,
-                                   token,
-                                   uploadResource);
-  }
-
-  public void saveHubBanner(String uploadId,
-                            String signedMessage,
-                            String rawMessage,
-                            String token) throws ObjectNotFoundException, WomException {
-    UploadResource uploadResource = uploadService.getUploadResource(uploadId);
-    if (uploadResource == null) {
-      throw new ObjectNotFoundException("wom.uploadedFileNotFound");
-    }
-    String hubAddress = getHubAddress();
-    if (StringUtils.isBlank(hubAddress)) {
-      throw new WomException("wom.notConnected");
-    }
-    womServiceClient.saveHubBanner(hubAddress,
-                                   signedMessage,
-                                   rawMessage,
-                                   token,
-                                   uploadResource);
-  }
-
   public long computeUsersCount() {
     try {
       return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
@@ -216,6 +205,26 @@ public class WomService {
   public String signHubMessage(Object object) throws WomException {
     String rawRequest = toJsonString(object);
     return signHubMessage(rawRequest);
+  }
+
+  @SneakyThrows
+  public void saveHubAvatar() throws WomException {
+    String hubAddress = getHubAddress();
+    if (StringUtils.isBlank(hubAddress)) {
+      throw new WomException("wom.notConnected");
+    }
+
+    Logo logo = brandingService.getLogo();
+    if (logo == null || logo.getFileId() <= 0) {
+      return;
+    }
+    String token = womServiceClient.generateToken();
+    String signedMessage = signHubMessage(token);
+
+    womServiceClient.saveHubAvatar(hubAddress,
+                                   signedMessage,
+                                   token,
+                                   fileService.getFile(logo.getFileId()).getAsStream());
   }
 
   private String signHubMessage(String rawRequest) throws WomException {

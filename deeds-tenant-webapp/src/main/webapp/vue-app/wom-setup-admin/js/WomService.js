@@ -36,20 +36,6 @@ export function getHub(nftId) {
   });
 }
 
-export function isTenantManager(address, nftId) {
-  return fetch(`/deeds-tenant/rest/wom/manager?address=${address}&nftId=${nftId}`, {
-    method: 'GET',
-    credentials: 'include',
-  }).then((resp) => {
-    if (resp?.ok) {
-      return resp.text()
-        .then(data => data === 'true');
-    } else {
-      return Vue.prototype.$tenantUtils.handleResponseError(resp);
-    }
-  });
-}
-
 export function connectToWoM(request) {
   return fetch('/deeds-tenant/rest/wom/connect', {
     method: 'POST',
@@ -106,50 +92,11 @@ export function getConfiguration() {
   });
 }
 
-export function saveHubAvatar(paramsObj) {
-  const formData = new FormData();
-  if (paramsObj) {
-    Object.keys(paramsObj).forEach(key => {
-      const value = paramsObj[key];
-      if (window.Array && Array.isArray && Array.isArray(value)) {
-        value.forEach(val => formData.append(key, val));
-      } else {
-        formData.append(key, value);
-      }
-    });
-  }
-  const params = new URLSearchParams(formData).toString();
-  return fetch('/deeds-tenant/rest/wom/avatar', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params,
-  }).then((resp) => {
-    if (!resp?.ok) {
-      return Vue.prototype.$tenantUtils.handleResponseError(resp);
-    }
-  });
-}
-
 export function getOwnedDeeds(womServerUrl, address) {
   const formData = new FormData();
   formData.append('address', address);
   const params = new URLSearchParams(formData).toString();
   const url = `${womServerUrl}/api/tenants?${params}`.replace(/\/\//g, '/').replace(':/', '://');
-  return fetch(url, {method: 'Get'})
-    .then((resp) => {
-      if (resp?.ok) {
-        return resp.json();
-      } else {
-        return Vue.prototype.$tenantUtils.handleResponseError(resp);
-      }
-    });
-}
-
-export function getDeed(womServerUrl, deedId) {
-  const url = `${womServerUrl}/api/deeds/${deedId}`.replace(/\/\//g, '/').replace(':/', '://');
   return fetch(url, {method: 'Get'})
     .then((resp) => {
       if (resp?.ok) {
@@ -179,29 +126,14 @@ export function getLeases(womServerUrl, address, page, size) {
     });
 }
 
-export function saveHubBanner(paramsObj) {
-  const formData = new FormData();
-  if (paramsObj) {
-    Object.keys(paramsObj).forEach(key => {
-      const value = paramsObj[key];
-      if (window.Array && Array.isArray && Array.isArray(value)) {
-        value.forEach(val => formData.append(key, val));
+export function getDeed(womServerUrl, deedId) {
+  const url = `${womServerUrl}/api/deeds/${deedId}`.replace(/\/\//g, '/').replace(':/', '://');
+  return fetch(url, {method: 'Get'})
+    .then((resp) => {
+      if (resp?.ok) {
+        return resp.json();
       } else {
-        formData.append(key, value);
+        return Vue.prototype.$tenantUtils.handleResponseError(resp);
       }
     });
-  }
-  const params = new URLSearchParams(formData).toString();
-  return fetch('/deeds-tenant/rest/wom/banner', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: params,
-  }).then((resp) => {
-    if (!resp?.ok) {
-      return Vue.prototype.$tenantUtils.handleResponseError(resp);
-    }
-  });
 }

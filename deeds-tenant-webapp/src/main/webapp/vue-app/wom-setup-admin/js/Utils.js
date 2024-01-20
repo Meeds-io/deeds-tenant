@@ -33,3 +33,11 @@ export function handleResponseError(resp) {
     throw new Error('wom.errorResponse');
   }
 }
+
+export function formatNumber(value, minFrac, maxFrac) {
+  return new Intl.NumberFormat(eXo.env.portal.language, {
+    style: 'decimal',
+    minimumFractionDigits: minFrac || 0,
+    maximumFractionDigits: maxFrac || 0,
+  }).format(value || 0);
+}

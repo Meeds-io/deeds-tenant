@@ -20,7 +20,7 @@ package io.meeds.tenant.wom.rest.client;
 import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
 import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
-import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +29,6 @@ import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
 import org.apache.hc.core5.http.ContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import org.exoplatform.upload.UploadResource;
 
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
@@ -118,18 +116,17 @@ public class WoMServiceClient {
 
   public void saveHubAvatar(String hubAddress,
                             String signedMessage,
-                            String rawMessage,
                             String token,
-                            UploadResource uploadResource) throws WomException {
-    saveHubAttachment(getSaveAvatarUri(hubAddress), hubAddress, signedMessage, rawMessage, token, uploadResource);
+                            InputStream inputStream) throws WomException {
+    saveHubAttachment(getSaveAvatarUri(hubAddress), hubAddress, signedMessage, token, token, inputStream);
   }
 
   public void saveHubBanner(String hubAddress,
                             String signedMessage,
                             String rawMessage,
                             String token,
-                            UploadResource uploadResource) throws WomException {
-    saveHubAttachment(getSaveBannerUri(hubAddress), hubAddress, signedMessage, rawMessage, token, uploadResource);
+                            InputStream inputStream) throws WomException {
+    saveHubAttachment(getSaveBannerUri(hubAddress), hubAddress, signedMessage, rawMessage, token, inputStream);
   }
 
   public String getWomUrl() {
@@ -141,11 +138,10 @@ public class WoMServiceClient {
                                  String signedMessage,
                                  String rawMessage,
                                  String token,
-                                 UploadResource uploadResource) throws WomException {
+                                 InputStream inputStream) throws WomException {
     HttpPost httpPost = new HttpPost(attachmentUri);
     MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create()
-                                                                 .addBinaryBody("file",
-                                                                                new File(uploadResource.getStoreLocation()))
+                                                                 .addBinaryBody("file", inputStream)
                                                                  .setContentType(ContentType.MULTIPART_FORM_DATA)
                                                                  .addTextBody("hubAddress", hubAddress)
                                                                  .addTextBody("signedMessage", signedMessage)
