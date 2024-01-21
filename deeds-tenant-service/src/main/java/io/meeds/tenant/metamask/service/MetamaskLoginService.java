@@ -43,7 +43,7 @@ import org.exoplatform.services.organization.UserHandler;
 import io.meeds.common.ContainerTransactional;
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
-import io.meeds.tenant.wom.service.WomService;
+import io.meeds.tenant.hub.service.HubService;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpSession;
@@ -72,7 +72,7 @@ public class MetamaskLoginService {
   private AccountSetupService    accountSetupService;
 
   @Autowired
-  private WomService             womService;
+  private HubService             hubService;
 
   @Setter
   @Value("${meeds.login.metamask.secureRootAccessWithMetamask:true}")
@@ -119,7 +119,7 @@ public class MetamaskLoginService {
    * @return true is wallet address is of the Tenant Manager else return false.
    */
   public boolean isDeedManager(String walletAddress) {
-    return womService.isDeedManager(walletAddress);
+    return hubService.isDeedManager(walletAddress);
   }
 
   /**
@@ -243,7 +243,7 @@ public class MetamaskLoginService {
    */
   public boolean isDeedHub() {
     try {
-      return womService.isDeedHub();
+      return hubService.isDeedHub();
     } catch (Exception e) {
       LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
       return false;
@@ -254,7 +254,7 @@ public class MetamaskLoginService {
    * @return DEED NFT identifier
    */
   public long getDeedId() {
-    return womService.getDeedId();
+    return hubService.getDeedId();
   }
 
   private String generateRandomToken() {

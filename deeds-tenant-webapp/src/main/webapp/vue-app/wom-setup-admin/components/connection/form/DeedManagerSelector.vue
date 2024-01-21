@@ -15,6 +15,7 @@
         :message="rawMessage"
         :disabled="!rawMessage"
         :address.sync="address"
+        :allowed-address="edit && hub.hubOwnerAddress"
         :signature.sync="signature"
         label="wom.start"
         primary />
@@ -27,6 +28,14 @@ export default {
     rawMessage: {
       type: String,
       default: null,
+    },
+    hub: {
+      type: Object,
+      default: null,
+    },
+    edit: {
+      type: Boolean,
+      default: false,
     },
   },
   data: () => ({

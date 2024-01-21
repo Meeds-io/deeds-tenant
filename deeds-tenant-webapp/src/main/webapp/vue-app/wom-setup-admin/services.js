@@ -31,16 +31,16 @@ if (!Vue.prototype.$tenantUtils) {
   });
 }
 
-import * as womService from './js/WomService.js';
-if (!Vue.prototype.$womService) {
-  window.Object.defineProperty(Vue.prototype, '$womService', {
-    value: womService,
+import * as hubService from './js/HubService.js';
+if (!Vue.prototype.$hubService) {
+  window.Object.defineProperty(Vue.prototype, '$hubService', {
+    value: hubService,
   });
 }
 
-import * as womReportService from './js/WomReportService.js';
-if (!Vue.prototype.$womReportService) {
-  window.Object.defineProperty(Vue.prototype, '$womReportService', {
-    value: womReportService,
+import * as hubReportService from './js/HubReportService.js';
+if (!Vue.prototype.$hubReportService) {
+  window.Object.defineProperty(Vue.prototype, '$hubReportService', {
+    value: hubReportService,
   });
 }

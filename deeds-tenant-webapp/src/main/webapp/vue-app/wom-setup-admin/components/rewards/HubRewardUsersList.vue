@@ -131,7 +131,7 @@ export default {
   methods: {
     init() {
       this.loading = true;
-      this.$womReportService.getLocalRewardDetails(this.periodMedian)
+      this.$hubReportService.getLocalRewardDetails(this.periodMedian)
         .then(data => {
           const rewards = (data?.rewards || []);
           this.rewards = rewards.filter(r => r.tokensSent

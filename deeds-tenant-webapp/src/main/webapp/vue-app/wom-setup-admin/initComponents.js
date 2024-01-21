@@ -18,17 +18,16 @@
  */
 import WoMAdminSetup from './components/WoMAdminSetup.vue';
 
-import WoMConnectionStepper from './components/connection/WoMConnectionStepper.vue';
-import WoMDisconnectionStepper from './components/connection/WoMDisconnectionStepper.vue';
+import WoMConnectionStepper from './components/connection/stepper/WoMConnectionStepper.vue';
+import WoMDisconnectionStepper from './components/connection/stepper/WoMDisconnectionStepper.vue';
 
 import MetamaskButton from './components/connection/form/MetamaskButton.vue';
+import ConnectButton from './components/connection/form/ConnectButton.vue';
 import DeedManagerSelector from './components/connection/form/DeedManagerSelector.vue';
 import DeedSelector from './components/connection/form/DeedSelector.vue';
-import RewardingReceiverSelector from './components/connection/form/RewardingReceiverSelector.vue';
-import ColorPicker from './components/connection/form/ColorPicker.vue';
+import DeedItem from './components/connection/form/DeedItem.vue';
 
-import WoMSetupDrawer from './components/connection/drawer/WoMSetupDrawer.vue';
-import ColorPickerDrawer from './components/connection/drawer/ColorPickerDrawer.vue';
+import WoMSetupDrawer from './components/connection/WoMSetupDrawer.vue';
 
 import HubCard from './components/connection/view/HubCard.vue';
 
@@ -49,10 +48,8 @@ const components = {
   'wom-setup-connection-stepper': WoMConnectionStepper,
   'wom-setup-disconnection-stepper': WoMDisconnectionStepper,
   'wom-setup-deed-manager-selector': DeedManagerSelector,
-  'wom-setup-rewarding-receiver': RewardingReceiverSelector,
   'wom-setup-metamask-button': MetamaskButton,
-  'wom-setup-color-picker': ColorPicker,
-  'wom-setup-color-picker-drawer': ColorPickerDrawer,
+  'wom-setup-connect-button': ConnectButton,
   'wom-setup-deed-chip': DeedChip,
   'wom-setup-hub-card': HubCard,
 
@@ -65,6 +62,7 @@ const components = {
   'wom-setup-address': Address,
   'wom-setup-address-icon': AddressIcon,
   'wom-setup-deed-selector': DeedSelector,
+  'wom-setup-deed-item': DeedItem,
   'wom-setup-hub-blockchain-chip': BlockchainChip,
 };
 
