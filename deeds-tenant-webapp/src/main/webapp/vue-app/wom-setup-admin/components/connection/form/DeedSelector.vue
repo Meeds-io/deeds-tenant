@@ -1,40 +1,56 @@
 <template>
   <div>
-    <wom-setup-deed-chip
-      v-if="deed"
-      :deed="deed"
-      @clear="reset" />
-    <template v-else>
-      <div class="mb-4">
-        {{ $t('wom.selectDeedTitle') }}
+    <v-progress-linear v-if="loading" indeterminate />
+    <div v-else-if="deeds.length">
+      <p>
+        {{ $t(`wom.chooseDeed.${edit && 'edit.' || ''}part1`) }}
+      </p>
+      <p>
+        {{ $t(`wom.chooseDeed.${edit && 'edit.' || ''}part2`) }}
+      </p>
+      <p v-if="edit">
+        {{ $t(`wom.chooseDeed.edit.part3`) }}
+      </p>
+      <v-radio-group
+        v-model="deedId"
+        :disabled="disabled"
+        mandatory>
+        <wom-setup-deed-item
+          v-for="item in deeds"
+          :key="item.nftId"
+          :deed="item"
+          :selected="item.nftId === hubDeedId"
+          selectable
+          class="px-0"
+          @select="deedId = item.nftId" />
+      </v-radio-group>
+      <div class="mt-6 text-center">
+        <span>{{ $t('wom.selectOfferText') }}</span>
+        <v-btn
+          href="https://www.meeds.io/marketplace"
+          target="_blank"
+          text>
+          <span class="text-none primary--text">{{ $t('wom.selectOfferLink') }}</span>
+        </v-btn>
       </div>
-      <div class="d-flex mb-4">
-        <v-chip class="mt-1 me-2 flex-grow-0 flex-shrink-0">
-          Deed #
-        </v-chip>
-        <v-text-field
-          v-model="deedId"
-          :disabled="loading"
-          :loading="loading"
-          :rules="rules.deedId"
-          class="pt-0 mt-0 width-auto full-height flex-grow-1 flex-shrink-1"
-          outlined
-          dense
-          autofocus>
-          <template #append>
-            <v-btn
-              v-show="changed"
-              :loading="loading"
-              class="mt-n1"
-              outlined
-              small
-              @click="checkDeedId">
-              <div class="primary--text">{{ $t('wom.verify') }}</div>
-            </v-btn>
-          </template>
-        </v-text-field>
+    </div>
+    <div v-else>
+      <p>
+        {{ $t('wom.noDeed.part1') }}
+      </p>
+      <p>
+        {{ $t('wom.noDeed.part2') }}
+      </p>
+      <div class="mt-6 text-center">
+        <v-btn
+          href="https://www.meeds.io/marketplace"
+          target="_blank"
+          class="primary"
+          elevation="0">
+          <span class="text-none">{{ $t('wom.selectOfferButton') }}</span>
+        </v-btn>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 <script>
@@ -44,64 +60,118 @@ export default {
       type: String,
       default: null,
     },
+    hub: {
+      type: Object,
+      default: null,
+    },
     address: {
       type: String,
       default: null,
     },
+    edit: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
-    deed: null,
+    deeds: [],
     deedId: null,
-    lastCheckedDeedId: null,
-    selectedDeedId: null,
-    isManager: false,
-    loading: false,
+    loading: true,
+    MONTH_IN_SECONDS: 2629800,
+    DAY_IN_SECONDS: 86400,
   }),
   computed: {
-    changed() {
-      return this.deedId && this.lastCheckedDeedId !== this.deedId;
+    ownedDeeds() {
+      return this.deeds.filter(d => !d.endDate);
     },
-    rules() {
-      return {
-        deedId: [
-          () => !this.deedId?.length || this.loading || this.changed || this.isManager || this.$t('wom.notDeedManagerError')
-        ],
-      };
+    leases() {
+      return this.deeds.filter(d => d.endDate);
+    },
+    hubDeedId() {
+      return this.hub?.connected && this.hub?.deedId;
+    },
+    deed() {
+      if (this.deedId === null || (this.hub?.connected && this.deedId === this.hub?.deedId)) {
+        return null;
+      }
+      return this.deeds.find(l => l.nftId === this.deedId);
+    },
+    deedManagerAddress() {
+      return this.deed?.managerAddress;
+    },
+    deedOwnerAddress() {
+      return this.deed?.ownerAddress || this.deedManagerAddress;
+    },
+    deedMaxUsers() {
+      return this.deed?.maxUsers || 0;
+    },
+    hubUsersCount() {
+      return this.$root.configuration.usersCount || 0;
+    },
+    maxUsersReached() {
+      return this.deedMaxUsers && this.hubUsersCount > this.deedMaxUsers && this.deedId;
     },
   },
   watch: {
-    isManager() {
-      this.selectedDeedId = this.isManager && this.deedId || null;
+    deed() {
+      this.$emit('input', this.deed);
     },
-    selectedDeedId() {
-      this.$emit('update:deedId', this.selectedDeedId);
+    deedManagerAddress() {
+      this.$emit('update:manager', this.deedManagerAddress);
     },
-    loading() {
-      if (!this.loading) {
-        const deedId = this.deedId;
-        this.deedId = null;
-        this.$nextTick().then(() => this.deedId = deedId);
+    deedOwnerAddress() {
+      this.$emit('update:owner', this.deedOwnerAddress);
+    },
+    maxUsersReached() {
+      if (this.maxUsersReached) {
+        this.$root.$emit('alert-message-html', this.$t('wom.maxUsersReached', {
+          0: `<span class="warning--text font-weight-bold">${this.$tenantUtils.formatNumber(this.deedMaxUsers)}</span>`,
+          1: `<span class="error--text font-weight-bold">${this.$tenantUtils.formatNumber(this.hubUsersCount)}</span>`
+        }), 'warning');
+      } else {
+        this.$root.$emit('close-alert-message');
       }
     },
   },
   created() {
-    this.deedId = this.value;
+    this.init();
   },
   methods: {
-    checkDeedId() {
+    init() {
       this.loading = true;
-      this.lastCheckedDeedId = this.deedId;
-      this.$womService.isTenantManager(this.address, this.deedId)
-        .then(isManager => this.isManager = isManager)
-        .then(() => this.isManager && this.$womService.getHub(this.deedId))
-        .then(deed => this.deed = deed || null)
-        .catch(() => this.isManager = false)
+      this.$hubService.getManagedDeeds(this.$root.configuration.womServerUrl, this.address)
+        .then(data => {
+          if (data?.length) {
+            data.forEach(deed => {
+              if (deed.endDate) {
+                deed.remainingMonths = parseInt((new Date(deed.endDate).getTime() - Date.now()) / 1000 / this.MONTH_IN_SECONDS);
+                deed.remainingDays = parseInt((new Date(deed.endDate).getTime() - Date.now()) / 1000 / this.DAY_IN_SECONDS);
+              }
+              deed.maxUsers = this.getMaxUsers(deed.cardType);
+            });
+          }
+          this.deeds = data || [];
+          this.deedId = this.hub?.deedId;
+        })
         .finally(() => this.loading = false);
     },
+    getMaxUsers(cardType) {
+      switch (cardType){
+      case 'COMMON': return 100;
+      case 'UNCOMMON': return 1000;
+      case 'RARE': return 10000;
+      case 'LEGENDARY': return this.$t('wom.unlimited');
+      default: return '';
+      }
+    },
     reset() {
+      this.deeds = [];
       this.deed = null;
       this.deedId = null;
-      this.selectedDeedId = null;
       this.isManager = false;
     },
   },

@@ -1,8 +1,9 @@
 <!--
+
  This file is part of the Meeds project (https://meeds.io/).
- 
- Copyright (C) 2020 - 2023 Meeds Association contact@meeds.io
- 
+
+ Copyright (C) 2020 - 2024 Meeds Association contact@meeds.io
+
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
@@ -15,65 +16,56 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this program; if not, write to the Free Software Foundation,
  Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 -->
 <template>
   <v-card
-    :style="hubStyle"
-    width="420"
-    max-width="100%"
-    height="270px"
-    max-height="270px"
-    class="overflow-hidden position-relative z-index-two rounded-lg d-flex flex-column"
+    class="full-width"
     flat>
-    <v-card-actions class="position-absolute z-index-two r-0">
-      <v-btn
-        :title="$t('wom.editHubTooltip')"
-        icon
-        class="px-0 ms-0 me-1 elevation-1 white"
-        @click.prevent.stop="$emit('edit')">
-        <v-icon
-          size="22"
-          color="primary"
-          class="ml-1">
-          fa-edit
-        </v-icon>
-      </v-btn>
-      <v-btn
-        :title="$t('wom.disconnectHubTooltip')"
-        icon
-        class="mx-0 px-0 elevation-1 white"
-        @click.prevent.stop="$emit('disconnect')">
-        <v-icon
-          size="22"
-          color="error">
-          fa-power-off
-        </v-icon>
-      </v-btn>
-    </v-card-actions>
     <v-card
-      class="d-flex position-absolute z-index-zero ms-n4"
-      height="100%"
-      width="100%"
-      tile
-      flat>
-      <v-img
-        :src="cardImage"
-        width="110%"
-        max-width="110%" />
-    </v-card>
-    <v-card
-      class="transparent"
-      height="100px"
-      rounded="lg"
-      flat />
-    <v-card
-      class="d-flex flex-column flex-grow-1 opacity-8"
-      tile
-      flat>
+      class="rounded-lg"
+      height="270px"
+      max-height="270px"
+      hover
+      outlined>
+      <v-card-actions class="position-absolute z-index-two r-0">
+        <v-btn
+          :title="$t('wom.editHubTooltip')"
+          elevation="0"
+          icon
+          class="px-0 ms-0 me-1 elevation-1 transparent"
+          @click.prevent.stop="$emit('edit')">
+          <v-icon
+            size="22"
+            color="white"
+            class="ml-1">
+            fa-edit
+          </v-icon>
+        </v-btn>
+        <v-chip
+          class="overflow-hidden d-block me-2"
+          color="white"
+          outlined
+          small>
+          <v-img
+            :src="cardImage"
+            max-height="22"
+            max-width="22"
+            class="rounded-circle ms-n3" />
+          <div class="white--text font-weight-normal body-1 ms-2">
+            #{{ deedId }}
+          </div>
+        </v-chip>
+      </v-card-actions>
+      <v-card
+        :color="hubBackgroundColor" 
+        height="100px"
+        width="100%"
+        flat />
       <v-card
         height="75px"
         width="75px"
-        class="ms-5 mt-n10 rounded-lg position-absolute z-index-two"
+        class="ms-5 mt-n10 rounded-lg position-absolute"
         outlined>
         <v-img
           v-if="hubLogoUrl"
@@ -83,48 +75,50 @@
           width="90%"
           contain />
       </v-card>
-      <div
-        :style="hubStyleTop"
-        class="d-flex flex-column flex-grow-1 pt-2 px-4 pb-4 position-relative z-index-one">
+      <div class="d-flex flex-column pt-2 px-4 pb-4">
         <div class="ms-10 ps-15">
-          <div
-            :title="hubName"
-            class="text-h6 font-weight-bold text-no-wrap text-truncate">
+          <span class="text-h6 font-weight-bold text-no-wrap">
             {{ hubName }}
-          </div>
-          <div
-            v-sanitized-html="hubUrl"
-            class="text-truncate">
-          </div>
+          </span>
         </div>
-        <div
+        <v-card
           v-sanitized-html="hubDescription"
-          class="text-light-color transparent font-weight-normal mt-3 text-truncate-2 flex-grow-1 pa-0"
-          flat
-          tile>
-        </div>
+          height="50px"
+          class="text-light-color font-weight-normal mt-3 text-truncate-2 pa-0"
+          flat />
+        <v-spacer />
         <div class="d-flex mt-4">
-          <div class="d-flex align-center justify-center">
-            <v-img 
-              src="/deeds-tenant/images/teamwork_icon_red.webp"
-              class="me-2"
-              width="25px"
-              height="25px" />
-            <div class="text-light-color font-weight-normal">
-              {{ hubUsersCount }} {{ $t('wom.users') }}
-            </div>
+          <div v-if="!hubUsers" class="d-flex align-center justify-center me-auto">
+            <v-icon size="21" class="secondary--text me-3">fas fa-bolt</v-icon>
+            <span class="text-light-color"> {{ $t('wom.gettingStrated') }} </span>
           </div>
-          <div class="d-flex align-center justify-center ms-10">
-            <v-img 
-              src="/deeds-tenant/images/meed_circle.webp"
-              class="me-2"
-              width="25px"
-              height="25px" />
-            <div class="text-light-color d-flex font-weight-normal">
-              {{ hubRewardsAmount }}
-              <span class="ms-2 text-no-wrap">Ɱ / {{ hubRewardsPeriod }}</span>
+          <template v-else>
+            <div class="d-flex align-center justify-center me-auto">
+              <v-img 
+                src="/deeds-tenant/images/teamwork_icon_red.webp"
+                class="me-2"
+                width="25px"
+                height="25px" />
+              <div class="text-light-color font-weight-normal">
+                {{ hubUsers }}
+              </div>
             </div>
-          </div>
+            <div v-if="!hubRewardsAmount || !hubRewardsPeriod" class="d-flex align-center justify-center ms-auto">
+              <v-icon size="21" class="secondary--text me-3">fas fa-bolt</v-icon>
+              <span class="text-light-color"> {{ $t('wom.gettingStrated') }} </span>
+            </div>
+            <div v-else class="d-flex align-center justify-center ms-2">
+              <v-img 
+                src="/deeds-tenant/images/meed_circle.webp"
+                class="me-2"
+                width="25px"
+                height="25px" />
+              <div class="text-light-color d-flex font-weight-normal">
+                {{ hubRewardsAmount }}
+                <span class="ms-2 text-no-wrap">Ɱ / {{ hubRewardsPeriod }}</span>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </v-card>
@@ -139,17 +133,17 @@ export default {
     },
   },
   computed: {
-    hubNames() {
-      return this.hub?.name || {};
+    language() {
+      return eXo.env.portal.language;
     },
     hubName() {
-      return this.hubNames[eXo.env.portal.language] || this.hubNames['en'] || '';
-    },
-    hubDescriptions() {
-      return this.hub?.description || {};
+      return this.language === 'fr' && this.hub?.name?.fr || this.hub?.name?.en;
     },
     hubDescription() {
-      return this.hubDescriptions[eXo.env.portal.language] || this.hubDescriptions['en'] || '';
+      return this.language === 'fr' && this.hub?.description?.fr || this.hub?.description?.en;
+    },
+    hubBackgroundColor() {
+      return this.hub?.backgroundColor || this.hub?.color;
     },
     hubAddress() {
       return this.hub?.address;
@@ -158,16 +152,35 @@ export default {
       return this.hub?.updatedDate && new Date(this.hub?.updatedDate).getTime();
     },
     womServerUrl() {
-      return this.$root.configuration?.womServerUrl;
+      return this.$root.configuration.womServerUrl;
     },
     hubLogoUrl() {
-      return this.hubAddress && `${this.womServerUrl}/api/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
+      return `${this.womServerUrl}/api/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
+    },
+    hubUsersCount() {
+      return this.hub?.usersCount || 0;
+    },
+    hubUsers() {
+      return this.hubUsersCount > 999 ? `${parseInt(this.hubUsersCount / 1000)}K` : this.hubUsersCount;
     },
     hubUrl() {
-      return this.hub?.url;
+      return this.hub?.hubUrl || this.hub?.url;
     },
-    hubBackgroundColor() {
-      return this.hub?.color || 'primary';
+    hubRewardsPeriodType() {
+      return this.hub?.rewardsPeriodType?.toLowerCase?.();
+    },
+    hubRewardsPeriod() {
+      return this.hubRewardsPeriodType && this.$t(`wom.${this.hubRewardsPeriodType}`);
+    },
+    hubRewardsAmount() {
+      return new Intl.NumberFormat(this.language, {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(this.hub?.rewardsPerPeriod || 0);
+    },
+    deedId() {
+      return this.hub?.deedId;
     },
     cityIndex() {
       return this.hub?.city;
@@ -183,32 +196,6 @@ export default {
     },
     cardImage() {
       return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city.toLowerCase()}-${this.cardType.toLowerCase()}.png`;
-    },
-    hubStyle() {
-      return `border: 1px solid ${this.hub?.color || '#707070'} !important;`;
-    },
-    hubStyleTop() {
-      return `border-top: 1px solid ${this.hub?.color || '#707070'} !important;`;
-    },
-    hubUsersCount() {
-      return new Intl.NumberFormat(eXo.env.portal.language, {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(this.hub?.usersCount || 0);
-    },
-    hubRewardsAmount() {
-      return new Intl.NumberFormat(eXo.env.portal.language, {
-        style: 'decimal',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      }).format(this.hub?.rewardsPerPeriod || 0);
-    },
-    hubRewardsPeriodType() {
-      return this.hub?.rewardsPeriodType?.toLowerCase();
-    },
-    hubRewardsPeriod() {
-      return this.$t(`wom.${this.hubRewardsPeriodType}`);
     },
   },
 };

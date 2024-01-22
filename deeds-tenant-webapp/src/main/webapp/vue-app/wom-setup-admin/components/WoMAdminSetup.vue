@@ -25,10 +25,49 @@
       <v-list-item class="px-0" two-line>
         <v-list-item-content>
           <v-list-item-title>
-            <h4 class="my-0">{{ $t('wom.setup.title') }}</h4>
+            <h4 class="my-0">
+              <help-label
+                label="wom.setup.title"
+                label-class="header-color"
+                tooltip="wom.whatIsWoM">
+                <template slot="helpContent">
+                  <p>
+                    {{ $t('wom.whatIsWoM.paragraph1') }}
+                  </p>
+                  <p>
+                    {{ $t('wom.whatIsWoM.paragraph2') }}
+                  </p>
+                  <p v-sanitized-html="$t('wom.whatIsWoM.paragraph3', {0: 'https://www.meeds.io/whitepaper'})"></p>
+                </template>
+              </help-label>
+            </h4>
           </v-list-item-title>
           <v-list-item-subtitle>
-            {{ $t('wom.setup.subtitle') }}
+            <help-label
+              label="wom.setup.subtitle1"
+              label-class="text-sub-title"
+              tooltip="wom.setup.subtitle1.tooltip">
+              <template slot="helpContent">
+                <p>
+                  {{ $t('wom.setup.subtitle1.paragraph1') }}
+                </p>
+                <p v-sanitized-html="$t('wom.setup.subtitle1.paragraph2', {0: 'https://www.meeds.io/hubs'})"></p>
+                <p>
+                  {{ $t('wom.setup.subtitle1.paragraph3') }}
+                </p>
+              </template>
+            </help-label>
+            <help-label
+              label="wom.setup.subtitle2"
+              label-class="text-sub-title"
+              tooltip="wom.setup.subtitle2.tooltip">
+              <template slot="helpContent">
+                <p>
+                  {{ $t('wom.setup.subtitle2.paragraph1') }}
+                </p>
+                <p v-sanitized-html="$t('wom.setup.subtitle2.paragraph2', {0: 'https://www.meeds.io/whitepaper'})"></p>
+              </template>
+            </help-label>
           </v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
