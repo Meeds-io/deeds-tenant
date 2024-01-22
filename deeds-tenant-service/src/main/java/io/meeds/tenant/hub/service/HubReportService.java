@@ -94,7 +94,7 @@ public class HubReportService {
   }
 
   public HubReportLocalStatus sendReport(RewardReport rewardReport) throws WomException {
-    if (!hubService.isDeedHub()) {
+    if (!hubService.isConnected()) {
       return null;
     }
 
@@ -230,7 +230,7 @@ public class HubReportService {
 
   private HubReportStatusType computeReportStatusType(RewardPeriod rewardPeriod, String status) {
     if (StringUtils.isBlank(status)) {
-      if (!hubService.isDeedHub() || isValidRewardDate(rewardPeriod)) {
+      if (!hubService.isConnected() || isValidRewardDate(rewardPeriod)) {
         return HubReportStatusType.NONE;
       } else {
         return HubReportStatusType.INVALID;

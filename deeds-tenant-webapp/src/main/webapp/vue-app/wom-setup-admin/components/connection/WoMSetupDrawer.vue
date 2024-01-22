@@ -34,6 +34,7 @@
     </template>
     <template v-if="drawer && initialized" #content>
       <v-card
+        v-show="!loading"
         class="pa-5"
         flat>
         <template v-if="!connected || edit">
@@ -52,6 +53,7 @@
             ref="womConnection"
             :hub="hub"
             :edit="edit"
+            :disabled="connecting || disconnecting"
             @modified="modified = $event"
             @validated="canConnect = $event"
             @connecting="connecting = $event"
@@ -83,11 +85,12 @@
         </template>
       </v-card>
     </template>
-    <template v-if="modified || edit" #footer>
+    <template v-if="!loading && (modified || edit)" #footer>
       <div class="d-flex">
         <template v-if="modified">
           <v-btn
-            v-if="connected"
+            v-if="connected && !deed && !connecting"
+            :disabled="loading"
             :loading="disconnecting"
             color="error"
             outlined
@@ -98,22 +101,23 @@
           </v-btn>
           <v-spacer />
           <v-btn
-            :disabled="connecting || disconnecting"
-            class="btn me-4"
+            :disabled="connecting || disconnecting || loading"
+            class="btn"
             @click="close">
             {{ $t('wom.cancel') }}
           </v-btn>
           <wom-setup-connect-button
             v-if="deed"
+            :wom-connection-params="womConnectionParams"
             :deed-manager-address="deedManagerAddress"
             :deed="deed"
-            :wom-connection-params="womConnectionParams"
-            class="btn btn-primary" />
+            class="ms-4"
+            @connecting="connecting = $event" />
           <v-btn
             v-else-if="!synched"
             :disabled="!canConnect"
             :loading="connecting"
-            class="btn btn-primary"
+            class="btn btn-primary ms-4"
             @click="$refs.womConnection.connect()">
             {{ $t('wom.select') }}
           </v-btn>
@@ -121,7 +125,8 @@
         <template v-else>
           <v-spacer />
           <v-btn
-            class="btn me-4"
+            :disabled="connecting || disconnecting || loading"
+            class="btn"
             @click="edit = false">
             {{ $t('wom.cancel') }}
           </v-btn>
@@ -146,19 +151,21 @@ export default {
     deed: null,
     womConnectionParams: null,
     deedManagerAddress: null,
-    operationSuccess: false,
     hub: null,
   }),
   computed: {
     connected() {
-      return this.hub?.enabled && !!this.hub?.address && this.hub.deedId >= 0;
+      return this.hub?.connected && !!this.hub?.address && this.hub.deedId >= 0;
+    },
+    deedId() {
+      return this.hub?.deedId;
     },
     confirmCloseLabels() {
       return {
         title: this.$t('wom.confirmCancelConnect'),
         message: this.$t('wom.confirmCancelConnectMessage'),
-        ok: this.$t('wom.yes'),
-        cancel: this.$t('wom.no'),
+        ok: this.$t('wom.confirm'),
+        cancel: this.$t('wom.cancel'),
       };
     },
   },
@@ -172,7 +179,7 @@ export default {
         this.edit = false;
       }
     },
-    connected() {
+    deedId() {
       this.reset();
     },
   },
@@ -192,14 +199,19 @@ export default {
       this.deed = null;
     },
     selectDeed(deedManagerAddress, deed, womConnectionParams) {
-      this.deedManagerAddress = deedManagerAddress;
-      this.deed = deed;
-      this.womConnectionParams = womConnectionParams;
+      if (!deedManagerAddress || !deed || !womConnectionParams) {
+        this.deedManagerAddress = null;
+        this.deed = null;
+        this.womConnectionParams = null;
+      } else {
+        this.deedManagerAddress = deedManagerAddress;
+        this.deed = deed;
+        this.womConnectionParams = womConnectionParams;
+      }
     },
     open() {
       this.reset();
       this.edit = false;
-      this.operationSuccess = false;
       this.$refs.drawer.open();
       this.refresh();
     },
@@ -207,7 +219,7 @@ export default {
       this.$refs.drawer.close();
     },
     refreshFromWoM() {
-      this.operationSuccess = true;
+      this.reset();
       this.refresh(true);
     },
     refresh(forceRefresh) {

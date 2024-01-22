@@ -24,26 +24,28 @@ import org.springframework.hateoas.server.core.Relation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor
+@EqualsAndHashCode
 @JsonInclude(value = Include.NON_EMPTY)
 @Relation(collectionRelation = "hubs", itemRelation = "hub")
-public class Hub {
+public class Hub implements Cloneable {
 
   @Getter
   @Setter
-  private long                deedId  = -1;
+  private long                deedId = -1;
 
   @Getter
   @Setter
-  private short               city    = -1;
+  private short               city   = -1;
 
   @Getter
   @Setter
-  private short               type    = -1;
+  private short               type   = -1;
 
   @Getter
   private String              address;
@@ -82,6 +84,10 @@ public class Hub {
 
   @Getter
   @Setter
+  private Instant             untilDate;
+
+  @Getter
+  @Setter
   private Instant             updatedDate;
 
   // Changed by Sent Report in UEM computing engine
@@ -100,8 +106,7 @@ public class Hub {
   private double              rewardsPerPeriod;
 
   @Getter
-  @Setter
-  private boolean             enabled = false;
+  private boolean             connected;
 
   public Hub(long deedId, // NOSONAR
              short city,
@@ -116,11 +121,12 @@ public class Hub {
              String deedManagerAddress,
              String earnerAddress,
              Instant createdDate,
+             Instant untilDate,
              Instant updatedDate,
              long usersCount,
              String rewardsPeriodType,
              double rewardsPerPeriod,
-             boolean enabled) {
+             boolean connected) {
     this.deedId = deedId;
     this.city = city;
     this.type = type;
@@ -129,11 +135,12 @@ public class Hub {
     this.url = url;
     this.color = color;
     this.createdDate = createdDate;
+    this.untilDate = untilDate;
     this.updatedDate = updatedDate;
     this.usersCount = usersCount;
     this.rewardsPeriodType = rewardsPeriodType;
     this.rewardsPerPeriod = rewardsPerPeriod;
-    this.enabled = enabled;
+    this.connected = connected;
     this.setAddress(address);
     this.setHubOwnerAddress(hubOwnerAddress);
     this.setDeedOwnerAddress(deedOwnerAddress);
@@ -161,4 +168,26 @@ public class Hub {
     this.earnerAddress = StringUtils.lowerCase(earnerAddress);
   }
 
+  @Override
+  public Hub clone() { // NOSONAR
+    return new Hub(deedId,
+                   city,
+                   type,
+                   address,
+                   name,
+                   description,
+                   url,
+                   color,
+                   hubOwnerAddress,
+                   deedOwnerAddress,
+                   deedManagerAddress,
+                   earnerAddress,
+                   createdDate,
+                   untilDate,
+                   updatedDate,
+                   usersCount,
+                   rewardsPeriodType,
+                   rewardsPerPeriod,
+                   connected);
+  }
 }

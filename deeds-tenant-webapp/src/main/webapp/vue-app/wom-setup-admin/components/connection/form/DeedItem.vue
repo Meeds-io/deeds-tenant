@@ -3,13 +3,25 @@
     :key="deed.nftId"
     class="px-0"
     three-line
-    @click="$emit('select')">
-    <v-list-item-action v-if="selectable" class="me-4">
+    v-on="!selected && {
+      click: () => $emit('select')
+    }">
+    <v-list-item-action
+      v-if="selectable"
+      class="me-4">
       <v-radio
+        v-show="!selected"
         :key="deed.nftId"
         :value="deed.nftId"
         on-icon="fa-lg far fa-dot-circle"
         off-icon="fa-lg far fa-circle" />
+      <v-icon
+        v-if="selected"
+        size="18"
+        class="mx-1"
+        color="success">
+        fa-check
+      </v-icon>
     </v-list-item-action>
     <v-list-item-content>
       <v-list-item-title v-if="deed.remainingMonths === 1" class="subtitle-2 text-color">
@@ -23,6 +35,9 @@
       </v-list-item-title>
       <v-list-item-title v-else-if="deed.remainingDays > 0" class="subtitle-2 text-color">
         {{ $t('wom.chooseDeed.leaseEndsInDays', {0: deed.remainingDays}) }}
+      </v-list-item-title>
+      <v-list-item-title v-else-if="deed.endDate" class="subtitle-2 text-color">
+        {{ $t('wom.chooseDeed.lessThanADay') }}
       </v-list-item-title>
       <v-list-item-title v-else class="subtitle-2 text-color">
         {{ $t('wom.chooseDeed.nolimitation') }}
@@ -55,6 +70,10 @@ export default {
     deed: {
       type: Object,
       default: null,
+    },
+    selected: {
+      type: Boolean,
+      default: false,
     },
     selectable: {
       type: Boolean,

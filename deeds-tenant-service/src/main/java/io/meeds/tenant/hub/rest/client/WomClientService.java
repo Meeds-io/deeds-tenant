@@ -34,6 +34,7 @@ import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportVerifiableData;
+import io.meeds.wom.api.model.HubUpdateRequest;
 import io.meeds.wom.api.model.WomConnectionRequest;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
 
@@ -57,6 +58,8 @@ public class WomClientService {
   private static final String  WOM_CONNECT_URI               = WOM_HUBS_URI;
 
   private static final String  WOM_DISCONNECT_URI            = WOM_HUBS_URI;
+
+  private static final String  WOM_UPDATE_HUB_URI            = WOM_HUBS_URI;
 
   private static final String  HUB_TENANT_BY_ADDRESS_URI     = WOM_HUBS_URI + "/" + HUB_ADDRESS_PARAM + "?forceRefresh=" +
       HUB_FORCE_REFRESH_PARAM;
@@ -118,6 +121,13 @@ public class WomClientService {
     return fromJsonString(responseText, HubReport.class);
   }
 
+  public String saveHub(Hub hub,
+                        String hubSignedMessage,
+                        String token) throws WomException {
+    return womConnectionService.processPut(getWoMUpdateHubUri(),
+                                           toJsonString(new HubUpdateRequest(hub, hubSignedMessage, token)));
+  }
+
   public void saveHubAvatar(String hubAddress,
                             String signedMessage,
                             String token,
@@ -145,8 +155,10 @@ public class WomClientService {
                                  InputStream inputStream) throws WomException {
     HttpPost httpPost = new HttpPost(attachmentUri);
     MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create()
-                                                                 .addBinaryBody("file", inputStream)
-                                                                 .setContentType(ContentType.MULTIPART_FORM_DATA)
+                                                                 .addBinaryBody("file",
+                                                                                inputStream,
+                                                                                ContentType.MULTIPART_FORM_DATA,
+                                                                                "file")
                                                                  .addTextBody("hubAddress", hubAddress)
                                                                  .addTextBody("signedMessage", signedMessage)
                                                                  .addTextBody("rawMessage", rawMessage)
@@ -167,6 +179,11 @@ public class WomClientService {
 
   private URI getWoMConnectionUri() {
     String uri = WOM_URL + WOM_CONNECT_URI;
+    return URI.create(fixUri(uri));
+  }
+
+  private URI getWoMUpdateHubUri() {
+    String uri = WOM_URL + WOM_UPDATE_HUB_URI;
     return URI.create(fixUri(uri));
   }
 

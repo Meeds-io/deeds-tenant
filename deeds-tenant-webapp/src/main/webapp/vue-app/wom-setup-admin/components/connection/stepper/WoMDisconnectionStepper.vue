@@ -21,8 +21,8 @@
     ref="confirmDialog"
     :title="$t('wom.disconnectFromWomConfirmTitle')"
     :message="$t('wom.disconnectFromWomConfirmMessage')"
-    :ok-label="$t('wom.yes')"
-    :cancel-label="$t('wom.no')"
+    :ok-label="$t('wom.confirm')"
+    :cancel-label="$t('wom.cancel')"
     @ok="disconnect" />
 </template>
 <script>
@@ -86,7 +86,10 @@ export default {
         .catch(e => {
           this.disconnecting = false;
           const error = (e?.data?.message || e?.message || e?.cause || String(e));
-          const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1]}` || error;
+          let errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
+          if (!this.$te(errorMessageKey)) {
+            errorMessageKey = 'wom.errorDisconnectingToWom';
+          }
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
         });
     },

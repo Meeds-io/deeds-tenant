@@ -243,7 +243,7 @@ public class MetamaskLoginService {
    */
   public boolean isDeedHub() {
     try {
-      return hubService.isDeedHub();
+      return hubService.isConnected();
     } catch (Exception e) {
       LOG.warn("Error checking whether the current installation is a Deed Tenant or not, return false", e);
       return false;

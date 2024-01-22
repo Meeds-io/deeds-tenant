@@ -105,6 +105,7 @@ export default {
       this.loading = true;
       provider.lookupAddress(this.address)
         .then(name => this.ens = name)
+        .catch(() => this.ens = null)
         .finally(() => this.loading = false);
     },
   },

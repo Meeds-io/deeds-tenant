@@ -13,11 +13,13 @@
       </p>
       <v-radio-group
         v-model="deedId"
+        :disabled="disabled"
         mandatory>
         <wom-setup-deed-item
           v-for="item in deeds"
           :key="item.nftId"
           :deed="item"
+          :selected="item.nftId === hubDeedId"
           selectable
           class="px-0"
           @select="deedId = item.nftId" />
@@ -70,6 +72,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   data: () => ({
     deeds: [],
@@ -85,8 +91,11 @@ export default {
     leases() {
       return this.deeds.filter(d => d.endDate);
     },
+    hubDeedId() {
+      return this.hub?.connected && this.hub?.deedId;
+    },
     deed() {
-      if (this.deedId === null || (this.hub?.enabled && this.deedId === this.hub?.deedId)) {
+      if (this.deedId === null || (this.hub?.connected && this.deedId === this.hub?.deedId)) {
         return null;
       }
       return this.deeds.find(l => l.nftId === this.deedId);
@@ -104,7 +113,7 @@ export default {
       return this.$root.configuration.usersCount || 0;
     },
     maxUsersReached() {
-      return this.deedMaxUsers && this.hubUsersCount > this.deedMaxUsers;
+      return this.deedMaxUsers && this.hubUsersCount > this.deedMaxUsers && this.deedId;
     },
   },
   watch: {

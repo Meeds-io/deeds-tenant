@@ -1,8 +1,6 @@
-/**
+/*
  * This file is part of the Meeds project (https://meeds.io/).
- *
- * Copyright (C) 2020 - 2023 Meeds Association contact@meeds.io
- *
+ * Copyright (C) 2020 - 2022 Meeds Association contact@meeds.io
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -15,27 +13,15 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-package io.meeds.tenant.hub.model;
+package io.meeds.tenant.hub.scheduling;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@Data
-@NoArgsConstructor
-public class HubConfiguration {
-
-  private String womAddress = "0x670c3F61A367891b54f54e457d3F64F7F8D15430";
-
-  private String adminWallet;
-
-  private String hubAddress;
-
-  private long   usersCount;
-
-  private String rewardsPeriodType;
-
-  private double rewardsPerPeriod;
-
-  private String womServerUrl;
+@Configuration
+@EnableScheduling
+@ComponentScan
+public class SchedulingTenantConfig {
 
 }

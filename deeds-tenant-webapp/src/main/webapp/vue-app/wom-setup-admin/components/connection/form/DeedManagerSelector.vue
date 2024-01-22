@@ -6,7 +6,7 @@
       </div>
       <wom-setup-address
         :address="address"
-        clearable
+        :clearable="!disabled"
         @clear="reset" />
     </div>
     <div v-else>
@@ -34,6 +34,10 @@ export default {
       default: null,
     },
     edit: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
       type: Boolean,
       default: false,
     },

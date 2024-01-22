@@ -45,6 +45,7 @@
     <!-- 3rd party libraries versions -->
     <addon.exo.wallet.version>2.6.x-whitepaper-SNAPSHOT</addon.exo.wallet.version>
     <addon.exo.gamification.version>2.6.x-whitepaper-SNAPSHOT</addon.exo.gamification.version>
+    <addon.exo.notes.version>1.4.x-whitepaper-SNAPSHOT</addon.exo.notes.version>
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
@@ -64,6 +65,13 @@
         <groupId>org.exoplatform.addons.gamification</groupId>
         <artifactId>gamification</artifactId>
         <version>${addon.exo.gamification.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.addons.notes</groupId>
+        <artifactId>notes</artifactId>
+        <version>${addon.exo.notes.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

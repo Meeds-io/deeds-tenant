@@ -26,6 +26,7 @@ import org.apache.hc.client5.http.classic.HttpClient;
 import org.apache.hc.client5.http.classic.methods.HttpDelete;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpPut;
 import org.apache.hc.client5.http.classic.methods.HttpUriRequestBase;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
@@ -64,6 +65,13 @@ public class WomConnectionService {
 
   public String processPost(URI uri, String jsonString) throws WomException {
     HttpPost request = new HttpPost(uri);
+    StringEntity entity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
+    request.setEntity(entity);
+    return processRequest(request);
+  }
+
+  public String processPut(URI uri, String jsonString) throws WomException {
+    HttpPut request = new HttpPut(uri);
     StringEntity entity = new StringEntity(jsonString, ContentType.APPLICATION_JSON);
     request.setEntity(entity);
     return processRequest(request);

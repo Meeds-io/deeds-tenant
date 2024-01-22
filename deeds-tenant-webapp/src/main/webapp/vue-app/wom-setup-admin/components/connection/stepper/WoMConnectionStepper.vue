@@ -27,19 +27,21 @@
       :raw-message="rawMessage"
       :address.sync="deedManagerAddress"
       :signature.sync="signedMessage"
+      :disabled="disabled"
       class="mx-auto" />
     <wom-setup-deed-selector
       v-if="stepper === 2"
       v-model="deed"
       :hub="hub"
       :edit="edit"
+      :disabled="disabled"
       :address="deedManagerAddress"
       :owner.sync="deedOwnerAddress"
       class="mt-5" />
     <wom-setup-deed-item
       v-else-if="stepper > 2"
       :deed="deed"
-      clearable
+      :clearable="!disabled"
       @clear="clearDeed" />
   </div>
 </template>
@@ -49,6 +51,10 @@ export default {
     hub: {
       type: Object,
       default: null,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     edit: {
       type: Boolean,
@@ -101,11 +107,17 @@ export default {
     modified() {
       this.$emit('modified', this.modified);
     },
+    deed() {
+      if (!this.deed) {
+        this.$emit('select');
+      }
+    },
     deedManagerAddress(newVal, oldVal) {
       if (newVal && !oldVal) {
         this.stepper = 2;
       } else if (!newVal && oldVal) {
         this.stepper = 1;
+        this.$emit('select');
       }
     },
     valid() {
@@ -166,7 +178,10 @@ export default {
         .catch(e => {
           this.connecting = false;
           const error = (e?.data?.message || e?.message || e?.cause || String(e));
-          const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
+          let errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
+          if (!this.$te(errorMessageKey)) {
+            errorMessageKey = 'wom.connectionError';
+          }
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
         });
     },

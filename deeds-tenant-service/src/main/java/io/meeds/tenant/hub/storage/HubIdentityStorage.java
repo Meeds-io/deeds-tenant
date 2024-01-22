@@ -30,7 +30,7 @@ import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.HUB_ENABLED;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.HUB_OWNER_ADDRESS;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.IDENTITY_REMOTE_ID;
-import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.JOIN_DATE;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.*;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.NAME;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.REWARD_AMOUNT;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.REWARD_PERIOD_TYPE;
@@ -76,7 +76,12 @@ public class HubIdentityStorage {
   }
 
   public Hub getHub(boolean forceRefresh) {
-    if (retrievedFromWom && !forceRefresh) {
+    if (!forceRefresh
+        && retrievedFromWom
+        && (hub == null
+            || !hub.isConnected()
+            || hub.getUntilDate() == null
+            || hub.getUntilDate().isAfter(Instant.now()))) {
       return hub;
     }
     Profile hubProfile = getHubProfile();
@@ -147,9 +152,14 @@ public class HubIdentityStorage {
     hubProfile.setProperty(HUB_OWNER_ADDRESS, hub.getHubOwnerAddress());
     hubProfile.setProperty(DEED_OWNER_ADDRESS, hub.getDeedOwnerAddress());
     hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
-    hubProfile.setProperty(JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
+    hubProfile.setProperty(START_JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
+    if (hub.getUntilDate() == null) {
+      hubProfile.removeProperty(END_JOIN_DATE);
+    } else {
+      hubProfile.setProperty(END_JOIN_DATE, String.valueOf(hub.getUntilDate().toEpochMilli()));
+    }
     hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
-    hubProfile.setProperty(HUB_ENABLED, String.valueOf(hub.isEnabled()));
+    hubProfile.setProperty(HUB_ENABLED, String.valueOf(hub.isConnected()));
     identityManager.updateProfile(hubProfile);
   }
 
@@ -169,9 +179,11 @@ public class HubIdentityStorage {
     String hubOwnerAddress = (String) hubProfile.getProperty(HUB_OWNER_ADDRESS);
     String deedOwnerAddress = (String) hubProfile.getProperty(DEED_OWNER_ADDRESS);
     String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
-    Instant joinDate = parseInstant(hubProfile, JOIN_DATE);
+    Instant joinDate = parseInstant(hubProfile, START_JOIN_DATE);
+    Instant untilDate = parseInstant(hubProfile, END_JOIN_DATE);
     Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
-    boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), true);
+    boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), true)
+                      && (untilDate == null || untilDate.isAfter(Instant.now()));
 
     return new Hub(Long.parseLong(deedId),
                    Short.parseShort(city),
@@ -186,6 +198,7 @@ public class HubIdentityStorage {
                    deedManagerAddress,
                    earnerAddress,
                    joinDate,
+                   untilDate,
                    updatedDate,
                    parseLong(usersCount),
                    rewardsPeriodType,
@@ -198,15 +211,11 @@ public class HubIdentityStorage {
       hubProfile.removeProperty(DEED_ID);
       hubProfile.removeProperty(DEED_CITY);
       hubProfile.removeProperty(DEED_TYPE);
-      hubProfile.removeProperty(NAME);
-      hubProfile.removeProperty(DESCRIPTION);
-      hubProfile.removeProperty(URL);
-      hubProfile.removeProperty(COLOR);
       hubProfile.removeProperty(EARNER_ADDRESS);
-      hubProfile.removeProperty(HUB_OWNER_ADDRESS);
       hubProfile.removeProperty(DEED_OWNER_ADDRESS);
       hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
-      hubProfile.removeProperty(JOIN_DATE);
+      hubProfile.removeProperty(START_JOIN_DATE);
+      hubProfile.removeProperty(END_JOIN_DATE);
       hubProfile.removeProperty(UPDATED_DATE);
       hubProfile.removeProperty(REWARD_PERIOD_TYPE);
       hubProfile.removeProperty(REWARD_AMOUNT);

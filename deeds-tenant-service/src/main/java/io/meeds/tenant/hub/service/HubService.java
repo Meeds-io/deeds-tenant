@@ -18,8 +18,10 @@ package io.meeds.tenant.hub.service;
 
 import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
 
@@ -29,18 +31,25 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.Sign;
 import org.web3j.utils.Numeric;
 
-import org.exoplatform.commons.file.services.FileService;
+import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.branding.model.Logo;
+import org.exoplatform.portal.config.model.PortalConfig;
+import org.exoplatform.portal.mop.service.LayoutService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.UserStatus;
+import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.wallet.model.reward.RewardPeriodType;
 import org.exoplatform.wallet.model.reward.RewardSettings;
 import org.exoplatform.wallet.reward.service.RewardSettingsService;
 import org.exoplatform.wallet.service.WalletAccountService;
+import org.exoplatform.wiki.model.Page;
 
+import io.meeds.notes.service.NotePageViewService;
+import io.meeds.social.cms.model.CMSSetting;
+import io.meeds.social.cms.service.CMSService;
 import io.meeds.tenant.hub.model.HubConfiguration;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubIdentityStorage;
@@ -50,16 +59,20 @@ import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.WomConnectionRequest;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
 
-import lombok.SneakyThrows;
-
 @Service
 public class HubService {
 
-  private static final Log      LOG                         = ExoLogger.getLogger(HubService.class);
+  public static final int       MAX_START_TENTATIVES            = 5;
 
-  public static final int       MAX_START_TENTATIVES        = 5;
+  public static final String    MANAGER_DEFAULT_ROLES_PARAM     = "managerDefaultRoles";
 
-  public static final String    MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
+  public static final String    PUBLIC_SITE_NAME                = "public";
+
+  public static final String    PUBLIC_ACCESS_PERMISSION        = "Everyone";
+
+  public static final String    PUBLIC_HUB_SUMMARY_SETTING_NAME = "publicHubSummary";
+
+  private static final Log      LOG                             = ExoLogger.getLogger(HubService.class);
 
   @Autowired
   private OrganizationService   organizationService;
@@ -80,13 +93,32 @@ public class HubService {
   private BrandingService       brandingService;
 
   @Autowired
-  private FileService           fileService;
+  private WomClientService      womServiceClient;
 
   @Autowired
-  private WomClientService      womServiceClient;
+  private CMSService            cmsService;
+
+  @Autowired
+  private LocaleConfigService   localeConfigService;
+
+  @Autowired
+  private LayoutService         layoutService;
+
+  @Autowired
+  private NotePageViewService   notePageViewService;
+
+  private long                  synchronizeLogoUpdateDate;
 
   public String getHubAddress() {
     return hubIdentityStorage.getHubAddress();
+  }
+
+  public boolean isConnected() {
+    Hub hub = getHub();
+    return hub != null
+           && hub.isConnected()
+           && hub.getDeedId() > 0
+           && isAfterNow(hub.getUntilDate());
   }
 
   public Hub getHub() {
@@ -97,33 +129,29 @@ public class HubService {
     return hubIdentityStorage.getHub(forceRefresh);
   }
 
-  public boolean isDeedHub() {
-    return getHub() != null;
-  }
-
   public long getDeedId() {
-    return isDeedHub() ? getHub().getDeedId() : -1; // NOSONAR
+    return isConnected() ? getHub().getDeedId() : -1; // NOSONAR
   }
 
   public short getDeedCity() {
-    return isDeedHub() ? getHub().getCity() : null; // NOSONAR
+    return isConnected() ? getHub().getCity() : null; // NOSONAR
   }
 
   public short getDeedType() {
-    return isDeedHub() ? getHub().getType() : null; // NOSONAR
+    return isConnected() ? getHub().getType() : null; // NOSONAR
   }
 
   public String getDeedManager() {
-    return isDeedHub() ? getHub().getDeedManagerAddress() : null;
+    return isConnected() ? getHub().getDeedManagerAddress() : null;
   }
 
   public Instant getHubJoinDate() {
-    return isDeedHub() ? getHub().getCreatedDate() : null;
+    return isConnected() ? getHub().getCreatedDate() : null;
   }
 
   public boolean isDeedManager(String address) {
     return StringUtils.isNotBlank(address)
-           && isDeedHub()
+           && isConnected()
            && StringUtils.equalsIgnoreCase(getDeedManager(), address);
   }
 
@@ -153,25 +181,16 @@ public class HubService {
     return hubConfiguration;
   }
 
-  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomException {
+  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomException { // NOSONAR
     try {
       String address = hubWalletStorage.getOrCreateHubAddress();
       connectionRequest.setAddress(address);
-      connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
-
-      connectionRequest.setName(Collections.singletonMap(Locale.ENGLISH.toLanguageTag(), brandingService.getCompanyName()));
-      connectionRequest.setDescription(brandingService.getLoginSubtitle());
-      connectionRequest.setUrl(brandingService.getCompanyLink());
-      connectionRequest.setColor(brandingService.getThemeStyle().get("primaryColor"));
-
       if (StringUtils.isBlank(connectionRequest.getEarnerAddress())) {
         connectionRequest.setEarnerAddress(walletAccountService.getAdminWallet().getAddress());
       }
       connectionRequest.setUsersCount(computeUsersCount());
-
-      if (StringUtils.contains(connectionRequest.getUrl(), "localhost:8080")) {
-        throw new WomException("wom.missingHubUrlConfiguration");
-      }
+      connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
+      setHubCardProperties(connectionRequest);
       String womAddress = womServiceClient.connectToWom(connectionRequest);
       try {
         saveHubAvatar();
@@ -186,7 +205,7 @@ public class HubService {
   }
 
   public void disconnectFromWom(WomDisconnectionRequest disconnectionRequest) throws WomException {
-    if (!isDeedHub()) {
+    if (!isConnected()) {
       throw new WomException("wom.alreadyDisconnected");
     }
     try {
@@ -195,6 +214,54 @@ public class HubService {
     } finally {
       hubIdentityStorage.refreshHubIdentity();
     }
+  }
+
+  public void updateHubCard() throws WomException { // NOSONAR
+    if (!isConnected()) {
+      return;
+    }
+
+    String token = womServiceClient.generateToken();
+    String hubSignedMessage = signHubMessage(token);
+
+    try {
+      Hub hub = getHub();
+      Hub original = hub.clone();
+      setHubCardProperties(hub);
+      if (!original.equals(hub)) {
+        LOG.debug("Updating Hub Card on WoM Server");
+        womServiceClient.saveHub(hub, hubSignedMessage, token);
+      }
+      long logoUpdateDate = getLogoUpdateDate();
+      if (synchronizeLogoUpdateDate == 0) {
+        synchronizeLogoUpdateDate = logoUpdateDate;
+      } else if (synchronizeLogoUpdateDate != logoUpdateDate) {
+        LOG.debug("Updating Hub Card Avatar on WoM Server");
+        saveHubAvatar();
+        synchronizeLogoUpdateDate = logoUpdateDate;
+      }
+    } finally {
+      hubIdentityStorage.refreshHubIdentity();
+    }
+  }
+
+  public void saveHubAvatar() throws WomException {
+    String hubAddress = getHubAddress();
+    if (StringUtils.isBlank(hubAddress)) {
+      throw new WomException("wom.notConnected");
+    }
+
+    Logo logo = brandingService.getLogo();
+    if (logo == null || logo.getData() == null || logo.getData().length == 0) {
+      return;
+    }
+    String token = womServiceClient.generateToken();
+    String signedMessage = signHubMessage(token);
+
+    womServiceClient.saveHubAvatar(hubAddress,
+                                   signedMessage,
+                                   token,
+                                   new ByteArrayInputStream(logo.getData()));
   }
 
   public long computeUsersCount() {
@@ -211,26 +278,6 @@ public class HubService {
     return signHubMessage(rawRequest);
   }
 
-  @SneakyThrows
-  public void saveHubAvatar() throws WomException {
-    String hubAddress = getHubAddress();
-    if (StringUtils.isBlank(hubAddress)) {
-      throw new WomException("wom.notConnected");
-    }
-
-    Logo logo = brandingService.getLogo();
-    if (logo == null || logo.getFileId() <= 0) {
-      return;
-    }
-    String token = womServiceClient.generateToken();
-    String signedMessage = signHubMessage(token);
-
-    womServiceClient.saveHubAvatar(hubAddress,
-                                   signedMessage,
-                                   token,
-                                   fileService.getFile(logo.getFileId()).getAsStream());
-  }
-
   private String signHubMessage(String rawRequest) throws WomException {
     byte[] encodedRequest = rawRequest.getBytes(StandardCharsets.UTF_8);
     Sign.SignatureData signatureData = Sign.signPrefixedMessage(encodedRequest, hubWalletStorage.getHubWallet());
@@ -244,6 +291,46 @@ public class HubService {
   private RewardPeriodType getRewardsPeriodType() {
     RewardSettings settings = rewardSettingsService.getSettings();
     return settings.getPeriodType();
+  }
+
+  private void setHubCardProperties(Hub hub) {
+    String enLanguage = Locale.ENGLISH.toLanguageTag();
+    hub.setName(Collections.singletonMap(enLanguage, brandingService.getCompanyName()));
+    hub.setDescription(Collections.singletonMap(enLanguage, getPublicDescription(enLanguage)));
+    hub.setColor(brandingService.getThemeStyle().get("primaryColor"));
+    hub.setUrl(CommonsUtils.getCurrentDomain());
+  }
+
+  private String getPublicDescription(String enLanguage) {
+    Page note = null;
+    if (isPublisSitePublished()) {
+      CMSSetting setting = cmsService.getSetting(NotePageViewService.CMS_CONTENT_TYPE, PUBLIC_HUB_SUMMARY_SETTING_NAME);
+      if (setting != null) {
+        String defaultLanguage = localeConfigService.getDefaultLocaleConfig().getLanguage();
+        note = notePageViewService.getNotePage(setting.getName(), defaultLanguage);
+        if ((note == null || StringUtils.isBlank(note.getContent()))
+            && !StringUtils.equals(defaultLanguage, enLanguage)) {
+          note = notePageViewService.getNotePage(setting.getName(), enLanguage);
+        }
+      }
+    }
+    return note == null || StringUtils.isBlank(note.getContent()) ? "" : note.getContent();
+  }
+
+  private boolean isPublisSitePublished() {
+    PortalConfig portalConfig = layoutService.getPortalConfig(PUBLIC_SITE_NAME);
+    return portalConfig != null
+           && portalConfig.getAccessPermissions() != null
+           && Arrays.asList(portalConfig.getAccessPermissions()).contains(PUBLIC_ACCESS_PERMISSION);
+  }
+
+  private long getLogoUpdateDate() {
+    Logo logo = brandingService.getLogo();
+    return logo == null ? synchronizeLogoUpdateDate : logo.getUpdatedDate();
+  }
+
+  private boolean isAfterNow(Instant untilDate) {
+    return untilDate == null || untilDate.isAfter(Instant.now());
   }
 
 }

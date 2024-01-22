@@ -33,7 +33,7 @@
     </span>
   </v-btn>
   <v-btn
-    v-else-if="validNetwork"
+    v-else-if="validNetwork && !connected"
     :loading="connecting"
     color="primary"
     elevation="0"
@@ -102,6 +102,11 @@ export default {
       return this.targetNetworkId === this.metamaskNetworkId;
     },
   },
+  watch: {
+    connecting() {
+      this.$emit('connecting', this.connecting);
+    },
+  },
   created() {
     window.ethereum.on('chainChanged', this.retrieveMetamaskNetwork);
     this.retrieveMetamaskNetwork();
@@ -152,7 +157,10 @@ export default {
         .catch(e => {
           this.connecting = false;
           const error = (e?.data?.message || e?.message || e?.cause || String(e));
-          const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
+          let errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
+          if (!this.$te(errorMessageKey)) {
+            errorMessageKey = 'wom.errorConnectingToWom';
+          }
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
         });
     },
