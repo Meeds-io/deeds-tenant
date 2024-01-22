@@ -23,27 +23,29 @@
     <v-btn
       v-if="!isMetamaskInstalled"
       :href="metamaskInstallLinlk"
+      :class="primary && 'primary' || 'white-background primary-border-color'"
       target="_blank"
       rel="nofollow noreferrer noopener"
-      class="mx-auto white-background primary-border-color d-block rounded-lg"
-      outlined>
+      class="mx-auto d-block"
+      elevation="0">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2 text-truncate text-none primary--text">{{ $t('wom.installMetamask') }}</span>
+      <span :class="!primary && 'primary--text'" class="py-2 ms-2 text-truncate text-none primary--text">{{ $t('wom.installMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
       :disabled="disabled"
-      class="mx-auto white-background primary-border-color d-block rounded-lg"
-      outlined
+      :class="primary && 'primary' || 'white-background primary-border-color'"
+      class="mx-auto d-block"
+      elevation="0"
       @click="signInWithMetamask()">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span class="py-2 ms-2 text-truncate text-none primary--text">{{ $t('wom.signWithMetamask') }}</span>
+      <span :class="!primary && 'primary--text'" class="py-2 ms-2 text-truncate text-none">{{ label && $t(label) || $t('wom.signWithMetamask') }}</span>
     </v-btn>
   </div>
 </template>
@@ -53,6 +55,18 @@ export default {
     message: {
       type: String,
       default: null,
+    },
+    label: {
+      type: String,
+      default: null,
+    },
+    allowedAddress: {
+      type: String,
+      default: null,
+    },
+    primary: {
+      type: Boolean,
+      default: false,
     },
     disabled: {
       type: Boolean,
@@ -91,7 +105,13 @@ export default {
       return this.$metamaskUtils.signInWithMetamask(this.message, this.isMobile)
         .then(signature => this.signature = signature.replace('SIGNED_MESSAGE@', ''))
         .then(() => this.$metamaskUtils.retrieveAddress())
-        .then(address => this.address = address)
+        .then(address => {
+          if (!this.allowedAddress || !address || this.allowedAddress.toLowerCase() === address.toLowerCase()) {
+            this.address = address;
+          } else {
+            this.$root.$emit('alert-message', this.$t('wom.onlyHubOwnerAddressCanManageWoMConnection', {0: this.allowedAddress}), 'error');
+          }
+        })
         .catch(console.debug);// eslint-disable-line no-console
     },
   },

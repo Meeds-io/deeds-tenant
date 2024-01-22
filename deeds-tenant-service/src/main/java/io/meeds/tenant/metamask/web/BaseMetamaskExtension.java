@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.exoplatform.web.login.UIParamsExtension;
 
+import io.meeds.tenant.hub.service.HubService;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.wom.service.WomService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -36,7 +36,7 @@ public abstract class BaseMetamaskExtension implements UIParamsExtension {
   protected MetamaskLoginService metamaskLoginService;
 
   @Autowired
-  protected WomService           womService;
+  protected HubService           hubService;
 
   protected void addDeedTenantParameters(HttpSession httpSession, Map<String, Object> params) {
     if (metamaskLoginService.isDeedHub()) {
@@ -45,8 +45,8 @@ public abstract class BaseMetamaskExtension implements UIParamsExtension {
       params.put("isDeedTenant", true);
 
       if (deedId > -1) {
-        params.put("cityIndex", womService.getDeedCity());
-        params.put("cardTypeIndex", womService.getDeedType());
+        params.put("cityIndex", hubService.getDeedCity());
+        params.put("cardTypeIndex", hubService.getDeedType());
         String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
         if (StringUtils.isNotBlank(walletAddress)
             && metamaskLoginService.isDeedManager(walletAddress)) {
