@@ -2,6 +2,7 @@
   <v-chip
     :small="small"
     :href="url"
+    :loading="loading"
     target="_blank"
     rel="nofollow noreferrer noopener"
     outlined>
@@ -17,6 +18,7 @@
     </span>
     <v-btn
       v-if="clearable"
+      :loading="loading"
       icon
       outlined
       small
@@ -58,9 +60,19 @@ export default {
       default: false,
     },
   },
+  data: () => ({
+    ens: null,
+    loading: false,
+  }),
   computed: {
     addressPreview() {
-      return this.address && `${this.address.substring(0,5)}...${this.address.substring(this.address.length-4 ,this.address.length)}`;
+      if (this.ens) {
+        return this.ens;
+      } else if (this.address) {
+        return `${this.address.substring(0,5)}...${this.address.substring(this.address.length-4 ,this.address.length)}`;
+      } else {
+        return null;
+      }
     },
     blockchain() {
       return this.networkId && (this.$root.blockchains[this.networkId] || this.$root.blockchains[0]) || null;
@@ -73,6 +85,28 @@ export default {
     },
     tooltip() {
       return this.title || this.address;
+    },
+  },
+  watch: {
+    address() {
+      if (this.address) {
+        this.lookupAddress();
+      }
+    },
+  },
+  created() {
+    if (this.address) {
+      this.lookupAddress();
+    }
+  },
+  methods: {
+    lookupAddress() {
+      const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+      this.loading = true;
+      provider.lookupAddress(this.address)
+        .then(name => this.ens = name)
+        .catch(() => this.ens = null)
+        .finally(() => this.loading = false);
     },
   },
 };
