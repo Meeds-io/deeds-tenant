@@ -72,10 +72,7 @@
         <module>ethers</module>
       </depends>
       <depends>
-        <module>translationField</module>
-      </depends>
-      <depends>
-        <module>imageCropper</module>
+        <module>animationComponents</module>
       </depends>
     </module>
   </portlet>

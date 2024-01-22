@@ -24,14 +24,16 @@ import org.springframework.hateoas.server.core.Relation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor
+@EqualsAndHashCode
 @JsonInclude(value = Include.NON_EMPTY)
 @Relation(collectionRelation = "hubs", itemRelation = "hub")
-public class Hub {
+public class Hub implements Cloneable {
 
   @Getter
   @Setter
@@ -65,7 +67,10 @@ public class Hub {
   private String              color;
 
   @Getter
-  private String              ownerAddress;
+  private String              hubOwnerAddress;
+
+  @Getter
+  private String              deedOwnerAddress;
 
   @Getter
   private String              deedManagerAddress;
@@ -76,6 +81,10 @@ public class Hub {
   @Getter
   @Setter
   private Instant             createdDate;
+
+  @Getter
+  @Setter
+  private Instant             untilDate;
 
   @Getter
   @Setter
@@ -96,6 +105,9 @@ public class Hub {
   @Setter
   private double              rewardsPerPeriod;
 
+  @Getter
+  private boolean             connected;
+
   public Hub(long deedId, // NOSONAR
              short city,
              short type,
@@ -104,38 +116,48 @@ public class Hub {
              Map<String, String> description,
              String url,
              String color,
-             String ownerAddress,
+             String hubOwnerAddress,
+             String deedOwnerAddress,
              String deedManagerAddress,
              String earnerAddress,
              Instant createdDate,
+             Instant untilDate,
              Instant updatedDate,
              long usersCount,
              String rewardsPeriodType,
-             double rewardsPerPeriod) {
+             double rewardsPerPeriod,
+             boolean connected) {
     this.deedId = deedId;
     this.city = city;
     this.type = type;
-    this.address = StringUtils.lowerCase(address);
     this.name = name;
     this.description = description;
     this.url = url;
     this.color = color;
-    this.ownerAddress = StringUtils.lowerCase(ownerAddress);
-    this.deedManagerAddress = StringUtils.lowerCase(deedManagerAddress);
-    this.earnerAddress = StringUtils.lowerCase(earnerAddress);
     this.createdDate = createdDate;
+    this.untilDate = untilDate;
     this.updatedDate = updatedDate;
     this.usersCount = usersCount;
     this.rewardsPeriodType = rewardsPeriodType;
     this.rewardsPerPeriod = rewardsPerPeriod;
+    this.connected = connected;
+    this.setAddress(address);
+    this.setHubOwnerAddress(hubOwnerAddress);
+    this.setDeedOwnerAddress(deedOwnerAddress);
+    this.setDeedManagerAddress(deedManagerAddress);
+    this.setEarnerAddress(earnerAddress);
   }
 
   public void setAddress(String address) {
     this.address = StringUtils.lowerCase(address);
   }
 
-  public void setOwnerAddress(String ownerAddress) {
-    this.ownerAddress = StringUtils.lowerCase(ownerAddress);
+  public void setHubOwnerAddress(String hubOwnerAddress) {
+    this.hubOwnerAddress = StringUtils.lowerCase(hubOwnerAddress);
+  }
+
+  public void setDeedOwnerAddress(String deedOwnerAddress) {
+    this.deedOwnerAddress = StringUtils.lowerCase(deedOwnerAddress);
   }
 
   public void setDeedManagerAddress(String deedManagerAddress) {
@@ -146,4 +168,26 @@ public class Hub {
     this.earnerAddress = StringUtils.lowerCase(earnerAddress);
   }
 
+  @Override
+  public Hub clone() { // NOSONAR
+    return new Hub(deedId,
+                   city,
+                   type,
+                   address,
+                   name,
+                   description,
+                   url,
+                   color,
+                   hubOwnerAddress,
+                   deedOwnerAddress,
+                   deedManagerAddress,
+                   earnerAddress,
+                   createdDate,
+                   untilDate,
+                   updatedDate,
+                   usersCount,
+                   rewardsPeriodType,
+                   rewardsPerPeriod,
+                   connected);
+  }
 }

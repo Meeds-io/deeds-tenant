@@ -179,11 +179,11 @@ export default {
   methods: {
     send() {
       this.loading = true;
-      return this.$womReportService.sendReport(this.report?.id)
+      return this.$hubReportService.sendReport(this.report?.id)
         .then(report => this.$emit('refresh', report))
         .then(() => this.$root.$emit('alert-message', this.$t('wom.reportSentSuccessfully'), 'success'))
         .catch(e => {
-          const error = (e?.cause || String(e));
+          const error = (e?.data?.message || e?.message || e?.cause || String(e));
           const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1]}` || error;
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
         })
@@ -191,15 +191,15 @@ export default {
     },
     refresh() {
       this.loading = true;
-      return this.$womReportService.getReport(this.report?.id, true)
+      return this.$hubReportService.getReport(this.report?.id, true)
         .then(report => this.$emit('refresh', report))
         .then(() => this.$root.$emit('alert-message', this.$t('wom.reportRefreshedSuccessfully'), 'success'))
         .catch(e => {
-          const error = (e?.cause || String(e));
+          const error = (e?.data?.message || e?.message || e?.cause || String(e));
           const errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1]}` || error;
           this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
 
-          return this.$womReportService.getReport(this.report?.id)
+          return this.$hubReportService.getReport(this.report?.id)
             .then(report => this.$emit('refresh', report))
             .catch(() => this.$emit('report-not-found', this.report?.id));
         })

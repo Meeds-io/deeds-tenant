@@ -34,8 +34,8 @@ import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.register.RegisterHandler;
 
+import io.meeds.tenant.hub.service.HubService;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.wom.service.WomService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -49,7 +49,7 @@ public class MetamaskRegisterExtensionTest {
   private MetamaskLoginService      metamaskLoginService;
 
   @MockBean
-  private WomService                womService;
+  private HubService                hubService;
 
   @Autowired
   private MetamaskRegisterExtension metamaskRegisterExtension;

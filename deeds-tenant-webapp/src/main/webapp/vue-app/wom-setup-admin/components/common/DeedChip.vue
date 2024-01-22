@@ -1,24 +1,17 @@
 <template>
-  <v-list-item class="border-color rounded-lg" two-line>
-    <v-list-item-avatar
-      class="deed-avatar"
-      height="70"
-      min-width="70"
-      width="70">
-      <v-img :src="cardImage" />
-    </v-list-item-avatar>
-    <v-list-item-content>
-      <v-list-item-title class="text-capitalize">{{ cardType }} #{{ deedId }}</v-list-item-title>
-      <v-list-item-subtitle class="text-capitalize">{{ city }}</v-list-item-subtitle>
-    </v-list-item-content>
-    <v-list-item-action>
-      <v-btn
-        icon
-        @click="$emit('clear')">
-        <v-icon size="18" class="error--text">fa-times</v-icon>
-      </v-btn>
-    </v-list-item-action>
-  </v-list-item>
+  <v-chip
+    target="_blank"
+    class="overflow-hidden d-block"
+    outlined>
+    <v-img
+      :src="cardImage"
+      max-height="36"
+      max-width="36"
+      class="rounded-circle ms-n3 me-2" />
+    <div class="text-light-color font-weight-normal body-1">
+      #{{ deedId }}
+    </div>
+  </v-chip>
 </template>
 <script>
 export default {
@@ -30,19 +23,13 @@ export default {
   },
   computed: {
     deedId() {
-      return this.deed?.nftId || this.deed?.deedId;
-    },
-    cityIndex() {
-      return this.deed?.city;
-    },
-    cardTypeIndex() {
-      return this.deed?.type;
+      return this.deed?.nftId;
     },
     city() {
-      return this.$root.cities[this.cityIndex];
+      return this.deed?.city;
     },
     cardType() {
-      return this.$root.cardTypes[this.cardTypeIndex];
+      return this.deed?.cardType;
     },
     cardImage() {
       return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city.toLowerCase()}-${this.cardType.toLowerCase()}.png`;

@@ -1,13 +1,12 @@
 <template>
   <div>
     <div v-if="address" class="d-flex align-center">
-      <div>
-        {{ $t('wom.deedManager') }}
+      <div class="flex-grow-1 text-start">
+        {{ $t('wom.welcome') }}
       </div>
       <wom-setup-address
         :address="address"
-        clearable
-        class="ms-auto"
+        :clearable="!disabled"
         @clear="reset" />
     </div>
     <div v-else>
@@ -16,7 +15,10 @@
         :message="rawMessage"
         :disabled="!rawMessage"
         :address.sync="address"
-        :signature.sync="signature" />
+        :allowed-address="edit && hub.hubOwnerAddress"
+        :signature.sync="signature"
+        label="wom.start"
+        primary />
     </div>
   </div>
 </template>
@@ -26,6 +28,18 @@ export default {
     rawMessage: {
       type: String,
       default: null,
+    },
+    hub: {
+      type: Object,
+      default: null,
+    },
+    edit: {
+      type: Boolean,
+      default: false,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
   data: () => ({

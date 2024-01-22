@@ -53,8 +53,8 @@ import org.exoplatform.services.organization.UserHandler;
 
 import io.meeds.portal.security.constant.UserRegistrationType;
 import io.meeds.portal.security.service.SecuritySettingService;
+import io.meeds.tenant.hub.service.HubService;
 import io.meeds.tenant.metamask.FakeTestException;
-import io.meeds.tenant.wom.service.WomService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -81,7 +81,7 @@ public class MetamaskLoginServiceTest {
   private AccountSetupService    accountSetupService;
 
   @MockBean
-  private WomService             womService;
+  private HubService             hubService;
 
   @MockBean
   private UserHandler            userHandler;
@@ -143,7 +143,7 @@ public class MetamaskLoginServiceTest {
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.RESTRICTED);
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
-    when(womService.isDeedManager(managerAddress)).thenReturn(true);
+    when(hubService.isDeedManager(managerAddress)).thenReturn(true);
     assertTrue(metamaskLoginService.isAllowUserRegistration(managerAddress));
     assertFalse(metamaskLoginService.isAllowUserRegistration("anyOtherAddress"));
   }
