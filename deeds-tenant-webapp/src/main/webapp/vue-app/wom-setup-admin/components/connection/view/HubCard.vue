@@ -82,10 +82,13 @@
           </span>
         </div>
         <v-card
-          v-sanitized-html="hubDescription"
           height="50px"
-          class="text-light-color font-weight-normal mt-3 text-truncate-2 pa-0"
-          flat />
+          class="text-light-color mt-3 pa-0"
+          flat>
+          <span class="text-truncate-2">
+            {{ hubDescriptionText }}
+          </span>
+        </v-card>
         <v-spacer />
         <div class="d-flex mt-4">
           <div v-if="!hubUsers" class="d-flex align-center justify-center me-auto">
@@ -141,6 +144,9 @@ export default {
     },
     hubDescription() {
       return this.language === 'fr' && this.hub?.description?.fr || this.hub?.description?.en;
+    },
+    hubDescriptionText() {
+      return this.hubDescription && this.$utils.htmlToText(this.hubDescription);
     },
     hubBackgroundColor() {
       return this.hub?.backgroundColor || this.hub?.color;
