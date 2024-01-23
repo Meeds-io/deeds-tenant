@@ -193,6 +193,7 @@ export default {
       this.loading = false;
       this.canConnect = false;
       this.connecting = false;
+      this.disconnecting = false;
       this.synched = false;
       this.womConnectionParams = null;
       this.deedManagerAddress = null;
