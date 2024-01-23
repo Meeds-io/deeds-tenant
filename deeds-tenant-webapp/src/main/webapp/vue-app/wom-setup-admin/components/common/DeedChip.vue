@@ -1,5 +1,6 @@
 <template>
   <v-chip
+    :disabled="disabled"
     target="_blank"
     class="overflow-hidden d-block"
     outlined>
@@ -19,6 +20,10 @@ export default {
     deed: {
       type: Object,
       default: null,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
