@@ -15,7 +15,7 @@
         :message="rawMessage"
         :disabled="!rawMessage"
         :address.sync="address"
-        :allowed-address="edit && hub.hubOwnerAddress"
+        :allowed-address="hub.hubOwnerAddress"
         :signature.sync="signature"
         label="wom.start"
         primary />
