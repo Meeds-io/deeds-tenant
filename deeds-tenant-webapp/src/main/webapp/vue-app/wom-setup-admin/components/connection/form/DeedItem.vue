@@ -3,7 +3,7 @@
     :key="deed.nftId"
     class="px-0"
     three-line
-    v-on="!selected && {
+    v-on="selectable && !selected && {
       click: () => $emit('select')
     }">
     <v-list-item-action
