@@ -21,6 +21,10 @@ import WoMAdminSetup from './components/WoMAdminSetup.vue';
 import WoMConnectionStepper from './components/connection/stepper/WoMConnectionStepper.vue';
 import WoMDisconnectionStepper from './components/connection/stepper/WoMDisconnectionStepper.vue';
 
+import ConnectedLabel from './components/connection/text/ConnectedLabel.vue';
+import DisconnectedLabel from './components/connection/text/DisconnectedLabel.vue';
+import NotConnectedLabel from './components/connection/text/NotConnectedLabel.vue';
+
 import MetamaskButton from './components/connection/form/MetamaskButton.vue';
 import ConnectButton from './components/connection/form/ConnectButton.vue';
 import DeedManagerSelector from './components/connection/form/DeedManagerSelector.vue';
@@ -52,6 +56,10 @@ const components = {
   'wom-setup-connect-button': ConnectButton,
   'wom-setup-deed-chip': DeedChip,
   'wom-setup-hub-card': HubCard,
+
+  'wom-connected-label': ConnectedLabel,
+  'wom-disconnected-label': DisconnectedLabel,
+  'wom-not-connected-label': NotConnectedLabel,
 
   'wom-setup-hub-rewards': HubRewards,
   'wom-setup-hub-reward-item': HubRewardItem,
