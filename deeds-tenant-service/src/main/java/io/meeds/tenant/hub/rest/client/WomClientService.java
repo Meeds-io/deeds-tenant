@@ -125,7 +125,13 @@ public class WomClientService {
                         String hubSignedMessage,
                         String token) throws WomException {
     return womConnectionService.processPut(getWoMUpdateHubUri(),
-                                           toJsonString(new HubUpdateRequest(hub, hubSignedMessage, token)));
+                                           toJsonString(new HubUpdateRequest(hub.getAddress(),
+                                                                             hub.getName(),
+                                                                             hub.getDescription(),
+                                                                             hub.getUrl(),
+                                                                             hub.getColor(),
+                                                                             hubSignedMessage,
+                                                                             token)));
   }
 
   public void saveHubAvatar(String hubAddress,
