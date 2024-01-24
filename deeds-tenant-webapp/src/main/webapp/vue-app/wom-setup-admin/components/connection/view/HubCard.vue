@@ -20,6 +20,7 @@
 -->
 <template>
   <v-card
+    :disabled="disabled"
     class="full-width"
     flat>
     <v-card
@@ -134,6 +135,10 @@ export default {
       type: Object,
       default: null,
     },
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     language() {
@@ -161,7 +166,9 @@ export default {
       return this.$root.configuration.womServerUrl;
     },
     hubLogoUrl() {
-      return `${this.womServerUrl}/api/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
+      return this.disabled
+        && `/portal/rest/v1/platform/branding/logo?v=${Date.now()}`
+        || `${this.womServerUrl}/api/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
     },
     hubUsersCount() {
       return this.hub?.usersCount || 0;
