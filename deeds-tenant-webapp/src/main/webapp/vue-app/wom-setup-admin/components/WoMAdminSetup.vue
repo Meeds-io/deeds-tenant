@@ -61,7 +61,7 @@
                     0: `<a href='https://www.meeds.io/hubs' target='_blank'>`,
                     1: '</a>'
                   })"
-                  class="text-color pa-0 mb-4"/>
+                  class="text-color pa-0 mb-4" />
                 <v-card-text class="text-color pa-0 mb-4">
                   {{ $t('wom.setup.subtitle1.paragraph3') }}
                 </v-card-text>
