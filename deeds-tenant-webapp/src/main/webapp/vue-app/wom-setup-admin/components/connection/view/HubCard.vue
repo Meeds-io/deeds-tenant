@@ -75,9 +75,9 @@
           width="90%"
           contain />
       </v-card>
-      <div class="d-flex flex-column pt-2 px-4 pb-4">
-        <div class="ms-10 ps-15">
-          <span class="text-h6 font-weight-bold text-no-wrap">
+      <div class="d-flex flex-column pt-2 px-4 pb-4 overflow-hidden">
+        <div :title="hubName" class="ms-10 ps-15 text-truncate">
+          <span class="text-h6 font-weight-bold text-truncate">
             {{ hubName }}
           </span>
         </div>
