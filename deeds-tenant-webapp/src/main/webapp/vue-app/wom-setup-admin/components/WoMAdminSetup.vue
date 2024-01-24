@@ -31,13 +31,18 @@
                 label-class="header-color"
                 tooltip="wom.whatIsWoM">
                 <template slot="helpContent">
-                  <p>
+                  <v-card-text class="text-color pa-0 mb-4">
                     {{ $t('wom.whatIsWoM.paragraph1') }}
-                  </p>
-                  <p>
+                  </v-card-text>
+                  <v-card-text class="text-color pa-0 mb-4">
                     {{ $t('wom.whatIsWoM.paragraph2') }}
-                  </p>
-                  <p v-sanitized-html="$t('wom.whatIsWoM.paragraph3', {0: 'https://www.meeds.io/whitepaper'})"></p>
+                  </v-card-text>
+                  <v-card-text
+                    v-sanitized-html="$t('wom.whatIsWoM.paragraph3', {
+                      0: `<a href='https://www.meeds.io/whitepaper' target='_blank'>`,
+                      1: '</a>'
+                    })"
+                    class="text-color pa-0 mb-4" />
                 </template>
               </help-label>
             </h4>
@@ -48,13 +53,18 @@
               label-class="text-sub-title"
               tooltip="wom.setup.subtitle1.tooltip">
               <template slot="helpContent">
-                <p>
+                <v-card-text class="text-color pa-0 mb-4">
                   {{ $t('wom.setup.subtitle1.paragraph1') }}
-                </p>
-                <p v-sanitized-html="$t('wom.setup.subtitle1.paragraph2', {0: 'https://www.meeds.io/hubs'})"></p>
-                <p>
+                </v-card-text>
+                <v-card-text
+                  v-sanitized-html="$t('wom.setup.subtitle1.paragraph2', {
+                    0: `<a href='https://www.meeds.io/hubs' target='_blank'>`,
+                    1: '</a>'
+                  })"
+                  class="text-color pa-0 mb-4"/>
+                <v-card-text class="text-color pa-0 mb-4">
                   {{ $t('wom.setup.subtitle1.paragraph3') }}
-                </p>
+                </v-card-text>
               </template>
             </help-label>
             <help-label
@@ -62,10 +72,15 @@
               label-class="text-sub-title"
               tooltip="wom.setup.subtitle2.tooltip">
               <template slot="helpContent">
-                <p>
+                <v-card-text class="text-color pa-0 mb-4">
                   {{ $t('wom.setup.subtitle2.paragraph1') }}
-                </p>
-                <p v-sanitized-html="$t('wom.setup.subtitle2.paragraph2', {0: 'https://www.meeds.io/whitepaper'})"></p>
+                </v-card-text>
+                <v-card-text
+                  v-sanitized-html="$t('wom.setup.subtitle2.paragraph2', {
+                    0: `<a href='https://www.meeds.io/whitepaper' target='_blank'>`,
+                    1: '</a>'
+                  })"
+                  class="text-color pa-0 mb-4" />
               </template>
             </help-label>
           </v-list-item-subtitle>
