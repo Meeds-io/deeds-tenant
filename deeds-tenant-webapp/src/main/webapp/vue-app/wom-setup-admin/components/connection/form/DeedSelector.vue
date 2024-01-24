@@ -16,7 +16,7 @@
         :disabled="disabled"
         mandatory>
         <wom-setup-deed-item
-          v-for="item in deeds"
+          v-for="item in sortedDeeds"
           :key="item.nftId"
           :deed="item"
           :selected="item.nftId === hubDeedId"
@@ -85,14 +85,37 @@ export default {
     DAY_IN_SECONDS: 86400,
   }),
   computed: {
-    ownedDeeds() {
-      return this.deeds.filter(d => !d.endDate);
-    },
-    leases() {
-      return this.deeds.filter(d => d.endDate);
-    },
     hubDeedId() {
       return this.hub?.connected && this.hub?.deedId;
+    },
+    currentDeed() {
+      return this.hub?.deedId && this.deeds.find(d => d.nftId === this.hub.deedId);
+    },
+    notCurrentDeeds() {
+      return this.hub?.deedId
+          && this.deeds.filter(d => d.nftId !== this.hub.deedId)
+          || this.deeds;
+    },
+    sortedConnectedDeeds() {
+      const connectedDeeds = this.notCurrentDeeds.filter(d => d.connected);
+      connectedDeeds.sort((d1, d2) =>
+        (this.getCardTypeIndice(d1.cardType) - this.getCardTypeIndice(d2.cardType))
+        || (d1.nftId - d2.nftId)
+      );
+      return connectedDeeds;
+    },
+    sortedDisconnectedDeeds() {
+      const disconnectedDeeds = this.notCurrentDeeds.filter(d => !d.connected);
+      disconnectedDeeds.sort((d1, d2) =>
+        (this.getCardTypeIndice(d1.cardType) - this.getCardTypeIndice(d2.cardType))
+        || (d1.nftId - d2.nftId)
+      );
+      return disconnectedDeeds;
+    },
+    sortedDeeds() {
+      return this.currentDeed
+        && [this.currentDeed, ...this.sortedDisconnectedDeeds, ...this.sortedConnectedDeeds]
+        || [...this.sortedDisconnectedDeeds, ...this.sortedConnectedDeeds];
     },
     deed() {
       if (this.deedId === null || (this.hub?.connected && this.deedId === this.hub?.deedId)) {
@@ -158,6 +181,15 @@ export default {
           this.deedId = this.hub?.deedId;
         })
         .finally(() => this.loading = false);
+    },
+    getCardTypeIndice(cardType) {
+      switch (cardType){
+      case 'COMMON': return 0;
+      case 'UNCOMMON': return 1;
+      case 'RARE': return 2;
+      case 'LEGENDARY': return 3;
+      default: return -1;
+      }
     },
     getMaxUsers(cardType) {
       switch (cardType){
