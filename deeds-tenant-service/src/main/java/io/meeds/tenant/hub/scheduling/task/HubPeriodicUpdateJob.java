@@ -43,7 +43,6 @@ public class HubPeriodicUpdateJob {
   @Scheduled(cron = "${meeds.deed.tenant.cron:0 0/2 * * * *}")
   @ContainerTransactional
   public void run() {
-    LOG.info("Updating Hub Card");
     try {
       hubService.updateHubCard();
     } catch (Exception e) {

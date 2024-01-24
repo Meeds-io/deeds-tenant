@@ -38,18 +38,21 @@
         class="pa-5"
         flat>
         <template v-if="!connected || edit">
-          <template v-if="!modified && !edit">
-            <p>
-              {{ $t('wom.connect.parapgraph1') }}
-            </p>
-            <p>
-              {{ $t('wom.connect.parapgraph2') }}
-            </p>
-            <p>
-              {{ $t('wom.connect.parapgraph3') }}
-            </p>
-          </template>
+          <wom-disconnected-label
+            v-if="disconnected && !reconnect && !modified && !edit"
+            class="mb-5" />
+          <wom-not-connected-label
+            v-if="!disconnected && !modified && !edit" />
+        </template>
+        <wom-connected-label v-else />
+        <wom-setup-hub-card
+          v-if="(connected && !edit) || (disconnected && !reconnect)"
+          :hub="hub"
+          :disabled="disconnected"
+          @edit="edit = true" />
+        <template v-if="!connected || edit">
           <wom-setup-connection-stepper
+            v-if="!disconnected || reconnect"
             ref="womConnection"
             :hub="hub"
             :edit="edit"
@@ -58,30 +61,22 @@
             @validated="canConnect = $event"
             @connecting="connecting = $event"
             @connected="synched = $event"
-            @select="selectDeed" />
+            @select="selectDeed"
+            @reconnect="reconnect = false" />
           <wom-setup-disconnection-stepper
+            v-if="connected && !deed && !connecting"
             ref="womDisconnection"
             :hub="hub"
             @disconnecting="disconnecting = $event" />
-        </template>
-        <template v-else>
-          <p class="mb-5 text-center" v-sanitized-html="$t('wom.connected')"></p>
-          <p class="my-0">
-            {{ $t('wom.connected.part1') }}
-          </p>
-          <p
-            class="my-0"
-            v-sanitized-html="$t('wom.connected.part2', {
-              0: `<a href='http://www.meeds.io/hubs' target='_blank' rel='nofollow noreferrer noopener'>`,
-              1: '</a>'
-            })">
-          </p>
-          <p class="mb-5">
-            {{ $t('wom.connected.part3') }}
-          </p>
-          <wom-setup-hub-card
-            :hub="hub"
-            @edit="edit = true" />
+          <div v-if="disconnected && !reconnect" class="d-flex">
+            <v-btn
+              color="primary"
+              elevation="0"
+              class="mx-auto my-5"
+              @click="reconnect = true">
+              {{ $t('wom.update') }}
+            </v-btn>
+          </div>
         </template>
       </v-card>
     </template>
@@ -144,6 +139,7 @@ export default {
     modified: false,
     loading: false,
     canConnect: false,
+    reconnect: false,
     connecting: false,
     disconnecting: false,
     synched: false,
@@ -159,6 +155,9 @@ export default {
     },
     deedId() {
       return this.hub?.deedId;
+    },
+    disconnected() {
+      return this.deedId && !this.connected;
     },
     confirmCloseLabels() {
       return {
@@ -193,6 +192,7 @@ export default {
       this.loading = false;
       this.canConnect = false;
       this.connecting = false;
+      this.reconnect = false;
       this.disconnecting = false;
       this.synched = false;
       this.womConnectionParams = null;

@@ -220,6 +220,7 @@ public class HubService {
     if (!isConnected()) {
       return;
     }
+    LOG.info("Updating Hub Card");
 
     String token = womServiceClient.generateToken();
     String hubSignedMessage = signHubMessage(token);
