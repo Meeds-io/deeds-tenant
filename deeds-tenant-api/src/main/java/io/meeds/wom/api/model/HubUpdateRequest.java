@@ -18,6 +18,8 @@
  */
 package io.meeds.wom.api.model;
 
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,10 +29,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class HubUpdateRequest {
 
-  private Hub    hub;
+  private String              address;
 
-  private String hubSignedMessage;
+  private Map<String, String> name;
 
-  private String token;
+  private Map<String, String> description;
+
+  private String              url;
+
+  private String              color;
+
+  private String              hubSignedMessage;
+
+  private String              token;
 
 }
