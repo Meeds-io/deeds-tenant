@@ -150,14 +150,14 @@ export default {
     hub: null,
   }),
   computed: {
-    connected() {
-      return this.hub?.connected && !!this.hub?.address && this.hub.deedId >= 0;
-    },
-    deedId() {
+    hubDeedId() {
       return this.hub?.deedId;
     },
+    connected() {
+      return this.hub?.connected && !!this.hub?.address && this.hubDeedId >= 0;
+    },
     disconnected() {
-      return this.deedId && !this.connected;
+      return this.hubDeedId && !this.connected;
     },
     confirmCloseLabels() {
       return {
@@ -178,7 +178,7 @@ export default {
         this.edit = false;
       }
     },
-    deedId() {
+    hubDeedId() {
       this.reset();
     },
   },
