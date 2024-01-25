@@ -15,7 +15,7 @@
         :message="rawMessage"
         :disabled="!rawMessage"
         :address.sync="address"
-        :allowed-address="hub.hubOwnerAddress"
+        :allowed-address="hubOwnerAddress"
         :signature.sync="signature"
         label="wom.start"
         primary />
@@ -52,6 +52,9 @@ export default {
         0: '<a href="https://www.meeds.io/marketplace" target="_blank">',
         1: '</a>',
       });
+    },
+    hubOwnerAddress() {
+      return this.hub?.hubOwnerAddress;
     },
   },
   watch: {
