@@ -35,7 +35,9 @@ public class HubReportStorage {
 
   private static final Context WOM_CONTEXT                         = Context.GLOBAL.id("WoM");
 
-  private static final String  REWARD_REPORT_HASH                  = "RewardReportHash";
+  private static final String  REWARD_REPORT_ID                    = "RewardReportId";
+
+  private static final String  REWARD_PERIOD_ID                    = "RewardPeriodId";
 
   private static final String  REWARD_REPORT_STATUS                = "RewardReportStatus";
 
@@ -45,7 +47,9 @@ public class HubReportStorage {
 
   private static final Scope   REWARD_REPORT_SENT_DATE_APPLICATION = Scope.APPLICATION.id(REWARD_REPORT_SENT_DATE);
 
-  private static final Scope   REWARD_REPORT_HASH_APPLICATION      = Scope.APPLICATION.id(REWARD_REPORT_HASH);
+  private static final Scope   REWARD_REPORT_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_REPORT_ID);
+
+  private static final Scope   REWARD_PERIOD_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_PERIOD_ID);
 
   @Autowired
   private RewardReportService  rewardReportService;
@@ -53,31 +57,35 @@ public class HubReportStorage {
   @Autowired
   private SettingService       settingService;
 
-  public void saveRewardPeriodStatus(RewardPeriod rewardPeriod, String status) {
+  public void saveStatus(RewardPeriod rewardPeriod, String status) {
     long periodId = getPeriodKey(rewardPeriod);
-    saveRewardPeriodStatus(periodId, status);
+    saveStatus(periodId, status);
   }
 
-  public void saveRewardPeriodStatus(long periodId, String status) {
+  public void saveStatus(long periodId, String status) {
     settingService.set(WOM_CONTEXT,
                        REWARD_REPORT_STATUS_APPLICATION,
                        String.valueOf(periodId),
                        SettingValue.create(status));
   }
 
-  public void saveRewardPeriodHash(RewardPeriod rewardPeriod, String hash) {
+  public void saveReportPeriodId(RewardPeriod rewardPeriod, long reportId) {
     long periodId = getPeriodKey(rewardPeriod);
-    saveRewardPeriodHash(periodId, hash);
+    saveReportPeriodId(periodId, reportId);
   }
 
-  public void saveRewardPeriodHash(long periodId, String hash) {
+  public void saveReportPeriodId(long periodId, long reportId) {
     settingService.set(WOM_CONTEXT,
-                       REWARD_REPORT_HASH_APPLICATION,
+                       REWARD_REPORT_ID_APPLICATION,
                        String.valueOf(periodId),
-                       SettingValue.create(hash));
+                       SettingValue.create(String.valueOf(reportId)));
+    settingService.set(WOM_CONTEXT,
+                       REWARD_PERIOD_ID_APPLICATION,
+                       String.valueOf(reportId),
+                       SettingValue.create(String.valueOf(periodId)));
   }
 
-  public void saveRewardPeriodSentDate(RewardPeriod rewardPeriod, Instant sentDate) {
+  public void saveSentDate(RewardPeriod rewardPeriod, Instant sentDate) {
     long periodId = getPeriodKey(rewardPeriod);
     settingService.set(WOM_CONTEXT,
                        REWARD_REPORT_SENT_DATE_APPLICATION,
@@ -85,7 +93,7 @@ public class HubReportStorage {
                        SettingValue.create(String.valueOf(sentDate.toEpochMilli())));
   }
 
-  public String getRewardPeriodStatus(RewardPeriod rewardPeriod) {
+  public String getStatus(RewardPeriod rewardPeriod) {
     long periodId = getPeriodKey(rewardPeriod);
     SettingValue<?> statusValue = settingService.get(WOM_CONTEXT,
                                                      REWARD_REPORT_STATUS_APPLICATION,
@@ -93,24 +101,31 @@ public class HubReportStorage {
     return statusValue == null || statusValue.getValue() == null ? null : statusValue.getValue().toString();
   }
 
-  public String getRewardPeriodHash(RewardPeriod rewardPeriod) {
+  public long getReportId(RewardPeriod rewardPeriod) {
     long periodId = getPeriodKey(rewardPeriod);
-    return getRewardPeriodHash(periodId);
+    return getReportId(periodId);
   }
 
-  public String getRewardPeriodHash(long periodId) {
+  public long getReportId(long periodId) {
     SettingValue<?> settingValue = settingService.get(WOM_CONTEXT,
-                                                      REWARD_REPORT_HASH_APPLICATION,
+                                                      REWARD_REPORT_ID_APPLICATION,
                                                       String.valueOf(periodId));
-    return settingValue == null || settingValue.getValue() == null ? null : settingValue.getValue().toString();
+    return settingValue == null || settingValue.getValue() == null ? 0 : Long.parseLong(settingValue.getValue().toString());
   }
 
-  public Instant getRewardPeriodSentDate(RewardPeriod rewardPeriod) {
+  public long getPeriodId(long reportId) {
+    SettingValue<?> settingValue = settingService.get(WOM_CONTEXT,
+                                                      REWARD_PERIOD_ID_APPLICATION,
+                                                      String.valueOf(reportId));
+    return settingValue == null || settingValue.getValue() == null ? 0 : Long.parseLong(settingValue.getValue().toString());
+  }
+
+  public Instant getSentDate(RewardPeriod rewardPeriod) {
     long periodId = getPeriodKey(rewardPeriod);
-    return getRewardPeriodSentDate(periodId);
+    return getSentDate(periodId);
   }
 
-  public Instant getRewardPeriodSentDate(long periodId) {
+  public Instant getSentDate(long periodId) {
     SettingValue<?> settingValue = settingService.get(WOM_CONTEXT,
                                                       REWARD_REPORT_SENT_DATE_APPLICATION,
                                                       String.valueOf(periodId));
@@ -120,24 +135,6 @@ public class HubReportStorage {
     } else {
       return Instant.ofEpochMilli(Long.parseLong(sentDateString));
     }
-  }
-
-  public void cleanRewardPeriodSentDate(long periodId) {
-    settingService.remove(WOM_CONTEXT,
-                          REWARD_REPORT_SENT_DATE_APPLICATION,
-                          String.valueOf(periodId));
-  }
-
-  public void cleanRewardPeriodStatus(long periodId) {
-    settingService.remove(WOM_CONTEXT,
-                          REWARD_REPORT_STATUS_APPLICATION,
-                          String.valueOf(periodId));
-  }
-
-  public void cleanRewardPeriodHash(long periodId) {
-    settingService.remove(WOM_CONTEXT,
-                          REWARD_REPORT_HASH_APPLICATION,
-                          String.valueOf(periodId));
   }
 
   public long getPeriodKey(RewardPeriod rewardPeriod) {

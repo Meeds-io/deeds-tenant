@@ -55,7 +55,12 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
   @Setter
   private String signature;
 
-  public HubReportVerifiableData(String hash, // NOSONAR
+  @Getter
+  @Setter
+  private long   reportId;
+
+  public HubReportVerifiableData(long reportId, // NOSONAR
+                                 String hash,
                                  String signature,
                                  String hubAddress,
                                  long deedId,
@@ -87,12 +92,14 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
           transactions);
     this.hash = hash;
     this.signature = signature;
+    this.reportId = reportId;
   }
 
   public HubReportVerifiableData(String hash,
                                  String signature,
                                  HubReportPayload reportData) {
-    this(hash,
+    this(0l,
+         hash,
          signature,
          reportData.getHubAddress(),
          reportData.getDeedId(),

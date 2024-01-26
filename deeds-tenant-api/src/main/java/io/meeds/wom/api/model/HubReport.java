@@ -98,15 +98,10 @@ public class HubReport extends HubReportVerifiableData {
 
   @Getter
   @Setter
-  private String              rewardId;
+  private long                rewardId;
 
-  @Getter
-  private String              rewardHash;
-
-  @Getter
-  private String              rewardTransactionHash;
-
-  public HubReport(String hash, // NOSONAR
+  public HubReport(long reportId, // NOSONAR
+                   String hash,
                    String signature,
                    String hubAddress,
                    long deedId,
@@ -136,10 +131,9 @@ public class HubReport extends HubReportVerifiableData {
                    double hubRewardLastPeriodDiff,
                    double lastPeriodUemRewardAmountPerPeriod,
                    double mp,
-                   String rewardId,
-                   String rewardHash,
-                   String rewardTransactionHash) {
-    super(StringUtils.lowerCase(hash),
+                   long rewardId) {
+    super(reportId,
+          StringUtils.lowerCase(hash),
           signature,
           StringUtils.lowerCase(hubAddress),
           deedId,
@@ -170,8 +164,6 @@ public class HubReport extends HubReportVerifiableData {
     this.lastPeriodUemRewardAmountPerPeriod = lastPeriodUemRewardAmountPerPeriod;
     this.mp = mp;
     this.rewardId = rewardId;
-    this.rewardHash = StringUtils.lowerCase(rewardHash);
-    this.rewardTransactionHash = StringUtils.lowerCase(rewardTransactionHash);
   }
 
   public void setEarnerAddress(String earnerAddress) {
@@ -184,14 +176,6 @@ public class HubReport extends HubReportVerifiableData {
 
   public void setOwnerAddress(String ownerAddress) {
     this.ownerAddress = StringUtils.lowerCase(ownerAddress);
-  }
-
-  public void setRewardHash(String rewardHash) {
-    this.rewardHash = StringUtils.lowerCase(rewardHash);
-  }
-
-  public void setRewardTransactionHash(String rewardTransactionHash) {
-    this.rewardTransactionHash = StringUtils.lowerCase(rewardTransactionHash);
   }
 
   public double getEd() {
@@ -207,18 +191,18 @@ public class HubReport extends HubReportVerifiableData {
   }
 
   public double getDr() {
-    return lastPeriodUemRewardAmount == 0 ? 1d
-                                          : BigDecimal.valueOf(getHubRewardAmount())
-                                                      .divide(BigDecimal.valueOf(lastPeriodUemRewardAmount),
-                                                              MathContext.DECIMAL128)
-                                                      .doubleValue();
+    return lastPeriodUemRewardAmount == 0 ? 1d :
+                                          BigDecimal.valueOf(getHubRewardAmount())
+                                                    .divide(BigDecimal.valueOf(lastPeriodUemRewardAmount),
+                                                            MathContext.DECIMAL128)
+                                                    .doubleValue();
   }
 
   public double getDs() {
-    return getUsersCount() == 0 ? 0d
-                                : BigDecimal.valueOf(getRecipientsCount())
-                                            .divide(BigDecimal.valueOf(getUsersCount()), MathContext.DECIMAL128)
-                                            .doubleValue();
+    return getUsersCount() == 0 ? 0d :
+                                BigDecimal.valueOf(getRecipientsCount())
+                                          .divide(BigDecimal.valueOf(getUsersCount()), MathContext.DECIMAL128)
+                                          .doubleValue();
   }
 
 }

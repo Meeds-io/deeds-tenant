@@ -91,14 +91,16 @@ public class EntityMapper {
   public static HubReportLocalStatus toHubLocalReport(HubReportPayload reportData, // NOSONAR
                                                       Hub hub,
                                                       long id,
-                                                      String hash,
+                                                      long reportId,
                                                       boolean canRefresh,
-                                                      boolean canSend, HubReportStatusType statusType,
+                                                      boolean canSend,
+                                                      HubReportStatusType statusType,
                                                       String errorMessageKey) {
     return new HubReportLocalStatus(id,
                                     canRefresh,
                                     canSend,
-                                    hash,
+                                    reportId,
+                                    null,
                                     null,
                                     reportData.getHubAddress(),
                                     reportData.getDeedId(),
@@ -116,7 +118,7 @@ public class EntityMapper {
                                     lowerCase(reportData.getTransactions()),
                                     hub == null ? null : StringUtils.lowerCase(hub.getEarnerAddress()),
                                     hub == null ? null : StringUtils.lowerCase(hub.getDeedManagerAddress()),
-                                    null,
+                                    hub == null ? null : StringUtils.lowerCase(hub.getDeedOwnerAddress()),
                                     0,
                                     statusType,
                                     errorMessageKey,
@@ -129,9 +131,7 @@ public class EntityMapper {
                                     0d,
                                     0d,
                                     0d,
-                                    null,
-                                    null,
-                                    null);
+                                    0l);
   }
 
   public static HubReportLocalStatus toHubLocalReport(HubReport report,
@@ -141,6 +141,7 @@ public class EntityMapper {
     return new HubReportLocalStatus(id,
                                     canRefresh,
                                     canSend,
+                                    report.getReportId(),
                                     report.getHash(),
                                     report.getSignature(),
                                     report.getHubAddress(),
@@ -172,9 +173,7 @@ public class EntityMapper {
                                     report.getHubRewardLastPeriodDiff(),
                                     report.getLastPeriodUemRewardAmountPerPeriod(),
                                     report.getMp(),
-                                    report.getRewardId(),
-                                    report.getRewardHash(),
-                                    report.getRewardTransactionHash());
+                                    report.getRewardId());
   }
 
   public static SortedSet<String> lowerCase(SortedSet<String> hashes) {
