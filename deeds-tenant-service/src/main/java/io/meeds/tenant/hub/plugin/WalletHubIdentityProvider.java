@@ -74,6 +74,12 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
   public static final String DEED_MANAGER_ADDRESS   = "DEED_MANAGER_ADDRESS";
 
+  public static final String WOM_NETWORK_ID         = "WOM_NETWORK_ID";
+
+  public static final String WOM_CONTRACT_ADDRESS   = "WOM_CONTRACT_ADDRESS";
+
+  public static final String UEM_CONTRACT_ADDRESS   = "UEM_CONTRACT_ADDRESS";
+
   @Autowired
   private IdentityManager    identityManager;
 

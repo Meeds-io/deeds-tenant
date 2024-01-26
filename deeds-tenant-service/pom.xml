@@ -40,6 +40,10 @@
       <artifactId>wallet-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.exoplatform.addons.wallet</groupId>
+      <artifactId>wallet-services</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.exoplatform.addons.gamification</groupId>
       <artifactId>gamification-services</artifactId>
     </dependency>

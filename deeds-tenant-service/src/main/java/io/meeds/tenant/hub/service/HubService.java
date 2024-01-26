@@ -51,12 +51,14 @@ import io.meeds.notes.service.NotePageViewService;
 import io.meeds.social.cms.model.CMSSetting;
 import io.meeds.social.cms.service.CMSService;
 import io.meeds.tenant.hub.model.HubConfiguration;
+import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubIdentityStorage;
 import io.meeds.tenant.hub.storage.HubWalletStorage;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.WomConnectionRequest;
+import io.meeds.wom.api.model.WomConnectionResponse;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
 
 @Service
@@ -121,11 +123,11 @@ public class HubService {
            && isAfterNow(hub.getUntilDate());
   }
 
-  public Hub getHub() {
+  public HubTenant getHub() {
     return getHub(false);
   }
 
-  public Hub getHub(boolean forceRefresh) {
+  public HubTenant getHub(boolean forceRefresh) {
     return hubIdentityStorage.getHub(forceRefresh);
   }
 
@@ -181,7 +183,7 @@ public class HubService {
     return hubConfiguration;
   }
 
-  public String connectToWoM(WomConnectionRequest connectionRequest) throws WomException { // NOSONAR
+  public WomConnectionResponse connectToWoM(WomConnectionRequest connectionRequest) throws WomException { // NOSONAR
     try {
       String address = hubWalletStorage.getOrCreateHubAddress();
       connectionRequest.setAddress(address);
@@ -191,14 +193,15 @@ public class HubService {
       connectionRequest.setUsersCount(computeUsersCount());
       connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
       setHubCardProperties(connectionRequest);
-      String womAddress = womServiceClient.connectToWom(connectionRequest);
+      WomConnectionResponse connectionResponse = womServiceClient.connectToWom(connectionRequest);
+      hubIdentityStorage.saveHubConnectionResponse(connectionResponse);
       try {
         saveHubAvatar();
       } catch (Exception e) {
         LOG.warn("Error while saving Hub Avatar. This isn't be blocker, thus continue processing WoM Connection",
                  e);
       }
-      return womAddress;
+      return connectionResponse;
     } finally {
       hubIdentityStorage.refreshHubIdentity();
     }

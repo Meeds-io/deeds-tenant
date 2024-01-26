@@ -20,7 +20,6 @@ package io.meeds.wom.api.model;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -29,118 +28,78 @@ import org.springframework.hateoas.server.core.Relation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.meeds.wom.api.constant.UEMRewardStatusType;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(value = Include.NON_EMPTY)
 @Relation(collectionRelation = "rewards", itemRelation = "reward")
-public class UEMReward extends UEMRewardVerifiableData {
-
-  private String              id;
-
-  private Set<String>         hubAddresses;
+public class UEMReward {
 
   /**
-   * Report Hashes
+   * UEM Blockchain Id
    */
-  private Set<String>         reportHashes;
+  private long                    rewardId;
 
-  private Set<String>         transactionHashes;
+  /**
+   * UEM Period Start Date
+   */
+  private Instant                 fromDate;
+
+  /**
+   * UEM Period End Date
+   */
+  private Instant                 toDate;
+
+  /**
+   * UEM Period Reward
+   */
+  private double                  uemRewardAmount;
+
+  /**
+   * Report Ids
+   */
+  private Set<Long>               reportIds;
+
+  /**
+   * Report Id => UEM Reward amount
+   */
+  private SortedMap<Long, Double> reportRewards;
+
+  private Set<String>             hubAddresses;
 
   /**
    * Total internal hub achievements
    */
-  private long                hubAchievementsCount;
+  private long                    hubAchievementsCount;
 
   /**
    * Total internal hub rewards sent to hub users
    */
-  private double              hubRewardsAmount;
+  private double                  hubRewardsAmount;
 
   /**
    * Total internal hub reward indices
    */
-  private double              uemRewardIndex;
+  private double                  uemRewardIndex;
 
-  private double              globalEngagementRate;
+  private double                  globalEngagementRate;
 
-  private String              periodType;
-
-  private long                tokenNetworkId;
-
-  private String              tokenAddress;
-
-  private UEMRewardStatusType status;
-
-  private Instant             createdDate;
-
-  public UEMReward(String id, // NOSONAR
-                   String hash,
-                   String reportMerkleRoot,
-                   Instant fromDate,
-                   Instant toDate,
-                   String periodType,
-                   Set<String> hubAddresses,
-                   Set<String> reportHashes,
-                   Set<String> transactionHashes,
-                   SortedMap<String, Double> reportRewards,
-                   long hubAchievementsCount,
-                   double hubRewardsAmount,
-                   double uemRewardIndex,
-                   double uemRewardAmount,
-                   long tokenNetworkId,
-                   String tokenAddress,
-                   double globalEngagementRate,
-                   UEMRewardStatusType status,
-                   Instant createdDate) {
-    super(hash,
-          reportMerkleRoot,
-          fromDate,
-          toDate,
-          uemRewardAmount,
-          reportRewards);
-    this.id = id;
-    this.periodType = periodType;
-    this.hubAddresses = hubAddresses;
-    this.reportHashes = reportHashes;
-    this.transactionHashes = transactionHashes;
-    this.hubAchievementsCount = hubAchievementsCount;
-    this.hubRewardsAmount = hubRewardsAmount;
-    this.uemRewardIndex = uemRewardIndex;
-    this.tokenNetworkId = tokenNetworkId;
-    this.tokenAddress = tokenAddress;
-    this.globalEngagementRate = globalEngagementRate;
-    this.status = status;
-    this.createdDate = createdDate;
-  }
+  private String                  periodType;
 
   public long getHubsCount() {
     return getHubAddresses() == null ? 0 : getHubAddresses().size();
   }
 
   public double getEw() {
-    long hubsCount = reportHashes == null ? 0 : reportHashes.size();
-    return hubsCount == 0 ? 0d
-                          : BigDecimal.valueOf(globalEngagementRate)
-                                      .divide(BigDecimal.valueOf(hubsCount), MathContext.DECIMAL128)
-                                      .doubleValue();
-  }
-
-  public void addTransactionHash(String transactionHash) {
-    if (transactionHashes == null) {
-      transactionHashes = new HashSet<>();
-    } else {
-      transactionHashes = new HashSet<>(transactionHashes);
-    }
-    transactionHashes.add(transactionHash);
+    long hubsCount = reportIds == null ? 0 : reportIds.size();
+    return hubsCount == 0 ? 0d :
+                          BigDecimal.valueOf(globalEngagementRate)
+                                    .divide(BigDecimal.valueOf(hubsCount), MathContext.DECIMAL128)
+                                    .doubleValue();
   }
 
 }
