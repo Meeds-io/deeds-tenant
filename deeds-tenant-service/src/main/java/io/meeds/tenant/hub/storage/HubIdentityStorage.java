@@ -26,18 +26,22 @@ import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_OWNER_AD
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_TYPE;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DESCRIPTION;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.EARNER_ADDRESS;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.END_JOIN_DATE;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.HUB_ENABLED;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.HUB_OWNER_ADDRESS;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.IDENTITY_PROVIDER_NAME;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.IDENTITY_REMOTE_ID;
-import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.*;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.NAME;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.REWARD_AMOUNT;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.REWARD_PERIOD_TYPE;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.START_JOIN_DATE;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.UEM_CONTRACT_ADDRESS;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.UPDATED_DATE;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.URL;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.USERS_COUNT;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.WALLET;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.WOM_CONTRACT_ADDRESS;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.WOM_NETWORK_ID;
 import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
 import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
@@ -53,10 +57,12 @@ import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
 
+import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.constant.WomParsingException;
 import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.WomConnectionResponse;
 
 @Component
 public class HubIdentityStorage {
@@ -65,17 +71,17 @@ public class HubIdentityStorage {
   private IdentityManager  identityManager;
 
   @Autowired
-  private WomClientService hubServiceClient;
+  private WomClientService womServiceClient;
 
   private boolean          retrievedFromWom;
 
-  private Hub              hub = null;
+  private HubTenant        hub = null;
 
-  public Hub getHub() {
+  public HubTenant getHub() {
     return getHub(false);
   }
 
-  public Hub getHub(boolean forceRefresh) {
+  public HubTenant getHub(boolean forceRefresh) {
     if (!forceRefresh
         && retrievedFromWom
         && (hub == null
@@ -107,6 +113,14 @@ public class HubIdentityStorage {
     identityManager.updateProfile(hubProfile);
   }
 
+  public void saveHubConnectionResponse(WomConnectionResponse connectionResponse) {
+    Profile hubProfile = getHubProfile();
+    hubProfile.setProperty(WOM_CONTRACT_ADDRESS, connectionResponse.getWomAddress());
+    hubProfile.setProperty(UEM_CONTRACT_ADDRESS, connectionResponse.getUemAddress());
+    hubProfile.setProperty(WOM_NETWORK_ID, connectionResponse.getNetworkId());
+    identityManager.updateProfile(hubProfile);
+  }
+
   public void refreshHubIdentity() {
     // Force Retrieve Hub profile again
     retrievedFromWom = false;
@@ -124,7 +138,7 @@ public class HubIdentityStorage {
   private boolean retrieveHubFromWoM(Profile hubProfile, boolean forceRefresh) {
     try {
       String hubAddress = (String) hubProfile.getProperty(ADDRESS);
-      Hub remoteHub = hubServiceClient.getHub(hubAddress, forceRefresh);
+      Hub remoteHub = womServiceClient.getHub(hubAddress, forceRefresh);
       if (remoteHub == null) {
         clearHubProperties(hubProfile);
       } else {
@@ -163,7 +177,7 @@ public class HubIdentityStorage {
     identityManager.updateProfile(hubProfile);
   }
 
-  private Hub mapToHub(Profile hubProfile) {
+  private HubTenant mapToHub(Profile hubProfile) {
     String deedId = (String) hubProfile.getProperty(DEED_ID);
     String city = (String) hubProfile.getProperty(DEED_CITY);
     String type = (String) hubProfile.getProperty(DEED_TYPE);
@@ -179,31 +193,37 @@ public class HubIdentityStorage {
     String hubOwnerAddress = (String) hubProfile.getProperty(HUB_OWNER_ADDRESS);
     String deedOwnerAddress = (String) hubProfile.getProperty(DEED_OWNER_ADDRESS);
     String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
+    String womAddress = (String) hubProfile.getProperty(WOM_CONTRACT_ADDRESS);
+    String uemAddress = (String) hubProfile.getProperty(UEM_CONTRACT_ADDRESS);
+    long womNetworkId = parseLong((String) hubProfile.getProperty(WOM_NETWORK_ID));
     Instant joinDate = parseInstant(hubProfile, START_JOIN_DATE);
     Instant untilDate = parseInstant(hubProfile, END_JOIN_DATE);
     Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
     boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), true)
                       && (untilDate == null || untilDate.isAfter(Instant.now()));
 
-    return new Hub(Long.parseLong(deedId),
-                   Short.parseShort(city),
-                   Short.parseShort(type),
-                   address,
-                   parseMap(name),
-                   parseMap(description),
-                   url,
-                   color,
-                   hubOwnerAddress,
-                   deedOwnerAddress,
-                   deedManagerAddress,
-                   earnerAddress,
-                   joinDate,
-                   untilDate,
-                   updatedDate,
-                   parseLong(usersCount),
-                   rewardsPeriodType,
-                   parseDouble(rewardsAmount),
-                   enabled);
+    return new HubTenant(Long.parseLong(deedId),
+                         Short.parseShort(city),
+                         Short.parseShort(type),
+                         address,
+                         parseMap(name),
+                         parseMap(description),
+                         url,
+                         color,
+                         hubOwnerAddress,
+                         deedOwnerAddress,
+                         deedManagerAddress,
+                         earnerAddress,
+                         joinDate,
+                         untilDate,
+                         updatedDate,
+                         parseLong(usersCount),
+                         rewardsPeriodType,
+                         parseDouble(rewardsAmount),
+                         enabled,
+                         womAddress,
+                         uemAddress,
+                         womNetworkId);
   }
 
   private void clearHubProperties(Profile hubProfile) {

@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -52,13 +53,17 @@ import io.meeds.gamification.constant.RealizationStatus;
 import io.meeds.gamification.model.filter.RealizationFilter;
 import io.meeds.gamification.service.RealizationService;
 import io.meeds.tenant.hub.model.HubReportLocalStatus;
+import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubReportStorage;
+import io.meeds.tenant.hub.storage.HubWalletStorage;
 
 @Service
 public class HubReportService {
 
   private static final Log     LOG                         = ExoLogger.getLogger(HubReportService.class);
+
+  private static final String  DEFAULT_LOG_LANG            = Locale.ENGLISH.toLanguageTag();
 
   public static final int      MAX_START_TENTATIVES        = 5;
 
@@ -79,7 +84,10 @@ public class HubReportService {
   private HubService           hubService;
 
   @Autowired
-  private WomClientService     hubServiceClient;
+  private WomClientService     womServiceClient;
+
+  @Autowired
+  private HubWalletStorage     hubWalletStorage;
 
   @Autowired
   private HubReportStorage     hubReportStorage;
@@ -100,35 +108,48 @@ public class HubReportService {
 
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
     if (!rewardReport.isCompletelyProceeded()) {
-      throw new IllegalStateException("Reward of period '" + rewardPeriod
-          + "' isn't completed proceeded, thus the Rewards report will not be sent");
+      throw new IllegalStateException("Reward of period '" + rewardPeriod +
+          "' isn't completed proceeded, thus the Rewards report will not be sent");
     } else if (isValidRewardDate(rewardPeriod)) {
       HubReportPayload reportData = toReport(rewardReport);
 
+      HubTenant hub = hubService.getHub();
       String signature = hubService.signHubMessage(reportData);
       String hash = StringUtils.lowerCase(Hash.sha3(signature));
       HubReportVerifiableData reportRequest = new HubReportVerifiableData(hash,
                                                                           signature,
                                                                           reportData);
       try {
-        HubReport report = hubServiceClient.sendReport(reportRequest);
+        long start = System.currentTimeMillis();
+        LOG.info("Sending: Hub Report of Reward date '{}' to '{}' to UEM",
+                 rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
+                 rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG));
+        long reportId = hubWalletStorage.sendReportTransaction(reportData, hub.getUemAddress(), hub.getNetworkId());
+        reportRequest.setReportId(reportId);
+        LOG.info("Sent: Hub Report with id '{}' of Reward date '{}' to '{}' to UEM within {}ms",
+                 rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
+                 rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG),
+                 reportId,
+                 System.currentTimeMillis() - start);
+
+        HubReport report = womServiceClient.sendReport(reportRequest);
         String error = report == null ? null : report.getError();
 
         if (report != null && StringUtils.isBlank(error)) {
-          markReportAsSent(rewardPeriod, hash, report.getSentDate());
+          markReportAsSent(rewardPeriod, reportId, report.getSentDate());
           return toHubLocalReport(report,
                                   hubReportStorage.getPeriodKey(rewardPeriod),
                                   report.getStatus().isCanRefresh(),
                                   report.getStatus().isCanSend());
         } else {
-          markReportAsError(rewardPeriod, hash, error);
-          throw new WomException(fromJsonString(hash, WomErrorMessage.class));
+          markReportAsError(rewardPeriod, error);
+          throw new WomException(fromJsonString(error, WomErrorMessage.class));
         }
       } catch (WomException e) {
-        markReportAsError(rewardPeriod, hash, e);
+        markReportAsError(rewardPeriod, e);
         throw e;
       } catch (RuntimeException e) {
-        markReportAsError(rewardPeriod, hash, new WomException("wom.unknownError", true));
+        markReportAsError(rewardPeriod, new WomException("wom.unknownError", true));
         throw e;
       }
     } else {
@@ -164,36 +185,24 @@ public class HubReportService {
   }
 
   private HubReportLocalStatus refreshReportFromWoM(long periodId) throws WomException {
-    String hash = hubReportStorage.getRewardPeriodHash(periodId);
-    if (StringUtils.isBlank(hash)) {
-      hubReportStorage.cleanRewardPeriodStatus(periodId);
+    long reportId = hubReportStorage.getReportId(periodId);
+    if (reportId == 0) {
       throw new WomException("wom.notSentReward");
     }
-    HubReport report = hubServiceClient.retrieveReport(hash);
+    HubReport report = womServiceClient.retrieveReport(reportId);
     if (report == null || !StringUtils.equalsIgnoreCase(report.getHubAddress(), hubService.getHubAddress())) {
-      hubReportStorage.cleanRewardPeriodHash(periodId);
-      hubReportStorage.cleanRewardPeriodStatus(periodId);
-      hubReportStorage.cleanRewardPeriodSentDate(periodId);
       throw new WomException("wom.rewardNotFoundInWom");
     } else {
-      HubReportStatusType statusType = report.getStatus() == null ? HubReportStatusType.SENT
-                                                                  : report.getStatus();
-      report.setStatus(statusType);
-
-      if (StringUtils.isBlank(report.getError())) {
-        hubReportStorage.saveRewardPeriodStatus(periodId, statusType.name());
-      } else {
-        hubReportStorage.saveRewardPeriodStatus(periodId, report.getError());
-      }
+      report.setStatus(HubReportStatusType.SENT);
       return toHubLocalReport(report,
                               periodId,
-                              statusType.isCanRefresh(),
-                              statusType.isCanSend());
+                              report.getStatus().isCanRefresh(),
+                              report.getStatus().isCanSend());
 
     }
   }
 
-  public HubReportPayload toReport(RewardReport rewardReport) {
+  private HubReportPayload toReport(RewardReport rewardReport) {
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
     Date fromDate = Date.from(Instant.ofEpochSecond(rewardPeriod.getStartDateInSeconds()));
     Date toDate = Date.from(Instant.ofEpochSecond(rewardPeriod.getEndDateInSeconds()));
@@ -204,7 +213,7 @@ public class HubReportService {
                        hubService.computeUsersCount(),
                        countParticipants(fromDate, toDate),
                        countAchievements(fromDate, toDate),
-                       hubReportStorage.getRewardPeriodSentDate(rewardPeriod));
+                       hubReportStorage.getSentDate(rewardPeriod));
   }
 
   private boolean isValidRewardDate(RewardPeriod rewardPeriod) {
@@ -212,20 +221,19 @@ public class HubReportService {
     return SEND_OUTDATED_REPORT || hubService.getHubJoinDate().isBefore(endDate);
   }
 
-  private void markReportAsSent(RewardPeriod rewardPeriod, String hash, Instant sentDate) {
-    hubReportStorage.saveRewardPeriodHash(rewardPeriod, hash);
-    hubReportStorage.saveRewardPeriodStatus(rewardPeriod, HubReportStatusType.SENT.name());
-    hubReportStorage.saveRewardPeriodSentDate(rewardPeriod, sentDate);
+  private void markReportAsSent(RewardPeriod rewardPeriod, long reportId, Instant sentDate) {
+    hubReportStorage.saveReportPeriodId(rewardPeriod, reportId);
+    hubReportStorage.saveStatus(rewardPeriod, HubReportStatusType.SENT.name());
+    hubReportStorage.saveSentDate(rewardPeriod, sentDate);
   }
 
-  private void markReportAsError(RewardPeriod rewardPeriod, String rewardPeriodHash, WomException e) throws WomParsingException {
+  private void markReportAsError(RewardPeriod rewardPeriod, WomException e) throws WomParsingException {
     String error = toJsonString(e.getErrorCode());
-    markReportAsError(rewardPeriod, rewardPeriodHash, error);
+    markReportAsError(rewardPeriod, error);
   }
 
-  private void markReportAsError(RewardPeriod rewardPeriod, String rewardPeriodHash, String error) {
-    hubReportStorage.saveRewardPeriodHash(rewardPeriod, rewardPeriodHash);
-    hubReportStorage.saveRewardPeriodStatus(rewardPeriod, error);
+  private void markReportAsError(RewardPeriod rewardPeriod, String error) {
+    hubReportStorage.saveStatus(rewardPeriod, error);
   }
 
   private HubReportStatusType computeReportStatusType(RewardPeriod rewardPeriod, String status) {
@@ -266,29 +274,27 @@ public class HubReportService {
 
   private HubReportLocalStatus generateNewReport(RewardReport rewardReport) {
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
-    String status = hubReportStorage.getRewardPeriodStatus(rewardPeriod);
+    String status = hubReportStorage.getStatus(rewardPeriod);
 
     HubReportStatusType statusType = computeReportStatusType(rewardPeriod, status);
     String errorMessageKey = statusType == HubReportStatusType.ERROR_SENDING ? status : null;
 
     HubReportPayload reportData = toReport(rewardReport);
-    String hash = hubReportStorage.getRewardPeriodHash(rewardPeriod);
+    long reportId = hubReportStorage.getReportId(rewardPeriod);
 
     Hub hub = hubService.getHub();
     long id = hubReportStorage.getPeriodKey(rewardPeriod);
-    boolean canRefresh = statusType.isCanRefresh()
-        && StringUtils.isNotBlank(hash);
-    boolean canSend = statusType.isCanSend()
-        && isValidRewardDate(rewardPeriod);
+    boolean canRefresh = statusType.isCanRefresh() && reportId == 0;
+    boolean canSend = statusType.isCanSend() && isValidRewardDate(rewardPeriod);
     HubReportLocalStatus reportLocalStatus = toHubLocalReport(reportData,
                                                               hub,
                                                               id,
-                                                              hash,
+                                                              reportId,
                                                               canRefresh,
                                                               canSend,
                                                               statusType,
                                                               errorMessageKey);
-    if (StringUtils.isBlank(hash)) {
+    if (reportId == 0 && !canSend) {
       reportLocalStatus.setDeedId(-1);
     }
     return reportLocalStatus;

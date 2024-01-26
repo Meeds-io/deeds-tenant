@@ -38,6 +38,7 @@ import io.meeds.tenant.hub.service.HubService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.WomConnectionRequest;
+import io.meeds.wom.api.model.WomConnectionResponse;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,7 +67,8 @@ public class HubController {
                     @Parameter(description = "Deed NFT identifier", required = false)
                     @RequestParam(name = "nftId", required = false)
                     String nftId,
-                    @Parameter(description = "Whether to force Refresh the Hub characteristics from WoM or not", required = false)
+                    @Parameter(description = "Whether to force Refresh the Hub characteristics from WoM or not",
+                               required = false)
                     @RequestParam(name = "forceRefresh", required = false)
                     boolean forceRefresh) {
     try {
@@ -88,10 +90,10 @@ public class HubController {
   @ApiResponse(responseCode = "200", description = "Request fulfilled")
   @ApiResponse(responseCode = "400", description = "Bad request")
   @ApiResponse(responseCode = "503", description = "Service Unavailable")
-  public String connectToWoM(
-                             @Parameter(description = "WoM connection request data", required = true)
-                             @RequestBody
-                             WomConnectionRequest connectionRequest) {
+  public WomConnectionResponse connectToWoM(
+                                            @Parameter(description = "WoM connection request data", required = true)
+                                            @RequestBody
+                                            WomConnectionRequest connectionRequest) {
     if (connectionRequest == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "wom.emptyConnectionRequest");
     } else if (connectionRequest.getDeedId() < 0) {

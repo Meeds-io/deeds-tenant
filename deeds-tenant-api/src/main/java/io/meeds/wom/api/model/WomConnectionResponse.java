@@ -33,6 +33,8 @@ public class WomConnectionResponse {
 
   private String womAddress;
 
+  private String uemAddress;
+
   private long   networkId;
 
 }
