@@ -45,6 +45,7 @@ public class HubReportLocalStatus extends HubReport {
   public HubReportLocalStatus(long id, // NOSONAR
                               boolean canRefresh,
                               boolean canSend,
+                              long reportId,
                               String hash,
                               String signature,
                               String hubAddress,
@@ -75,10 +76,9 @@ public class HubReportLocalStatus extends HubReport {
                               double hubRewardLastPeriodDiff,
                               double lastPeriodUemRewardAmountPerPeriod,
                               double mp,
-                              String rewardId,
-                              String rewardHash,
-                              String rewardTransactionHash) {
-    super(hash,
+                              long rewardId) {
+    super(reportId,
+          hash,
           signature,
           hubAddress,
           deedId,
@@ -108,9 +108,7 @@ public class HubReportLocalStatus extends HubReport {
           hubRewardLastPeriodDiff,
           lastPeriodUemRewardAmountPerPeriod,
           mp,
-          rewardId,
-          rewardHash,
-          rewardTransactionHash);
+          rewardId);
 
     this.id = id;
     this.canRefresh = canRefresh;

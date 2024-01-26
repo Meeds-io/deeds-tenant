@@ -36,6 +36,7 @@ import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportVerifiableData;
 import io.meeds.wom.api.model.HubUpdateRequest;
 import io.meeds.wom.api.model.WomConnectionRequest;
+import io.meeds.wom.api.model.WomConnectionResponse;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
 
 @Component
@@ -103,8 +104,9 @@ public class WomClientService {
     return womConnectionService.processGet(getTokenGenerationUri());
   }
 
-  public String connectToWom(WomConnectionRequest connectionRequest) throws WomException {
-    return womConnectionService.processPost(getWoMConnectionUri(), toJsonString(connectionRequest));
+  public WomConnectionResponse connectToWom(WomConnectionRequest connectionRequest) throws WomException {
+    String responseText = womConnectionService.processPost(getWoMConnectionUri(), toJsonString(connectionRequest));
+    return fromJsonString(responseText, WomConnectionResponse.class);
   }
 
   public String disconnectFromWom(WomDisconnectionRequest disconnectionRequest) throws WomException {
@@ -116,8 +118,8 @@ public class WomClientService {
     return fromJsonString(responseText, HubReport.class);
   }
 
-  public HubReport retrieveReport(String hash) throws WomException {
-    String responseText = womConnectionService.processGet(getWoMReportUri(hash));
+  public HubReport retrieveReport(long reportId) throws WomException {
+    String responseText = womConnectionService.processGet(getWoMReportUri(reportId));
     return fromJsonString(responseText, HubReport.class);
   }
 
@@ -198,9 +200,9 @@ public class WomClientService {
     return URI.create(fixUri(uri));
   }
 
-  private URI getWoMReportUri(String hash) {
+  private URI getWoMReportUri(long reportId) {
     String uri = WOM_URL + WOM_REWARD_REPORT_BY_HASH_URI;
-    return URI.create(fixUri(uri).replace(HASH_PARAM, hash));
+    return URI.create(fixUri(uri).replace(HASH_PARAM, String.valueOf(reportId)));
   }
 
   private URI getWoMDisonnectionUri() {
