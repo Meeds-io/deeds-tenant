@@ -36,6 +36,8 @@ import lombok.ToString;
 @NoArgsConstructor
 public class HubTenant extends Hub {
 
+  private String adminAddress;
+
   private String womAddress;
 
   private String uemAddress;
@@ -56,11 +58,15 @@ public class HubTenant extends Hub {
                    String earnerAddress,
                    Instant createdDate,
                    Instant untilDate,
+                   Instant joinDate,
                    Instant updatedDate,
                    long usersCount,
                    String rewardsPeriodType,
                    double rewardsPerPeriod,
                    boolean connected,
+                   double ownerClaimableAmount,
+                   double managerClaimableAmount,
+                   String adminAddress,
                    String womAddress,
                    String uemAddress,
                    long networkId) {
@@ -78,11 +84,15 @@ public class HubTenant extends Hub {
           earnerAddress,
           createdDate,
           untilDate,
+          joinDate,
           updatedDate,
           usersCount,
           rewardsPeriodType,
           rewardsPerPeriod,
-          connected);
+          connected,
+          ownerClaimableAmount,
+          managerClaimableAmount);
+    this.adminAddress = adminAddress;
     this.womAddress = womAddress;
     this.uemAddress = uemAddress;
     this.networkId = networkId;

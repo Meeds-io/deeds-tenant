@@ -55,13 +55,9 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
   @Setter
   private String signature;
 
-  @Getter
-  @Setter
-  private long   reportId;
-
-  public HubReportVerifiableData(long reportId, // NOSONAR
-                                 String hash,
+  public HubReportVerifiableData(String hash, // NOSONAR
                                  String signature,
+                                 long reportId,
                                  String hubAddress,
                                  long deedId,
                                  Instant fromDate,
@@ -76,7 +72,8 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
                                  long rewardTokenNetworkId,
                                  double hubRewardAmount,
                                  SortedSet<String> transactions) {
-    super(hubAddress,
+    super(reportId,
+          hubAddress,
           deedId,
           fromDate,
           toDate,
@@ -92,15 +89,14 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
           transactions);
     this.hash = hash;
     this.signature = signature;
-    this.reportId = reportId;
   }
 
   public HubReportVerifiableData(String hash,
                                  String signature,
                                  HubReportPayload reportData) {
-    this(0l,
-         hash,
+    this(hash,
          signature,
+         reportData.getReportId(),
          reportData.getHubAddress(),
          reportData.getDeedId(),
          reportData.getFromDate(),

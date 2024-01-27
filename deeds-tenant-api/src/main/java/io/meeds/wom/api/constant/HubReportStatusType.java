@@ -27,6 +27,8 @@ public enum HubReportStatusType {
   INVALID(false, false),
   // Sent to WoM
   SENT(true, false),
+  // Sending to WoM
+  SENDING(false, false),
   // Error while sending to WoM
   ERROR_SENDING(true, true),
   // Pending for rewards to be sent

@@ -41,7 +41,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @JsonInclude(value = Include.NON_EMPTY)
 @Relation(collectionRelation = "reports", itemRelation = "report")
-public class HubReport extends HubReportVerifiableData {
+public class HubReport extends HubReportPayload {
 
   @Getter
   private String              earnerAddress;
@@ -101,8 +101,6 @@ public class HubReport extends HubReportVerifiableData {
   private long                rewardId;
 
   public HubReport(long reportId, // NOSONAR
-                   String hash,
-                   String signature,
                    String hubAddress,
                    long deedId,
                    Instant fromDate,
@@ -133,8 +131,6 @@ public class HubReport extends HubReportVerifiableData {
                    double mp,
                    long rewardId) {
     super(reportId,
-          StringUtils.lowerCase(hash),
-          signature,
           StringUtils.lowerCase(hubAddress),
           deedId,
           fromDate,
