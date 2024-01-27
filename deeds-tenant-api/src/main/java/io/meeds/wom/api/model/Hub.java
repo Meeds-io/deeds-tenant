@@ -88,6 +88,10 @@ public class Hub implements Cloneable {
 
   @Getter
   @Setter
+  private Instant             joinDate;
+
+  @Getter
+  @Setter
   private Instant             updatedDate;
 
   // Changed by Sent Report in UEM computing engine
@@ -108,6 +112,20 @@ public class Hub implements Cloneable {
   @Getter
   private boolean             connected;
 
+  // Changed by Sent Report in UEM computing engine
+  // Or
+  // When a Reward Claim is made
+  @Getter
+  @Setter
+  private double              ownerClaimableAmount;
+
+  // Changed by Sent Report in UEM computing engine
+  // Or
+  // When a Reward Claim is made
+  @Getter
+  @Setter
+  private double              managerClaimableAmount;
+
   public Hub(long deedId, // NOSONAR
              short city,
              short type,
@@ -122,11 +140,14 @@ public class Hub implements Cloneable {
              String earnerAddress,
              Instant createdDate,
              Instant untilDate,
+             Instant joinDate,
              Instant updatedDate,
              long usersCount,
              String rewardsPeriodType,
              double rewardsPerPeriod,
-             boolean connected) {
+             boolean connected,
+             double ownerClaimableAmount,
+             double managerClaimableAmount) {
     this.deedId = deedId;
     this.city = city;
     this.type = type;
@@ -136,11 +157,14 @@ public class Hub implements Cloneable {
     this.color = color;
     this.createdDate = createdDate;
     this.untilDate = untilDate;
+    this.joinDate = joinDate;
     this.updatedDate = updatedDate;
     this.usersCount = usersCount;
     this.rewardsPeriodType = rewardsPeriodType;
     this.rewardsPerPeriod = rewardsPerPeriod;
     this.connected = connected;
+    this.ownerClaimableAmount = ownerClaimableAmount;
+    this.managerClaimableAmount = managerClaimableAmount;
     this.setAddress(address);
     this.setHubOwnerAddress(hubOwnerAddress);
     this.setDeedOwnerAddress(deedOwnerAddress);
@@ -184,10 +208,13 @@ public class Hub implements Cloneable {
                    earnerAddress,
                    createdDate,
                    untilDate,
+                   joinDate,
                    updatedDate,
                    usersCount,
                    rewardsPeriodType,
                    rewardsPerPeriod,
-                   connected);
+                   connected,
+                   ownerClaimableAmount,
+                   managerClaimableAmount);
   }
 }

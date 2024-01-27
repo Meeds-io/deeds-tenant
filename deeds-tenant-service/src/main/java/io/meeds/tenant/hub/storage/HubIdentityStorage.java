@@ -18,6 +18,7 @@
 package io.meeds.tenant.hub.storage;
 
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.ADDRESS;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.*;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.COLOR;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_CITY;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_ID;
@@ -56,6 +57,7 @@ import org.springframework.stereotype.Component;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.wallet.service.WalletTokenAdminService;
 
 import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
@@ -68,14 +70,17 @@ import io.meeds.wom.api.model.WomConnectionResponse;
 public class HubIdentityStorage {
 
   @Autowired
-  private IdentityManager  identityManager;
+  private IdentityManager         identityManager;
 
   @Autowired
-  private WomClientService womServiceClient;
+  private WomClientService        womServiceClient;
 
-  private boolean          retrievedFromWom;
+  @Autowired
+  private WalletTokenAdminService walletTokenAdminService;
 
-  private HubTenant        hub = null;
+  private boolean                 retrievedFromWom;
+
+  private HubTenant               hub = null;
 
   public HubTenant getHub() {
     return getHub(false);
@@ -150,7 +155,7 @@ public class HubIdentityStorage {
       throw new IllegalStateException("Error communicating with WoM Server, couldn't retrieve Hub remote status", e);
     }
   }
-
+  
   private void mapToProfile(Profile hubProfile, Hub hub) throws WomParsingException {
     hubProfile.setProperty(DEED_ID, String.valueOf(hub.getDeedId()));
     hubProfile.setProperty(DEED_CITY, String.valueOf(hub.getCity()));
@@ -160,19 +165,26 @@ public class HubIdentityStorage {
     hubProfile.setProperty(URL, hub.getUrl());
     hubProfile.setProperty(REWARD_PERIOD_TYPE, hub.getRewardsPeriodType());
     hubProfile.setProperty(REWARD_AMOUNT, String.valueOf(hub.getRewardsPerPeriod()));
+    hubProfile.setProperty(OWNER_CLAIMABLE_AMOUNT, String.valueOf(hub.getOwnerClaimableAmount()));
+    hubProfile.setProperty(MANAGER_CLAIMABLE_AMOUNT, String.valueOf(hub.getManagerClaimableAmount()));
     hubProfile.setProperty(USERS_COUNT, String.valueOf(hub.getUsersCount()));
     hubProfile.setProperty(COLOR, hub.getColor());
     hubProfile.setProperty(EARNER_ADDRESS, hub.getEarnerAddress());
     hubProfile.setProperty(HUB_OWNER_ADDRESS, hub.getHubOwnerAddress());
     hubProfile.setProperty(DEED_OWNER_ADDRESS, hub.getDeedOwnerAddress());
     hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
-    hubProfile.setProperty(START_JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
+    hubProfile.setProperty(CREATED_JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
+    hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
+    if (hub.getJoinDate() == null) {
+      hubProfile.removeProperty(START_JOIN_DATE);
+    } else {
+      hubProfile.setProperty(START_JOIN_DATE, String.valueOf(hub.getJoinDate().toEpochMilli()));
+    }
     if (hub.getUntilDate() == null) {
       hubProfile.removeProperty(END_JOIN_DATE);
     } else {
       hubProfile.setProperty(END_JOIN_DATE, String.valueOf(hub.getUntilDate().toEpochMilli()));
     }
-    hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
     hubProfile.setProperty(HUB_ENABLED, String.valueOf(hub.isConnected()));
     identityManager.updateProfile(hubProfile);
   }
@@ -195,7 +207,10 @@ public class HubIdentityStorage {
     String deedManagerAddress = (String) hubProfile.getProperty(DEED_MANAGER_ADDRESS);
     String womAddress = (String) hubProfile.getProperty(WOM_CONTRACT_ADDRESS);
     String uemAddress = (String) hubProfile.getProperty(UEM_CONTRACT_ADDRESS);
+    String ownerClaimableAmount = (String) hubProfile.getProperty(OWNER_CLAIMABLE_AMOUNT);
+    String managerClaimableAmount = (String) hubProfile.getProperty(MANAGER_CLAIMABLE_AMOUNT);
     long womNetworkId = parseLong((String) hubProfile.getProperty(WOM_NETWORK_ID));
+    Instant createdDate = parseInstant(hubProfile, CREATED_JOIN_DATE);
     Instant joinDate = parseInstant(hubProfile, START_JOIN_DATE);
     Instant untilDate = parseInstant(hubProfile, END_JOIN_DATE);
     Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
@@ -214,13 +229,17 @@ public class HubIdentityStorage {
                          deedOwnerAddress,
                          deedManagerAddress,
                          earnerAddress,
-                         joinDate,
+                         createdDate,
                          untilDate,
+                         joinDate,
                          updatedDate,
                          parseLong(usersCount),
                          rewardsPeriodType,
                          parseDouble(rewardsAmount),
                          enabled,
+                         parseDouble(ownerClaimableAmount),
+                         parseDouble(managerClaimableAmount),
+                         walletTokenAdminService.getAdminWalletAddress(),
                          womAddress,
                          uemAddress,
                          womNetworkId);
@@ -234,11 +253,11 @@ public class HubIdentityStorage {
       hubProfile.removeProperty(EARNER_ADDRESS);
       hubProfile.removeProperty(DEED_OWNER_ADDRESS);
       hubProfile.removeProperty(DEED_MANAGER_ADDRESS);
-      hubProfile.removeProperty(START_JOIN_DATE);
       hubProfile.removeProperty(END_JOIN_DATE);
-      hubProfile.removeProperty(UPDATED_DATE);
       hubProfile.removeProperty(REWARD_PERIOD_TYPE);
       hubProfile.removeProperty(REWARD_AMOUNT);
+      hubProfile.removeProperty(OWNER_CLAIMABLE_AMOUNT);
+      hubProfile.removeProperty(MANAGER_CLAIMABLE_AMOUNT);
       hubProfile.removeProperty(USERS_COUNT);
       hubProfile.removeProperty(HUB_ENABLED);
       identityManager.updateProfile(hubProfile);

@@ -30,55 +30,61 @@ import jakarta.annotation.PostConstruct;
 @Service
 public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
-  public static final String IDENTITY_PROVIDER_NAME = "WALLET_HUB";
+  public static final String IDENTITY_PROVIDER_NAME   = "WALLET_HUB";
 
-  public static final String IDENTITY_REMOTE_ID     = "HUB";
+  public static final String IDENTITY_REMOTE_ID       = "HUB";
 
-  public static final String ADDRESS                = "HUB_ADDRESS";
+  public static final String ADDRESS                  = "HUB_ADDRESS";
 
-  public static final String START_JOIN_DATE        = "HUB_START_JOIN_DATE";
+  public static final String CREATED_JOIN_DATE        = "HUB_CREATED_DATE";
 
-  public static final String END_JOIN_DATE          = "HUB_END_JOIN_DATE";
+  public static final String START_JOIN_DATE          = "HUB_START_JOIN_DATE";
 
-  public static final String UPDATED_DATE           = "HUB_UPDATED_DATE";
+  public static final String END_JOIN_DATE            = "HUB_END_JOIN_DATE";
 
-  public static final String WALLET                 = "HUB_WALLET";
+  public static final String UPDATED_DATE             = "HUB_UPDATED_DATE";
 
-  public static final String NAME                   = "HUB_NAME";
+  public static final String WALLET                   = "HUB_WALLET";
 
-  public static final String DESCRIPTION            = "HUB_DESCRIPTION";
+  public static final String NAME                     = "HUB_NAME";
 
-  public static final String URL                    = "HUB_URL";
+  public static final String DESCRIPTION              = "HUB_DESCRIPTION";
 
-  public static final String COLOR                  = "HUB_COLOR";
+  public static final String URL                      = "HUB_URL";
 
-  public static final String EARNER_ADDRESS         = "HUB_EARNER_ADDRESS";
+  public static final String COLOR                    = "HUB_COLOR";
 
-  public static final String HUB_OWNER_ADDRESS      = "HUB_OWNER_ADDRESS";
+  public static final String EARNER_ADDRESS           = "HUB_EARNER_ADDRESS";
 
-  public static final String REWARD_PERIOD_TYPE     = "HUB_PERIOD_TYPE";
+  public static final String HUB_OWNER_ADDRESS        = "HUB_OWNER_ADDRESS";
 
-  public static final String REWARD_AMOUNT          = "HUB_REWARDS_AMOUNT";
+  public static final String REWARD_PERIOD_TYPE       = "HUB_PERIOD_TYPE";
 
-  public static final String USERS_COUNT            = "HUB_USERS_COUNT";
+  public static final String REWARD_AMOUNT            = "HUB_REWARDS_AMOUNT";
 
-  public static final String HUB_ENABLED            = "HUB_ENABLED";
+  public static final String OWNER_CLAIMABLE_AMOUNT   = "HUB_OWNER_CLAIMABLE_AMOUNT";
 
-  public static final String DEED_ID                = "DEED_ID";
+  public static final String MANAGER_CLAIMABLE_AMOUNT = "HUB_MANAGER_CLAIMABLE_AMOUNT";
 
-  public static final String DEED_CITY              = "DEED_CITY";
+  public static final String USERS_COUNT              = "HUB_USERS_COUNT";
 
-  public static final String DEED_TYPE              = "DEED_TYPE";
+  public static final String HUB_ENABLED              = "HUB_ENABLED";
 
-  public static final String DEED_OWNER_ADDRESS     = "DEED_OWNER_ADDRESS";
+  public static final String DEED_ID                  = "DEED_ID";
 
-  public static final String DEED_MANAGER_ADDRESS   = "DEED_MANAGER_ADDRESS";
+  public static final String DEED_CITY                = "DEED_CITY";
 
-  public static final String WOM_NETWORK_ID         = "WOM_NETWORK_ID";
+  public static final String DEED_TYPE                = "DEED_TYPE";
 
-  public static final String WOM_CONTRACT_ADDRESS   = "WOM_CONTRACT_ADDRESS";
+  public static final String DEED_OWNER_ADDRESS       = "DEED_OWNER_ADDRESS";
 
-  public static final String UEM_CONTRACT_ADDRESS   = "UEM_CONTRACT_ADDRESS";
+  public static final String DEED_MANAGER_ADDRESS     = "DEED_MANAGER_ADDRESS";
+
+  public static final String WOM_NETWORK_ID           = "WOM_NETWORK_ID";
+
+  public static final String WOM_CONTRACT_ADDRESS     = "WOM_CONTRACT_ADDRESS";
+
+  public static final String UEM_CONTRACT_ADDRESS     = "UEM_CONTRACT_ADDRESS";
 
   @Autowired
   private IdentityManager    identityManager;

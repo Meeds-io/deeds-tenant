@@ -101,6 +101,9 @@
 export default {
   mounted() {
     this.$root.$applicationLoaded();
+    if (window.location.hash === '#wom') {
+      this.$refs.drawer.open();
+    }
   },
 };
 </script>

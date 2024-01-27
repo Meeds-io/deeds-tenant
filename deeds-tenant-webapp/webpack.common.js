@@ -8,6 +8,7 @@ let config = {
   // can use multiple entry
   entry: {
     womSetup: './src/main/webapp/vue-app/wom-setup-admin/main.js',
+    womWalletExtensions: './src/main/webapp/vue-app/wom-wallet-extensions/main.js',
     metamaskLoginExtension: './src/main/webapp/vue-app/login/main.js',
     metamaskRegisterExtension: './src/main/webapp/vue-app/register-extension/main.js',
     metamaskSetupForm: './src/main/webapp/vue-app/register-deed-setup/main.js',

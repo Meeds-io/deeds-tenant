@@ -42,6 +42,10 @@ import lombok.Setter;
 public class HubReportPayload implements DataPayload, Cloneable {
 
   @Getter
+  @Setter
+  private long              reportId;
+
+  @Getter
   private String            hubAddress;
 
   @Getter
@@ -116,16 +120,17 @@ public class HubReportPayload implements DataPayload, Cloneable {
   }
 
   protected static SortedSet<String> lowerCase(SortedSet<String> transactions) {
-    return CollectionUtils.isEmpty(transactions) ? transactions
-                                                 : transactions.stream()
-                                                               .map(StringUtils::lowerCase)
-                                                               .filter(StringUtils::isNotBlank)
-                                                               .collect(Collectors.toCollection(TreeSet::new));
+    return CollectionUtils.isEmpty(transactions) ? transactions :
+                                                 transactions.stream()
+                                                             .map(StringUtils::lowerCase)
+                                                             .filter(StringUtils::isNotBlank)
+                                                             .collect(Collectors.toCollection(TreeSet::new));
   }
 
   @Override
   protected HubReportPayload clone() { // NOSONAR
-    return new HubReportPayload(hubAddress,
+    return new HubReportPayload(reportId,
+                                hubAddress,
                                 deedId,
                                 fromDate,
                                 toDate,
