@@ -154,7 +154,7 @@ export default {
       return this.hub?.deedId;
     },
     connected() {
-      return this.hub?.connected && !!this.hub?.address && this.hubDeedId >= 0;
+      return this.hub?.connected && !!this.hub?.address && this.hubDeedId > 0;
     },
     disconnected() {
       return this.hubDeedId && !this.connected;

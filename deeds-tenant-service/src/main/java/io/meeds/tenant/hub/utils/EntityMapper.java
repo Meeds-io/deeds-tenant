@@ -72,7 +72,8 @@ public class EntityMapper {
     String rewardTokenAddress = getContractAddress();
     long rewardTokenNetworkId = getNetworkId();
 
-    return new HubReportPayload(StringUtils.lowerCase(hubAddress),
+    return new HubReportPayload(0l,
+                                StringUtils.lowerCase(hubAddress),
                                 deedId,
                                 fromDate,
                                 toDate,
@@ -90,18 +91,16 @@ public class EntityMapper {
 
   public static HubReportLocalStatus toHubLocalReport(HubReportPayload reportData, // NOSONAR
                                                       Hub hub,
-                                                      long id,
+                                                      long periodId,
                                                       long reportId,
                                                       boolean canRefresh,
                                                       boolean canSend,
                                                       HubReportStatusType statusType,
                                                       String errorMessageKey) {
-    return new HubReportLocalStatus(id,
+    return new HubReportLocalStatus(periodId,
                                     canRefresh,
                                     canSend,
                                     reportId,
-                                    null,
-                                    null,
                                     reportData.getHubAddress(),
                                     reportData.getDeedId(),
                                     reportData.getFromDate(),
@@ -142,8 +141,6 @@ public class EntityMapper {
                                     canRefresh,
                                     canSend,
                                     report.getReportId(),
-                                    report.getHash(),
-                                    report.getSignature(),
                                     report.getHubAddress(),
                                     report.getDeedId(),
                                     report.getFromDate(),
