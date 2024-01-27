@@ -124,8 +124,11 @@ public class HubReportService {
         LOG.info("Sending: Hub Report of Reward date '{}' to '{}' to UEM",
                  rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
                  rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG));
+        hubReportStorage.saveStatus(rewardPeriod, HubReportStatusType.SENDING.name());
         long reportId = hubWalletStorage.sendReportTransaction(reportData, hub.getUemAddress(), hub.getNetworkId());
         reportRequest.setReportId(reportId);
+        hubReportStorage.saveReportPeriodId(rewardPeriod, reportId);
+
         LOG.info("Sent: Hub Report with id '{}' of Reward date '{}' to '{}' to UEM within {}ms",
                  rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
                  rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG),
@@ -148,7 +151,7 @@ public class HubReportService {
       } catch (WomException e) {
         markReportAsError(rewardPeriod, e);
         throw e;
-      } catch (RuntimeException e) {
+      } catch (Exception e) {
         markReportAsError(rewardPeriod, new WomException("wom.unknownError", true));
         throw e;
       }
@@ -283,12 +286,12 @@ public class HubReportService {
     long reportId = hubReportStorage.getReportId(rewardPeriod);
 
     Hub hub = hubService.getHub();
-    long id = hubReportStorage.getPeriodKey(rewardPeriod);
+    long periodId = hubReportStorage.getPeriodKey(rewardPeriod);
     boolean canRefresh = statusType.isCanRefresh() && reportId == 0;
     boolean canSend = statusType.isCanSend() && isValidRewardDate(rewardPeriod);
     HubReportLocalStatus reportLocalStatus = toHubLocalReport(reportData,
                                                               hub,
-                                                              id,
+                                                              periodId,
                                                               reportId,
                                                               canRefresh,
                                                               canSend,

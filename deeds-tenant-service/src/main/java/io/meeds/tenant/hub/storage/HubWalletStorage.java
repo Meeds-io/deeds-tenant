@@ -17,21 +17,21 @@
  */
 package io.meeds.tenant.hub.storage;
 
+import static io.meeds.tenant.hub.utils.ContractUtils.executeRemoteCallTransaction;
+import static io.meeds.tenant.hub.utils.ContractUtils.getReportSentEvents;
 import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
 import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 import static org.exoplatform.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
-import static org.web3j.utils.RevertReasonExtractor.extractRevertReason;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
@@ -41,15 +41,10 @@ import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.WalletFile;
 import org.web3j.protocol.ObjectMapperFactory;
-import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.RemoteFunctionCall;
-import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.protocol.exceptions.JsonRpcError;
-import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.TransactionManager;
-import org.web3j.tx.response.EmptyTransactionReceipt;
 import org.web3j.tx.response.PollingTransactionReceiptProcessor;
 import org.web3j.tx.response.TransactionReceiptProcessor;
 
@@ -63,6 +58,7 @@ import org.exoplatform.web.security.security.TokenServiceInitializationException
 
 import io.meeds.tenant.hub.model.HubReport;
 import io.meeds.tenant.hub.service.PolygonContractGasProvider;
+import io.meeds.tenant.hub.utils.ContractUtils.ReportSentEventResponse;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.HubReportPayload;
 
@@ -128,7 +124,12 @@ public class HubWalletStorage {
                                                           new org.web3j.abi.datatypes.generated.Uint256(report.getDeedId())),
                                      Arrays.<TypeReference<?>> asList(new TypeReference<Uint256>() {
                                      }));
-    RemoteFunctionCall<TransactionReceipt> remoteCall = executeRemoteCallTransaction(function, uemAddress, uemNetworkId);
+    RemoteFunctionCall<TransactionReceipt> remoteCall = executeRemoteCallTransaction(getTransactionManager(),
+                                                                                     polygonContractGasProvider,
+                                                                                     getTransactionReceiptProcessor(),
+                                                                                     function,
+                                                                                     uemAddress,
+                                                                                     uemNetworkId);
     try {
       TransactionReceipt receipt = remoteCall.send();
       if (receipt == null) {
@@ -145,9 +146,10 @@ public class HubWalletStorage {
             throw new WomException("uem.sendReportTransactionFailed");
           }
         }
+      } else {
+        List<ReportSentEventResponse> reportSentEvents = getReportSentEvents(receipt);
+        return reportSentEvents.get(0).reportId.longValue();
       }
-      // TODO return report Id
-      return 0;
     } catch (Exception e) {
       String message = getUemContractExceptionMessage(e);
       if (StringUtils.isNotBlank(message)) {
@@ -201,77 +203,6 @@ public class HubWalletStorage {
     }
   }
 
-  private RemoteFunctionCall<TransactionReceipt> executeRemoteCallTransaction(Function function,
-                                                                              String uemAddress,
-                                                                              long uemNetworkId) {
-    return new RemoteFunctionCall<>(function,
-                                    () -> executeTransaction(FunctionEncoder.encode(function),
-                                                             function.getName(),
-                                                             uemAddress,
-                                                             uemNetworkId));
-  }
-
-  @SneakyThrows
-  private TransactionReceipt executeTransaction(String data,
-                                                String funcName,
-                                                String uemAddress,
-                                                long uemNetworkId) throws WomException {
-    TransactionReceipt receipt = null;
-    try {
-      EthSendTransaction ethSendTransaction = getTransactionManager(polygonContractGasProvider.getWeb3j(),
-                                                                    polygonContractGasProvider.getChainId()).sendEIP1559Transaction(uemNetworkId,
-                                                                                                                                    polygonContractGasProvider.getMaxPriorityFeePerGas(funcName),
-                                                                                                                                    polygonContractGasProvider.getMaxFeePerGas(funcName),
-                                                                                                                                    polygonContractGasProvider.getGasLimit(funcName),
-                                                                                                                                    uemAddress,
-                                                                                                                                    data,
-                                                                                                                                    BigInteger.ZERO,
-                                                                                                                                    false);
-      receipt = processResponse(ethSendTransaction);
-    } catch (JsonRpcError error) {
-
-      if (error.getData() != null) {
-        throw new TransactionException(error.getData().toString());
-      } else {
-        throw new TransactionException(
-                                       String.format(
-                                                     "JsonRpcError thrown with code %d. Message: %s",
-                                                     error.getCode(),
-                                                     error.getMessage()));
-      }
-    }
-
-    if (receipt != null
-        && !receipt.isStatusOK()
-        && !(receipt instanceof EmptyTransactionReceipt)) {
-      throw new TransactionException(
-                                     String.format(
-                                                   "Transaction %s has failed with status: %s. " + "Gas used: %s. " +
-                                                       "Revert reason: '%s'.",
-                                                   receipt.getTransactionHash(),
-                                                   receipt.getStatus(),
-                                                   receipt.getGasUsedRaw() != null ? receipt.getGasUsed().toString() : "unknown",
-                                                   extractRevertReason(receipt,
-                                                                       data,
-                                                                       polygonContractGasProvider.getWeb3j(),
-                                                                       true,
-                                                                       BigInteger.ZERO)),
-                                     receipt);
-    }
-    return receipt;
-  }
-
-  private TransactionReceipt processResponse(EthSendTransaction transactionResponse) throws IOException,
-                                                                                     TransactionException {
-    if (transactionResponse.hasError()) {
-      throw new JsonRpcError(transactionResponse.getError());
-    }
-
-    String transactionHash = transactionResponse.getTransactionHash();
-
-    return getTransactionReceiptProcessor(polygonContractGasProvider.getWeb3j()).waitForTransactionReceipt(transactionHash);
-  }
-
   private String getUemContractExceptionMessage(Throwable e) {
     if (e != null) {
       if (StringUtils.contains(e.getMessage(), "wom.")) {
@@ -295,18 +226,18 @@ public class HubWalletStorage {
     return null;
   }
 
-  private TransactionManager getTransactionManager(Web3j web3j, long networkId) throws WomException {
+  private TransactionManager getTransactionManager() throws WomException {
     if (transactionManager == null) {
-      transactionManager = new RawTransactionManager(web3j,
+      transactionManager = new RawTransactionManager(polygonContractGasProvider.getWeb3j(),
                                                      Credentials.create(getHubWallet()),
-                                                     networkId);
+                                                     polygonContractGasProvider.getChainId());
     }
     return transactionManager;
   }
 
-  private TransactionReceiptProcessor getTransactionReceiptProcessor(Web3j web3j) {
+  private TransactionReceiptProcessor getTransactionReceiptProcessor() {
     if (transactionReceiptProcessor == null) {
-      transactionReceiptProcessor = new PollingTransactionReceiptProcessor(web3j,
+      transactionReceiptProcessor = new PollingTransactionReceiptProcessor(polygonContractGasProvider.getWeb3j(),
                                                                            TransactionManager.DEFAULT_POLLING_FREQUENCY,
                                                                            TransactionManager.DEFAULT_POLLING_ATTEMPTS_PER_TX_HASH);
     }

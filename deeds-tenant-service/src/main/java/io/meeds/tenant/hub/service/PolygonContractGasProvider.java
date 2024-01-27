@@ -37,7 +37,7 @@ public class PolygonContractGasProvider implements ContractEIP1559GasProvider {
 
   private static final Logger     LOG       = LoggerFactory.getLogger(PolygonContractGasProvider.class);
 
-  private static final BigInteger GAS_LIMIT = BigInteger.valueOf(300000);
+  private static final BigInteger GAS_LIMIT = BigInteger.valueOf(1000000);
 
   @Autowired(required = false)
   private EthereumClientConnector clientConnector;

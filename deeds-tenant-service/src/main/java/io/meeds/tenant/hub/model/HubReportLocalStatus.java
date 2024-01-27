@@ -36,18 +36,16 @@ import lombok.NoArgsConstructor;
 @JsonInclude(value = Include.NON_EMPTY)
 public class HubReportLocalStatus extends HubReport {
 
-  private long    id;
+  private long    periodId;
 
   private boolean canRefresh;
 
   private boolean canSend;
 
-  public HubReportLocalStatus(long id, // NOSONAR
+  public HubReportLocalStatus(long periodId, // NOSONAR
                               boolean canRefresh,
                               boolean canSend,
                               long reportId,
-                              String hash,
-                              String signature,
                               String hubAddress,
                               long deedId,
                               Instant fromDate,
@@ -78,8 +76,6 @@ public class HubReportLocalStatus extends HubReport {
                               double mp,
                               long rewardId) {
     super(reportId,
-          hash,
-          signature,
           hubAddress,
           deedId,
           fromDate,
@@ -110,7 +106,7 @@ public class HubReportLocalStatus extends HubReport {
           mp,
           rewardId);
 
-    this.id = id;
+    this.periodId = periodId;
     this.canRefresh = canRefresh;
     this.canSend = canSend;
   }
