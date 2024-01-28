@@ -61,20 +61,6 @@ export default {
     metamaskNetworkId: null,
     connecting: false,
     connected: false,
-    blockchains: {
-      137: {
-        name: 'Polygon',
-        blockexplorer: 'https://polygonscan.com',
-        chainId: '0x89',
-        testnet: false,
-      },
-      80001: {
-        name: 'Mumbai',
-        chainId: '0x13881',
-        blockexplorer: 'https://mumbai.polygonscan.com',
-        testnet: true,
-      },
-    },
     connectAbi: [
       'function connect(address _hubAddress, uint256 _deedId)',
     ],
@@ -93,7 +79,7 @@ export default {
       return this.womConnectionParams?.networkId;
     },
     targetBlockchain() {
-      return this.targetNetworkId && this.blockchains[this.targetNetworkId];
+      return this.targetNetworkId && this.$root.blockchains[this.targetNetworkId];
     },
     targetNetworkName() {
       return this.targetBlockchain?.name;

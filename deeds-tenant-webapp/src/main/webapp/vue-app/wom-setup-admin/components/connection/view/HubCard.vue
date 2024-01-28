@@ -163,7 +163,7 @@ export default {
       return this.hub?.updatedDate && new Date(this.hub?.updatedDate).getTime();
     },
     womServerUrl() {
-      return this.$root.configuration.womServerUrl;
+      return this.hub?.womServerUrl;
     },
     hubLogoUrl() {
       return this.disabled

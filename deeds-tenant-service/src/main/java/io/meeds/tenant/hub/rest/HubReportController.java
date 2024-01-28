@@ -92,10 +92,10 @@ public class HubReportController {
   @Operation(summary = "Send manually Hub reward report to the UEM engine", method = "GET")
   @ApiResponse(responseCode = "200", description = "Request fulfilled")
   @ApiResponse(responseCode = "400", description = "Bad request")
-  public HubReportLocalStatus sendReportToWoM(
-                                              @Parameter(description = "Report period identifier key", required = true)
-                                              @PathVariable("periodId")
-                                              long periodId) {
+  public HubReportLocalStatus sendReport(
+                                         @Parameter(description = "Report period identifier key", required = true)
+                                         @PathVariable("periodId")
+                                         long periodId) {
     try {
       return reportService.sendReport(periodId);
     } catch (WomException e) {

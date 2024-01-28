@@ -43,6 +43,9 @@ export default {
     hubAddress() {
       return this.hub?.address;
     },
+    womAddress() {
+      return this.hub?.womAddress;
+    },
   },
   watch: {
     disconnecting() {
@@ -59,7 +62,7 @@ export default {
       return this.$tenantUtils.sendTransaction(
         provider,
         new window.ethers.Contract(
-          this.$root.configuration.womAddress,
+          this.womAddress,
           this.disconnectAbi,
           provider
         ),

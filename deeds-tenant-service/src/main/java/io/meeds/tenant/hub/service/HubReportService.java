@@ -18,7 +18,6 @@ package io.meeds.tenant.hub.service;
 
 import static io.meeds.tenant.hub.utils.EntityMapper.toHubLocalReport;
 import static io.meeds.tenant.hub.utils.EntityMapper.toHubReport;
-import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
 import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
 
 import java.time.Instant;
@@ -34,20 +33,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Hash;
 
+import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.wallet.model.reward.RewardPeriod;
 import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.reward.service.RewardReportService;
 
-import io.meeds.wom.api.constant.HubReportStatusType;
-import io.meeds.wom.api.constant.WomException;
-import io.meeds.wom.api.constant.WomParsingException;
-import io.meeds.wom.api.model.Hub;
-import io.meeds.wom.api.model.HubReport;
-import io.meeds.wom.api.model.HubReportPayload;
-import io.meeds.wom.api.model.HubReportVerifiableData;
-import io.meeds.wom.api.model.WomErrorMessage;
 import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
 import io.meeds.gamification.model.filter.RealizationFilter;
@@ -57,40 +49,53 @@ import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubReportStorage;
 import io.meeds.tenant.hub.storage.HubWalletStorage;
+import io.meeds.wom.api.constant.HubReportStatusType;
+import io.meeds.wom.api.constant.WomException;
+import io.meeds.wom.api.constant.WomParsingException;
+import io.meeds.wom.api.model.Hub;
+import io.meeds.wom.api.model.HubReport;
+import io.meeds.wom.api.model.HubReportPayload;
+import io.meeds.wom.api.model.HubReportVerifiableData;
+
+import lombok.SneakyThrows;
 
 @Service
 public class HubReportService {
 
-  private static final Log     LOG                         = ExoLogger.getLogger(HubReportService.class);
+  public static final String  REPORT_SENT_EVENT                = "deed.tenant.report.sent";
 
-  private static final String  DEFAULT_LOG_LANG            = Locale.ENGLISH.toLanguageTag();
+  public static final String  REPORT_SENDING_IN_PROGRESS_EVENT = "deed.tenant.report.sending";
 
-  public static final int      MAX_START_TENTATIVES        = 5;
+  public static final String  REPORT_SENDING_ERROR_EVENT       = "deed.tenant.report.error";
 
-  public static final String   MANAGER_DEFAULT_ROLES_PARAM = "managerDefaultRoles";
+  public static final String  REPORT_PERSISTED_EVENT           = "deed.tenant.report.persistedInServer";
 
-  // Used for testnet only, WoM Server won't accept outdated reports
-  private static final boolean SEND_OUTDATED_REPORT        =
-                                                    Boolean.parseBoolean(System.getProperty("io.meeds.test.sendOutdatedReport",
-                                                                                            "false"));
+  public static final String  REPORT_PERSIST_ERROR_EVENT       = "deed.tenant.report.persistError";
 
-  @Autowired
-  private RewardReportService  rewardReportService;
+  private static final String DEFAULT_LOG_LANG                 = Locale.ENGLISH.toLanguageTag();
+
+  private static final Log    LOG                              = ExoLogger.getLogger(HubReportService.class);
 
   @Autowired
-  private RealizationService   realizationService;
+  private RewardReportService rewardReportService;
 
   @Autowired
-  private HubService           hubService;
+  private RealizationService  realizationService;
 
   @Autowired
-  private WomClientService     womServiceClient;
+  private HubService          hubService;
 
   @Autowired
-  private HubWalletStorage     hubWalletStorage;
+  private WomClientService    womServiceClient;
 
   @Autowired
-  private HubReportStorage     hubReportStorage;
+  private HubWalletStorage    hubWalletStorage;
+
+  @Autowired
+  private HubReportStorage    hubReportStorage;
+
+  @Autowired
+  private ListenerService     listenerService;
 
   public HubReportLocalStatus sendReport(long periodId) throws WomException {
     RewardReport rewardReport = rewardReportService.getRewardReportByPeriodId(periodId);
@@ -110,54 +115,31 @@ public class HubReportService {
     if (!rewardReport.isCompletelyProceeded()) {
       throw new IllegalStateException("Reward of period '" + rewardPeriod +
           "' isn't completed proceeded, thus the Rewards report will not be sent");
-    } else if (isValidRewardDate(rewardPeriod)) {
+    } else {
       HubReportPayload reportData = toReport(rewardReport);
 
       HubTenant hub = hubService.getHub();
-      String signature = hubService.signHubMessage(reportData);
-      String hash = StringUtils.lowerCase(Hash.sha3(signature));
-      HubReportVerifiableData reportRequest = new HubReportVerifiableData(hash,
-                                                                          signature,
-                                                                          reportData);
-      try {
-        long start = System.currentTimeMillis();
-        LOG.info("Sending: Hub Report of Reward date '{}' to '{}' to UEM",
-                 rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
-                 rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG));
-        hubReportStorage.saveStatus(rewardPeriod, HubReportStatusType.SENDING.name());
-        long reportId = hubWalletStorage.sendReportTransaction(reportData, hub.getUemAddress(), hub.getNetworkId());
-        reportRequest.setReportId(reportId);
-        hubReportStorage.saveReportPeriodId(rewardPeriod, reportId);
+      long start = System.currentTimeMillis();
+      LOG.info("Sending: Hub Report of Reward date '{}' to '{}' to UEM",
+               rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
+               rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG));
 
-        LOG.info("Sent: Hub Report with id '{}' of Reward date '{}' to '{}' to UEM within {}ms",
-                 rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
-                 rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG),
-                 reportId,
-                 System.currentTimeMillis() - start);
+      long reportId = sendTransaction(rewardPeriod, reportData, hub);
+      reportData.setReportId(reportId);
 
-        HubReport report = womServiceClient.sendReport(reportRequest);
-        String error = report == null ? null : report.getError();
+      LOG.info("Sent: Hub Report with id '{}' of Reward date '{}' to '{}' to UEM within {}ms",
+               rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
+               rewardPeriod.getEndDateFormatted(DEFAULT_LOG_LANG),
+               reportId,
+               System.currentTimeMillis() - start);
 
-        if (report != null && StringUtils.isBlank(error)) {
-          markReportAsSent(rewardPeriod, reportId, report.getSentDate());
-          return toHubLocalReport(report,
-                                  hubReportStorage.getPeriodKey(rewardPeriod),
-                                  report.getStatus().isCanRefresh(),
-                                  report.getStatus().isCanSend());
-        } else {
-          markReportAsError(rewardPeriod, error);
-          throw new WomException(fromJsonString(error, WomErrorMessage.class));
-        }
-      } catch (WomException e) {
-        markReportAsError(rewardPeriod, e);
-        throw e;
-      } catch (Exception e) {
-        markReportAsError(rewardPeriod, new WomException("wom.unknownError", true));
-        throw e;
-      }
-    } else {
-      LOG.info("Hub rewards will not be sent to WoM server since it's end date is before WoM join date");
-      return null;
+      HubReport report = persistReport(reportData);
+      return toHubLocalReport(report,
+                              hubReportStorage.getPeriodKey(rewardPeriod),
+                              HubReportStatusType.SENT.isCanRefresh(),
+                              HubReportStatusType.SENT.isCanSend(),
+                              HubReportStatusType.SENT,
+                              null);
     }
   }
 
@@ -176,7 +158,7 @@ public class HubReportService {
 
   public HubReportLocalStatus getReport(long periodId, boolean refresh) throws WomException {
     if (refresh) {
-      return refreshReportFromWoM(periodId);
+      return retrieveReport(periodId);
     } else {
       RewardReport rewardReport = rewardReportService.getRewardReportByPeriodId(periodId);
       if (rewardReport == null) {
@@ -187,7 +169,7 @@ public class HubReportService {
     }
   }
 
-  private HubReportLocalStatus refreshReportFromWoM(long periodId) throws WomException {
+  private HubReportLocalStatus retrieveReport(long periodId) throws WomException {
     long reportId = hubReportStorage.getReportId(periodId);
     if (reportId == 0) {
       throw new WomException("wom.notSentReward");
@@ -196,13 +178,48 @@ public class HubReportService {
     if (report == null || !StringUtils.equalsIgnoreCase(report.getHubAddress(), hubService.getHubAddress())) {
       throw new WomException("wom.rewardNotFoundInWom");
     } else {
-      report.setStatus(HubReportStatusType.SENT);
       return toHubLocalReport(report,
                               periodId,
-                              report.getStatus().isCanRefresh(),
-                              report.getStatus().isCanSend());
+                              HubReportStatusType.SENT.isCanRefresh(),
+                              HubReportStatusType.SENT.isCanSend(),
+                              HubReportStatusType.SENT,
+                              null);
 
     }
+  }
+
+  private long sendTransaction(RewardPeriod rewardPeriod, HubReportPayload reportData, HubTenant hub) throws WomException {
+    long reportId;
+    try {
+      markReportAsSending(rewardPeriod);
+      reportId = hubWalletStorage.sendReportTransaction(reportData, hub.getUemAddress(), hub.getNetworkId());
+      markReportAsSent(rewardPeriod, reportId);
+    } catch (WomException e) {
+      markReportAsError(rewardPeriod, e);
+      throw e;
+    } catch (RuntimeException e) {
+      markReportAsError(rewardPeriod, new WomException("wom.unknownError", true));
+      throw e;
+    } finally {
+      String status = hubReportStorage.getStatus(rewardPeriod);
+      HubReportStatusType statusType = computeReportStatusType(status);
+      if (statusType == HubReportStatusType.SENDING) {
+        markReportAsError(rewardPeriod, new WomException("wom.unknownError", true));
+      }
+    }
+    return reportId;
+  }
+
+  @SneakyThrows
+  private HubReport persistReport(HubReportPayload reportData) throws WomException {
+    String signature = hubService.signHubMessage(reportData);
+    String hash = StringUtils.lowerCase(Hash.sha3(signature));
+    HubReportVerifiableData reportRequest = new HubReportVerifiableData(hash,
+                                                                        signature,
+                                                                        reportData);
+    HubReport report = womServiceClient.saveReport(reportRequest);
+    listenerService.broadcast(REPORT_PERSISTED_EVENT, reportRequest.getReportId(), null);
+    return report;
   }
 
   private HubReportPayload toReport(RewardReport rewardReport) {
@@ -219,15 +236,24 @@ public class HubReportService {
                        hubReportStorage.getSentDate(rewardPeriod));
   }
 
-  private boolean isValidRewardDate(RewardPeriod rewardPeriod) {
-    Instant endDate = Instant.ofEpochMilli(rewardPeriod.getEndDateInSeconds());
-    return SEND_OUTDATED_REPORT || hubService.getHubJoinDate().isBefore(endDate);
-  }
-
-  private void markReportAsSent(RewardPeriod rewardPeriod, long reportId, Instant sentDate) {
+  @SneakyThrows
+  private void markReportAsSent(RewardPeriod rewardPeriod, long reportId) {
     hubReportStorage.saveReportPeriodId(rewardPeriod, reportId);
     hubReportStorage.saveStatus(rewardPeriod, HubReportStatusType.SENT.name());
-    hubReportStorage.saveSentDate(rewardPeriod, sentDate);
+    hubReportStorage.saveSentDate(rewardPeriod, Instant.now());
+    listenerService.broadcast(REPORT_SENT_EVENT, rewardPeriod.getId(), reportId);
+  }
+
+  @SneakyThrows
+  private void markReportAsSending(RewardPeriod rewardPeriod) {
+    hubReportStorage.saveStatus(rewardPeriod, HubReportStatusType.SENDING.name());
+    listenerService.broadcast(REPORT_SENDING_IN_PROGRESS_EVENT, rewardPeriod.getId(), null);
+  }
+
+  @SneakyThrows
+  private void markReportAsError(RewardPeriod rewardPeriod, String error) {
+    hubReportStorage.saveStatus(rewardPeriod, error);
+    listenerService.broadcast(REPORT_SENDING_ERROR_EVENT, rewardPeriod.getId(), null);
   }
 
   private void markReportAsError(RewardPeriod rewardPeriod, WomException e) throws WomParsingException {
@@ -235,13 +261,9 @@ public class HubReportService {
     markReportAsError(rewardPeriod, error);
   }
 
-  private void markReportAsError(RewardPeriod rewardPeriod, String error) {
-    hubReportStorage.saveStatus(rewardPeriod, error);
-  }
-
-  private HubReportStatusType computeReportStatusType(RewardPeriod rewardPeriod, String status) {
+  private HubReportStatusType computeReportStatusType(String status) {
     if (StringUtils.isBlank(status)) {
-      if (!hubService.isConnected() || isValidRewardDate(rewardPeriod)) {
+      if (!hubService.isConnected()) {
         return HubReportStatusType.NONE;
       } else {
         return HubReportStatusType.INVALID;
@@ -256,6 +278,10 @@ public class HubReportService {
         yield HubReportStatusType.REWARDED;
       case "REJECTED":
         yield HubReportStatusType.REJECTED;
+      case "SENDING":
+        yield HubReportStatusType.SENDING;
+      case "INVALID":
+        yield HubReportStatusType.INVALID;
       default:
         yield HubReportStatusType.ERROR_SENDING;
       };
@@ -279,7 +305,7 @@ public class HubReportService {
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
     String status = hubReportStorage.getStatus(rewardPeriod);
 
-    HubReportStatusType statusType = computeReportStatusType(rewardPeriod, status);
+    HubReportStatusType statusType = computeReportStatusType(status);
     String errorMessageKey = statusType == HubReportStatusType.ERROR_SENDING ? status : null;
 
     HubReportPayload reportData = toReport(rewardReport);
@@ -288,7 +314,7 @@ public class HubReportService {
     Hub hub = hubService.getHub();
     long periodId = hubReportStorage.getPeriodKey(rewardPeriod);
     boolean canRefresh = statusType.isCanRefresh() && reportId == 0;
-    boolean canSend = statusType.isCanSend() && isValidRewardDate(rewardPeriod);
+    boolean canSend = statusType.isCanSend();
     HubReportLocalStatus reportLocalStatus = toHubLocalReport(reportData,
                                                               hub,
                                                               periodId,

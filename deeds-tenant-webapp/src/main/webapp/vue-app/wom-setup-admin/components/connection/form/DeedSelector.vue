@@ -133,7 +133,7 @@ export default {
       return this.deed?.maxUsers || 0;
     },
     hubUsersCount() {
-      return this.$root.configuration.usersCount || 0;
+      return this.hub?.usersCount || 0;
     },
     maxUsersReached() {
       return this.deedMaxUsers && this.hubUsersCount > this.deedMaxUsers && this.deedId;
@@ -166,7 +166,7 @@ export default {
   methods: {
     init() {
       this.loading = true;
-      this.$hubService.getManagedDeeds(this.$root.configuration.womServerUrl, this.address)
+      this.$hubService.getManagedDeeds(this.hub?.womServerUrl, this.address)
         .then(data => {
           if (data?.length) {
             data.forEach(deed => {

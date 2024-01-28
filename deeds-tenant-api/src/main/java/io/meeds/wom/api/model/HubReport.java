@@ -28,8 +28,6 @@ import org.springframework.hateoas.server.core.Relation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.meeds.wom.api.constant.HubReportStatusType;
-
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,65 +42,71 @@ import lombok.ToString;
 public class HubReport extends HubReportPayload {
 
   @Getter
-  private String              earnerAddress;
-
-  @Getter
-  private String              deedManagerAddress;
-
-  @Getter
-  private String              ownerAddress;
+  @Setter
+  private long    rewardId;
 
   @Getter
   @Setter
-  private int                 ownerMintingPercentage;
+  private short   city;
 
   @Getter
   @Setter
-  private HubReportStatusType status;
+  private short   cardType;
 
   @Getter
   @Setter
-  private String              error;
+  private short   mintingPower;
 
   @Getter
   @Setter
-  private double              uemRewardIndex;
+  private long    maxUsers;
+
+  @Getter
+  private String  deedManagerAddress;
+
+  @Getter
+  private String  ownerAddress;
 
   @Getter
   @Setter
-  private double              uemRewardAmount;
+  private int     ownerMintingPercentage;
 
   @Getter
   @Setter
-  private double              lastPeriodUemRewardAmount;
+  private double  fixedRewardIndex;
 
   @Getter
   @Setter
-  private double              lastPeriodUemDiff;
+  private double  ownerFixedIndex;
 
   @Getter
   @Setter
-  private double              hubRewardAmountPerPeriod;
+  private double  tenantFixedIndex;
 
   @Getter
   @Setter
-  private double              hubRewardLastPeriodDiff;
+  private boolean fraud;
 
   @Getter
   @Setter
-  private double              lastPeriodUemRewardAmountPerPeriod;
+  private double  uemRewardIndex;
 
   @Getter
   @Setter
-  private double              mp;
+  private double  uemRewardAmount;
 
   @Getter
   @Setter
-  private long                rewardId;
+  private double  lastPeriodUemRewardAmount;
 
   public HubReport(long reportId, // NOSONAR
+                   long rewardId,
                    String hubAddress,
                    long deedId,
+                   short city,
+                   short cardType,
+                   short mintingPower,
+                   long maxUsers,
                    Instant fromDate,
                    Instant toDate,
                    Instant sentDate,
@@ -115,21 +119,11 @@ public class HubReport extends HubReportPayload {
                    long rewardTokenNetworkId,
                    double hubRewardAmount,
                    SortedSet<String> transactions,
-                   String earnerAddress,
                    String deedManagerAddress,
                    String ownerAddress,
                    int ownerMintingPercentage,
-                   HubReportStatusType status,
-                   String error,
                    double uemRewardIndex,
-                   double uemRewardAmount,
-                   double lastPeriodUemRewardAmount,
-                   double lastPeriodUemDiff,
-                   double hubRewardAmountPerPeriod,
-                   double hubRewardLastPeriodDiff,
-                   double lastPeriodUemRewardAmountPerPeriod,
-                   double mp,
-                   long rewardId) {
+                   double uemRewardAmount) {
     super(reportId,
           StringUtils.lowerCase(hubAddress),
           deedId,
@@ -145,25 +139,16 @@ public class HubReport extends HubReportPayload {
           rewardTokenNetworkId,
           hubRewardAmount,
           lowerCase(transactions));
-    this.earnerAddress = StringUtils.lowerCase(earnerAddress);
+    this.rewardId = rewardId;
+    this.city = city;
+    this.cardType = cardType;
+    this.mintingPower = mintingPower;
+    this.maxUsers = maxUsers;
     this.deedManagerAddress = StringUtils.lowerCase(deedManagerAddress);
     this.ownerAddress = StringUtils.lowerCase(ownerAddress);
     this.ownerMintingPercentage = ownerMintingPercentage;
-    this.status = status;
-    this.error = error;
     this.uemRewardIndex = uemRewardIndex;
     this.uemRewardAmount = uemRewardAmount;
-    this.lastPeriodUemRewardAmount = lastPeriodUemRewardAmount;
-    this.lastPeriodUemDiff = lastPeriodUemDiff;
-    this.hubRewardAmountPerPeriod = hubRewardAmountPerPeriod;
-    this.hubRewardLastPeriodDiff = hubRewardLastPeriodDiff;
-    this.lastPeriodUemRewardAmountPerPeriod = lastPeriodUemRewardAmountPerPeriod;
-    this.mp = mp;
-    this.rewardId = rewardId;
-  }
-
-  public void setEarnerAddress(String earnerAddress) {
-    this.earnerAddress = StringUtils.lowerCase(earnerAddress);
   }
 
   public void setDeedManagerAddress(String deedManagerAddress) {
