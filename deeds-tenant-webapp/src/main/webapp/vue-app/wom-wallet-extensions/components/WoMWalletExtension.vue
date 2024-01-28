@@ -56,7 +56,7 @@ export default {
     },
     refresh(forceRefresh) {
       this.loading = true;
-      return this.$hubService.getHub(null, forceRefresh)
+      return this.$hubService.getHub(forceRefresh)
         .then(hub => this.hub = hub)
         .finally(() => {
           this.loading = false;

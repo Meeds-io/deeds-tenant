@@ -36,18 +36,29 @@ import lombok.NoArgsConstructor;
 @JsonInclude(value = Include.NON_EMPTY)
 public class HubReportLocalStatus extends HubReport {
 
-  private long    periodId;
+  private long                periodId;
 
-  private boolean canRefresh;
+  private boolean             canRefresh;
 
-  private boolean canSend;
+  private boolean             canSend;
+
+  private HubReportStatusType status;
+
+  private String              error;
 
   public HubReportLocalStatus(long periodId, // NOSONAR
                               boolean canRefresh,
                               boolean canSend,
+                              HubReportStatusType status,
+                              String error,
                               long reportId,
+                              long rewardId,
                               String hubAddress,
                               long deedId,
+                              short city,
+                              short cardType,
+                              short mintingPower,
+                              long maxUsers,
                               Instant fromDate,
                               Instant toDate,
                               Instant sentDate,
@@ -60,24 +71,19 @@ public class HubReportLocalStatus extends HubReport {
                               long rewardTokenNetworkId,
                               double hubRewardAmount,
                               SortedSet<String> transactions,
-                              String earnerAddress,
                               String deedManagerAddress,
                               String ownerAddress,
                               int ownerMintingPercentage,
-                              HubReportStatusType status,
-                              String error,
                               double uemRewardIndex,
-                              double uemRewardAmount,
-                              double lastPeriodUemRewardAmount,
-                              double lastPeriodUemDiff,
-                              double hubRewardAmountPerPeriod,
-                              double hubRewardLastPeriodDiff,
-                              double lastPeriodUemRewardAmountPerPeriod,
-                              double mp,
-                              long rewardId) {
+                              double uemRewardAmount) {
     super(reportId,
+          rewardId,
           hubAddress,
           deedId,
+          city,
+          cardType,
+          mintingPower,
+          maxUsers,
           fromDate,
           toDate,
           sentDate,
@@ -90,25 +96,17 @@ public class HubReportLocalStatus extends HubReport {
           rewardTokenNetworkId,
           hubRewardAmount,
           transactions,
-          earnerAddress,
           deedManagerAddress,
           ownerAddress,
           ownerMintingPercentage,
-          status,
-          error,
           uemRewardIndex,
-          uemRewardAmount,
-          lastPeriodUemRewardAmount,
-          lastPeriodUemDiff,
-          hubRewardAmountPerPeriod,
-          hubRewardLastPeriodDiff,
-          lastPeriodUemRewardAmountPerPeriod,
-          mp,
-          rewardId);
+          uemRewardAmount);
 
     this.periodId = periodId;
     this.canRefresh = canRefresh;
     this.canSend = canSend;
+    this.status = status;
+    this.error = error;
   }
 
 }

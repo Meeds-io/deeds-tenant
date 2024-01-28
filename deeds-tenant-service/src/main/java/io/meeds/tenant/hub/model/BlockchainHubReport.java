@@ -6,43 +6,41 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.StaticStruct;
 import org.web3j.abi.datatypes.generated.Uint256;
 
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@Data
 @EqualsAndHashCode(callSuper = false)
-public class HubReport extends StaticStruct {
+public class BlockchainHubReport extends StaticStruct {
 
-  public String     hub;
+  public String     hub;               // NOSONAR
 
-  public BigInteger usersCount;
+  public BigInteger usersCount;        // NOSONAR
 
-  public BigInteger recipientsCount;
+  public BigInteger recipientsCount;   // NOSONAR
 
-  public BigInteger participantsCount;
+  public BigInteger participantsCount; // NOSONAR
 
-  public BigInteger achievementsCount;
+  public BigInteger achievementsCount; // NOSONAR
 
-  public BigInteger amount;
+  public BigInteger amount;            // NOSONAR
 
-  public String     tokenAddress;
+  public String     tokenAddress;      // NOSONAR
 
-  public BigInteger tokenChainId;
+  public BigInteger tokenChainId;      // NOSONAR
 
-  public BigInteger fromDate;
+  public BigInteger fromDate;          // NOSONAR
 
-  public BigInteger toDate;
+  public BigInteger toDate;            // NOSONAR
 
-  public HubReport(String hub,
-                   BigInteger usersCount,
-                   BigInteger recipientsCount,
-                   BigInteger participantsCount,
-                   BigInteger achievementsCount,
-                   BigInteger amount,
-                   String tokenAddress,
-                   BigInteger tokenChainId,
-                   BigInteger fromDate,
-                   BigInteger toDate) {
+  public BlockchainHubReport(String hub, // NOSONAR
+                             BigInteger usersCount,
+                             BigInteger recipientsCount,
+                             BigInteger participantsCount,
+                             BigInteger achievementsCount,
+                             BigInteger amount,
+                             String tokenAddress,
+                             BigInteger tokenChainId,
+                             BigInteger fromDate,
+                             BigInteger toDate) {
     super(new org.web3j.abi.datatypes.Address(160, hub),
           new org.web3j.abi.datatypes.generated.Uint256(usersCount),
           new org.web3j.abi.datatypes.generated.Uint256(recipientsCount),
@@ -65,16 +63,16 @@ public class HubReport extends StaticStruct {
     this.toDate = toDate;
   }
 
-  public HubReport(Address hub,
-                   Uint256 usersCount,
-                   Uint256 recipientsCount,
-                   Uint256 participantsCount,
-                   Uint256 achievementsCount,
-                   Uint256 amount,
-                   Address tokenAddress,
-                   Uint256 tokenChainId,
-                   Uint256 fromDate,
-                   Uint256 toDate) {
+  public BlockchainHubReport(Address hub, // NOSONAR
+                             Uint256 usersCount,
+                             Uint256 recipientsCount,
+                             Uint256 participantsCount,
+                             Uint256 achievementsCount,
+                             Uint256 amount,
+                             Address tokenAddress,
+                             Uint256 tokenChainId,
+                             Uint256 fromDate,
+                             Uint256 toDate) {
     super(hub,
           usersCount,
           recipientsCount,

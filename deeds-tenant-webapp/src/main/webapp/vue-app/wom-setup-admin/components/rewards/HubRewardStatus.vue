@@ -9,7 +9,7 @@
       offset-y>
       <template #activator="{ on, attrs }">
         <v-btn
-          :href="womReportUrl"
+          :href="fullReportUrl"
           :color="color"
           target="_blank"
           rel="nofollow noreferrer noopener"
@@ -45,19 +45,23 @@ export default {
     menu: false,
   }),
   computed: {
-    womReportUrl() {
-      const womServerUrl = this.$root?.configuration?.womServerUrl;
-      const reportHash = this.report?.hash;
-      if (!womServerUrl || !reportHash) {
+    womServerUrl() {
+      return this.hub?.womServerUrl;
+    },
+    meedsServerUrl() {
+      return this.womServerUrl?.includes?.('wom.meeds.io') ? 'https://www.meeds.io' : this.womServerUrl;
+    },
+    fullReportUrl() {
+      if (!this.meedsServerUrl || !this.reportId) {
         return null;
       }
-      return `${womServerUrl}/hubs?report=${reportHash}`;
+      return `${this.meedsServerUrl}?report=${this.reportId}`;
     },
     hub() {
       return this.$root.hub;
     },
     connectedToWoM() {
-      return !!this.hub;
+      return !!this.hub?.connected;
     },
     status() {
       return this.report?.status;
