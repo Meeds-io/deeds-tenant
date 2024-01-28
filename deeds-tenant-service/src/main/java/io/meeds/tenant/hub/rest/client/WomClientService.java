@@ -69,8 +69,6 @@ public class WomClientService {
 
   private static final String  HUB_BANNER_BY_ADDRESS_URI     = WOM_HUBS_URI + "/" + HUB_ADDRESS_PARAM + "/banner";
 
-  private static final String  HUB_TENANT_BY_NFT_URI         = WOM_HUBS_URI + "/byNftId/" + NFT_ID_PARAM;
-
   private static final String  HUB_MANAGER_CHEK_URI          = WOM_HUBS_URI + "/manager?nftId=" + NFT_ID_PARAM + "&address=" +
       MANAGER_ADDRESS_PARAM;
 
@@ -88,11 +86,6 @@ public class WomClientService {
   public boolean isDeedManager(String address, long nftId) throws WomException {
     String responseText = womConnectionService.processGet(getIsHubManagerUri(address, nftId));
     return StringUtils.equals("true", responseText);
-  }
-
-  public Hub getHub(long nftId) throws WomException {
-    String responseText = womConnectionService.processGet(getDeedHubTenantUri(nftId));
-    return fromJsonString(responseText, Hub.class);
   }
 
   public Hub getHub(String hubAddress, boolean forceRefresh) throws WomException {
@@ -113,7 +106,7 @@ public class WomClientService {
     return womConnectionService.processDelete(getWoMDisonnectionUri(), toJsonString(disconnectionRequest));
   }
 
-  public HubReport sendReport(HubReportVerifiableData reportRequest) throws WomException {
+  public HubReport saveReport(HubReportVerifiableData reportRequest) throws WomException {
     String responseText = womConnectionService.processPost(getWoMReportUri(), toJsonString(reportRequest));
     return fromJsonString(responseText, HubReport.class);
   }
@@ -214,11 +207,6 @@ public class WomClientService {
     String uri = WOM_URL + HUB_MANAGER_CHEK_URI;
     return URI.create(fixUri(uri).replace(NFT_ID_PARAM, String.valueOf(nftId))
                                  .replace(MANAGER_ADDRESS_PARAM, address));
-  }
-
-  private URI getDeedHubTenantUri(long nftId) {
-    String uri = WOM_URL + HUB_TENANT_BY_NFT_URI;
-    return URI.create(fixUri(uri).replace(NFT_ID_PARAM, String.valueOf(nftId)));
   }
 
   private URI getDeedHubTenantUri(String hubAddress, boolean forceRefresh) {

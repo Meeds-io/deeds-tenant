@@ -21,6 +21,7 @@ package io.meeds.tenant.hub.utils;
 import static org.web3j.utils.RevertReasonExtractor.extractRevertReason;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,8 +36,13 @@ import org.web3j.abi.datatypes.Event;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.RemoteFunctionCall;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.protocol.core.methods.response.BaseEventResponse;
+import org.web3j.protocol.core.methods.response.EthEstimateGas;
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount;
 import org.web3j.protocol.core.methods.response.EthSendTransaction;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -48,6 +54,7 @@ import org.web3j.tx.response.EmptyTransactionReceipt;
 import org.web3j.tx.response.TransactionReceiptProcessor;
 
 import io.meeds.tenant.hub.service.PolygonContractGasProvider;
+import io.meeds.wom.api.constant.WomException;
 
 import lombok.SneakyThrows;
 
@@ -89,10 +96,32 @@ public class ContractUtils {
                                                        long uemNetworkId) {
     TransactionReceipt receipt = null;
     try {
+      BigInteger estimatedGas;
+
+      String fromAddress = transactionManager.getFromAddress();
+      BigInteger maxPriorityFeePerGas = polygonContractGasProvider.getMaxPriorityFeePerGas(funcName);
+      BigInteger maxFeePerGas = polygonContractGasProvider.getMaxFeePerGas(funcName);
+      BigInteger gasLimit = polygonContractGasProvider.getGasLimit(funcName);
+      BigInteger nonce = getNonce(polygonContractGasProvider.getWeb3j(), fromAddress);
+      Transaction tx = Transaction.createFunctionCallTransaction(fromAddress,
+                                                                 nonce,
+                                                                 maxFeePerGas,
+                                                                 gasLimit,
+                                                                 uemAddress,
+                                                                 data);
+      EthEstimateGas gasEstimate = polygonContractGasProvider.getWeb3j().ethEstimateGas(tx).send();
+      if (gasEstimate.hasError()) {
+        throw new WomException(gasEstimate.getError().getMessage());
+      } else {
+        estimatedGas = gasEstimate.getAmountUsed();
+      }
+
       EthSendTransaction ethSendTransaction = transactionManager.sendEIP1559Transaction(uemNetworkId,
-                                                                                        polygonContractGasProvider.getMaxPriorityFeePerGas(funcName),
-                                                                                        polygonContractGasProvider.getMaxFeePerGas(funcName),
-                                                                                        polygonContractGasProvider.getGasLimit(funcName),
+                                                                                        maxPriorityFeePerGas,
+                                                                                        maxFeePerGas,
+                                                                                        BigDecimal.valueOf(estimatedGas.doubleValue())
+                                                                                                  .multiply(BigDecimal.valueOf(1.2d))
+                                                                                                  .toBigInteger(),
                                                                                         uemAddress,
                                                                                         data,
                                                                                         BigInteger.ZERO,
@@ -129,6 +158,13 @@ public class ContractUtils {
                                      receipt);
     }
     return receipt;
+  }
+
+  @SneakyThrows
+  private static BigInteger getNonce(Web3j web3j, String address) {
+    EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.PENDING)
+                                                         .send();
+    return ethGetTransactionCount.getTransactionCount();
   }
 
   private static TransactionReceipt processResponse(TransactionReceiptProcessor transactionReceiptProcessor,

@@ -20,6 +20,8 @@ package io.meeds.wom.api.model;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -45,6 +47,26 @@ public class UEMReward {
   private long                    rewardId;
 
   /**
+   * UEM Blockchain configured amount for current period
+   */
+  private double                  amount;
+
+  /**
+   * UEM Blockchain fromReport
+   */
+  private long                    fromReport;
+
+  /**
+   * UEM Blockchain toReport
+   */
+  private long                    toReport;
+
+  /**
+   * UEM Blockchain computed fixed Global Index
+   */
+  private double                  fixedGlobalIndex;
+
+  /**
    * UEM Period Start Date
    */
   private Instant                 fromDate;
@@ -53,16 +75,6 @@ public class UEMReward {
    * UEM Period End Date
    */
   private Instant                 toDate;
-
-  /**
-   * UEM Period Reward
-   */
-  private double                  uemRewardAmount;
-
-  /**
-   * Report Ids
-   */
-  private Set<Long>               reportIds;
 
   /**
    * Report Id => UEM Reward amount
@@ -81,23 +93,22 @@ public class UEMReward {
    */
   private double                  hubRewardsAmount;
 
-  /**
-   * Total internal hub reward indices
-   */
-  private double                  uemRewardIndex;
+  public List<Long> getReportIds() {
+    List<Long> reportIds = new ArrayList<>();
+    for (long i = fromReport; i <= toReport; i++) {
+      reportIds.add(i);
+    }
+    return reportIds;
+  }
 
-  private double                  globalEngagementRate;
-
-  private String                  periodType;
-
-  public long getHubsCount() {
-    return getHubAddresses() == null ? 0 : getHubAddresses().size();
+  public long getReportsCount() {
+    return fromReport == 0 ? 0 : (toReport - fromReport + 1);
   }
 
   public double getEw() {
-    long hubsCount = reportIds == null ? 0 : reportIds.size();
+    long hubsCount = getReportsCount();
     return hubsCount == 0 ? 0d :
-                          BigDecimal.valueOf(globalEngagementRate)
+                          BigDecimal.valueOf(fixedGlobalIndex)
                                     .divide(BigDecimal.valueOf(hubsCount), MathContext.DECIMAL128)
                                     .doubleValue();
   }

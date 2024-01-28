@@ -17,7 +17,6 @@
  */
 package io.meeds.tenant.hub.rest;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
@@ -33,7 +32,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import io.meeds.tenant.hub.model.HubConfiguration;
 import io.meeds.tenant.hub.service.HubService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
@@ -64,23 +62,15 @@ public class HubController {
   @ApiResponse(responseCode = "404", description = "Not found")
   @ApiResponse(responseCode = "503", description = "Service unavailable")
   public Hub getHub(
-                    @Parameter(description = "Deed NFT identifier", required = false)
-                    @RequestParam(name = "nftId", required = false)
-                    String nftId,
                     @Parameter(description = "Whether to force Refresh the Hub characteristics from WoM or not",
                                required = false)
                     @RequestParam(name = "forceRefresh", required = false)
                     boolean forceRefresh) {
-    try {
-      Hub hub = StringUtils.isBlank(nftId) ? hubService.getHub(forceRefresh) : hubService.getHub(Long.parseLong(nftId));
-      if (hub == null) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-      } else {
-        return hub;
-      }
-    } catch (WomException e) {
-      logWomException(e);
-      throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    Hub hub = hubService.getHub(forceRefresh);
+    if (hub == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    } else {
+      return hub;
     }
   }
 
@@ -100,8 +90,6 @@ public class HubController {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "wom.emptyDeedId");
     } else if (connectionRequest.getDeedManagerAddress() == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "wom.emptyDeedManagerAddress");
-    } else if (connectionRequest.getEarnerAddress() == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "wom.emptyEarnerAddress");
     } else if (connectionRequest.getSignedMessage() == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "wom.emptySignedMessage");
     } else if (connectionRequest.getToken() == null) {
@@ -140,14 +128,6 @@ public class HubController {
       logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
-  }
-
-  @GetMapping("configuration")
-  @Secured("rewarding")
-  @Operation(summary = "Retrieves Hub configuration properties", method = "GET")
-  @ApiResponse(responseCode = "200", description = "Request fulfilled")
-  public HubConfiguration getConfiguration() {
-    return hubService.getConfiguration();
   }
 
   @GetMapping("token")

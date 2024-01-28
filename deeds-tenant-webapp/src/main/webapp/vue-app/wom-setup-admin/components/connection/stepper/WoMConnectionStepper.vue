@@ -69,7 +69,6 @@ export default {
     stepper: 1,
     deedOwnerAddress: null,
     deedManagerAddress: null,
-    earnerAddress: null,
     hubUrl: null,
     token: null,
     signedMessage: null,
@@ -139,7 +138,6 @@ export default {
     reset() {
       this.stepper = 1;
       this.deed = null;
-      this.earnerAddress = this.hub?.earnerAddress || this.$root?.configuration?.adminWallet;
       this.hubUrl = window.location.origin;
       this.validateEmpty = false;
       this.deedOwnerAddress = null;
@@ -164,7 +162,6 @@ export default {
         deedOwnerAddress: this.deedOwnerAddress,
         deedManagerAddress: this.deedManagerAddress,
         url: this.hubUrl,
-        earnerAddress: this.earnerAddress,
         signedMessage: this.signedMessage,
         rawMessage: this.rawMessage,
         token: this.token,

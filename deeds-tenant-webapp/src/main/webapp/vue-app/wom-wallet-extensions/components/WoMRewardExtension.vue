@@ -21,25 +21,28 @@
 -->
 <template>
   <v-alert
-    v-if="periodEndDate && (!loading || !hub)"
-    type="information"
+    v-if="periodEndDate
+      && !periodUpcoming
+      && (!loading || !hub)"
+    :type="alertType"
     border="left"
     elevation="2"
+    class="ma-0"
     outlined
     colored-border>
-    <div class="text-color text-start my-2">
+    <div class="text-color text-start">
       <template v-if="!connected">
-        <div v-sanitized-html="notConnectedLabel1"></div>
+        <div v-sanitized-html="notConnectedLabel1" class="mb-2"></div>
         <div v-sanitized-html="notConnectedLabel2"></div>
       </template>
       <template v-else-if="!loading && periodNonEligible">
         {{ $t('uem.periodNonEligible') }}
+        <strong class="text-center d-inline-flex">
+          <date-format :value="hubJoinDate" />
+        </strong>
       </template>
       <template v-else-if="!loading && periodNotEnded">
         {{ $t('uem.periodNotEnded') }}
-      </template>
-      <template v-else-if="!loading && periodUpcoming">
-        {{ $t('uem.periodUpcoming') }}
       </template>
       <template v-else-if="!loading && periodWithoutRewards">
         {{ $t('uem.periodWithoutRewards') }}
@@ -47,15 +50,30 @@
       <template v-else-if="!loading && sendingWalletReward">
         {{ $t('uem.sendingWalletRewards') }}
       </template>
+      <template v-else-if="!loading && reportTransactionSent">
+        <span v-sanitized-html="reportSentLabel"></span>
+      </template>
       <template v-else-if="!loading && reportTransactionSending">
         {{ $t('uem.reportTransactionSending') }}
       </template>
-      <template v-else-if="!loading && reportTransactionSent">
-        {{ $t('uem.reportTransactionSent') }}
-      </template>
       <template v-else-if="!loading && reportTransactionError">
         <div class="mb-4">{{ $t('uem.reportTransactionError') }}</div>
-        <div class="error--text mb-4">{{ reportError }}</div>
+        <div v-sanitized-html="reportErrorMessage" class="error--text mb-4"></div>
+        <v-btn
+          :loading="sending"
+          class="primary-border-color"
+          color="primary"
+          elevation="0"
+          outlined
+          @click="resendReport">
+          {{ $t('uem.retry') }}
+        </v-btn>
+      </template>
+      <template v-else-if="!loading && rewardNotSentYet">
+        {{ $t('uem.rewardNotSentYet') }}
+      </template>
+      <template v-else-if="!loading && reportTransactionNotSent">
+        <div class="mb-4">{{ $t('uem.reportTransactionNotSent') }}</div>
         <v-btn
           :loading="sending"
           class="primary-border-color"
@@ -110,6 +128,27 @@ export default {
     completelyProceeded() {
       return this.rewardReport?.completelyProceeded;
     },
+    womServerUrl() {
+      return this.hub?.womServerUrl;
+    },
+    meedsServerUrl() {
+      return this.womServerUrl?.includes?.('wom.meeds.io') ? 'https://www.meeds.io' : this.womServerUrl;
+    },
+    fullReportUrl() {
+      if (!this.meedsServerUrl || !this.reportId) {
+        return null;
+      }
+      return `${this.meedsServerUrl}?report=${this.reportId}`;
+    },
+    reportSentLabel() {
+      return this.reportSentThisWeek && this.$t('uem.reportTransactionSentThisWeek', {
+        0: `<a href="${this.fullReportUrl}" target="_blank">`,
+        2: '</a>',
+      }) ||  this.$t('uem.reportTransactionSent', {
+        0: `<a href="${this.fullReportUrl}" target="_blank">`,
+        2: '</a>',
+      });
+    },
     hubJoinDate() {
       return this.hub?.joinDate && new Date(this.hub.joinDate).getTime();
     },
@@ -134,56 +173,116 @@ export default {
     sendingWalletReward() {
       return this.rewardReport?.pendingTransactionCount;
     },
+    rewardNotSentYet() {
+      return !this.periodWithoutRewards
+        && !this.sendingWalletReward
+        && !this.rewardReport?.successTransactionCount
+        && this.rewardReport?.tokensToSend;
+    },
+    reportErrorObj() {
+      return this.report?.error?.length
+        && (this.report.error.indexOf('{') === 0)
+        && JSON.parse(this.report.error);
+    },
     shouldRetry() {
-      if (this.report?.error && this.report.error.indexOf('{') === 0) {
-        const error = JSON.parse(this.report.error);
-        return error?.shouldRetry;
-      }
-      return false;
+      return this.reportErrorObj?.shouldRetry;
     },
-    reportError() {
-      if (!this.report?.error) {
-        return null;
-      } else if (this.report.error.indexOf('{') === 0) {
-        const error = JSON.parse(this.report.error);
-        return error?.messageKey && this.$te(error?.messageKey) && this.$t(error?.messageKey) || error?.message || this.$t('uem.unknownErrorSendingReport');
-      } else {
-        return this.report.error;
-      }
+    reportErrorMessageKey() {
+      return this.reportErrorObj?.messageKey;
     },
-    reportTransactionError() {
-      return this.reportError;
+    reportErrorMessage() {
+      return this.reportErrorMessageKey
+        && this.$te(this.reportErrorMessageKey)
+        && this.$t(this.reportErrorMessageKey, {
+          0: '<strong>',
+          1: '</strong>',
+        })
+        || this.$t('uem.unknownErrorSendingReport');
+    },
+    reportId() {
+      return this.report?.reportId;
     },
     reportTransactionSent() {
-      return this.report?.status === 'SENT';
+      return this.reportId;
+    },
+    reportTransactionError() {
+      return this.report?.error;
     },
     reportTransactionSending() {
       return this.report?.status === 'SENDING';
     },
+    reportTransactionNotSent() {
+      return !this.periodWithoutRewards
+        && !this.rewardNotSentYet
+        && !this.reportTransactionSent
+        && !this.reportTransactionSending;
+    },
+    reportSentDate() {
+      return this.report?.sentDate && new Date(this.report?.sentDate).getTime() || null;
+    },
+    uemCurrentWeekStartPeriod() {
+      const date = new Date();
+      const day = date.getDay();
+      const diffDays = date.getDate() - day + (day && 1 || -6);
+      date.setDate(diffDays);
+      date.setUTCMilliseconds(0);
+      date.setUTCSeconds(0);
+      date.setUTCMinutes(0);
+      date.setUTCHours(0);
+      return date.getTime();
+    },
+    reportSentThisWeek() {
+      return this.reportSentDate && this.reportSentDate > this.uemCurrentWeekStartPeriod;
+    },
+    alertType() {
+      if (this.reportTransactionSent) {
+        return 'success';
+      } else if (this.reportTransactionError) {
+        return 'warning';
+      } else {
+        return 'info';
+      }
+    },
   },
   watch: {
     connected() {
-      console.warn('connected', this.periodId, this.connected);
       if (this.periodId && this.connected) {
         this.getReport();
       }
     },
-    periodId() {
-      console.warn('periodId', this.periodId, this.connected);
+    rewardReport(newVal, oldVal) {
       if (this.periodId && this.connected) {
         this.getReport();
+      } else if (newVal && oldVal) {
+        this.report = null;
       }
     },
   },
   created() {
     this.getHub();
+    document.addEventListener('deed.tenant.report.sent', this.refreshReportFromTriggeredEvent);
+    document.addEventListener('deed.tenant.report.sending', this.refreshReportFromTriggeredEvent);
+    document.addEventListener('deed.tenant.report.error', this.refreshReportFromTriggeredEvent);
+  },
+  beforeDestroy() {
+    document.removeEventListener('deed.tenant.report.sent', this.refreshReportFromTriggeredEvent);
+    document.removeEventListener('deed.tenant.report.sending', this.refreshReportFromTriggeredEvent);
+    document.removeEventListener('deed.tenant.report.error', this.refreshReportFromTriggeredEvent);
   },
   methods: {
     resendReport() {
       this.sending = true;
       return this.$hubReportService.sendReport(this.periodId)
-        .then(() => this.$hubReportService.getReport(this.periodId, true))
+        .then(() => {
+          // refresh report async
+          this.getReport();
+        })
         .finally(() => this.sending = false);
+    },
+    refreshReportFromTriggeredEvent(event) {
+      if (event?.detail?.long === this.periodId) {
+        this.getReport();
+      }
     },
     getReport() {
       this.loading = true;

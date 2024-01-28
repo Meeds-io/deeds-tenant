@@ -33,15 +33,15 @@ import org.exoplatform.wallet.reward.service.RewardReportService;
 @Component
 public class HubReportStorage {
 
-  private static final Context WOM_CONTEXT                         = Context.GLOBAL.id("WoM");
+  private static final Context UEM_CONTEXT                         = Context.GLOBAL.id("UEM");
 
-  private static final String  REWARD_REPORT_ID                    = "RewardReportId";
+  private static final String  REWARD_REPORT_ID                    = "UEMReportId";
 
-  private static final String  REWARD_PERIOD_ID                    = "RewardPeriodId";
+  private static final String  REWARD_PERIOD_ID                    = "UEMPeriodId";
 
-  private static final String  REWARD_REPORT_STATUS                = "RewardReportStatus";
+  private static final String  REWARD_REPORT_STATUS                = "UEMReportStatus";
 
-  private static final String  REWARD_REPORT_SENT_DATE             = "RewardReportSentDate";
+  private static final String  REWARD_REPORT_SENT_DATE             = "UEMReportSentDate";
 
   private static final Scope   REWARD_REPORT_STATUS_APPLICATION    = Scope.APPLICATION.id(REWARD_REPORT_STATUS);
 
@@ -63,7 +63,7 @@ public class HubReportStorage {
   }
 
   public void saveStatus(long periodId, String status) {
-    settingService.set(WOM_CONTEXT,
+    settingService.set(UEM_CONTEXT,
                        REWARD_REPORT_STATUS_APPLICATION,
                        String.valueOf(periodId),
                        SettingValue.create(status));
@@ -75,11 +75,11 @@ public class HubReportStorage {
   }
 
   public void saveReportPeriodId(long periodId, long reportId) {
-    settingService.set(WOM_CONTEXT,
+    settingService.set(UEM_CONTEXT,
                        REWARD_REPORT_ID_APPLICATION,
                        String.valueOf(periodId),
                        SettingValue.create(String.valueOf(reportId)));
-    settingService.set(WOM_CONTEXT,
+    settingService.set(UEM_CONTEXT,
                        REWARD_PERIOD_ID_APPLICATION,
                        String.valueOf(reportId),
                        SettingValue.create(String.valueOf(periodId)));
@@ -87,7 +87,7 @@ public class HubReportStorage {
 
   public void saveSentDate(RewardPeriod rewardPeriod, Instant sentDate) {
     long periodId = getPeriodKey(rewardPeriod);
-    settingService.set(WOM_CONTEXT,
+    settingService.set(UEM_CONTEXT,
                        REWARD_REPORT_SENT_DATE_APPLICATION,
                        String.valueOf(periodId),
                        SettingValue.create(String.valueOf(sentDate.toEpochMilli())));
@@ -95,7 +95,7 @@ public class HubReportStorage {
 
   public String getStatus(RewardPeriod rewardPeriod) {
     long periodId = getPeriodKey(rewardPeriod);
-    SettingValue<?> statusValue = settingService.get(WOM_CONTEXT,
+    SettingValue<?> statusValue = settingService.get(UEM_CONTEXT,
                                                      REWARD_REPORT_STATUS_APPLICATION,
                                                      String.valueOf(periodId));
     return statusValue == null || statusValue.getValue() == null ? null : statusValue.getValue().toString();
@@ -107,14 +107,14 @@ public class HubReportStorage {
   }
 
   public long getReportId(long periodId) {
-    SettingValue<?> settingValue = settingService.get(WOM_CONTEXT,
+    SettingValue<?> settingValue = settingService.get(UEM_CONTEXT,
                                                       REWARD_REPORT_ID_APPLICATION,
                                                       String.valueOf(periodId));
     return settingValue == null || settingValue.getValue() == null ? 0 : Long.parseLong(settingValue.getValue().toString());
   }
 
   public long getPeriodId(long reportId) {
-    SettingValue<?> settingValue = settingService.get(WOM_CONTEXT,
+    SettingValue<?> settingValue = settingService.get(UEM_CONTEXT,
                                                       REWARD_PERIOD_ID_APPLICATION,
                                                       String.valueOf(reportId));
     return settingValue == null || settingValue.getValue() == null ? 0 : Long.parseLong(settingValue.getValue().toString());
@@ -126,7 +126,7 @@ public class HubReportStorage {
   }
 
   public Instant getSentDate(long periodId) {
-    SettingValue<?> settingValue = settingService.get(WOM_CONTEXT,
+    SettingValue<?> settingValue = settingService.get(UEM_CONTEXT,
                                                       REWARD_REPORT_SENT_DATE_APPLICATION,
                                                       String.valueOf(periodId));
     String sentDateString = settingValue == null || settingValue.getValue() == null ? null : settingValue.getValue().toString();
