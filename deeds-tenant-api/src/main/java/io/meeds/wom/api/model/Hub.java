@@ -76,9 +76,6 @@ public class Hub implements Cloneable {
   private String              deedManagerAddress;
 
   @Getter
-  private String              earnerAddress;
-
-  @Getter
   @Setter
   private Instant             createdDate;
 
@@ -137,7 +134,6 @@ public class Hub implements Cloneable {
              String hubOwnerAddress,
              String deedOwnerAddress,
              String deedManagerAddress,
-             String earnerAddress,
              Instant createdDate,
              Instant untilDate,
              Instant joinDate,
@@ -169,7 +165,6 @@ public class Hub implements Cloneable {
     this.setHubOwnerAddress(hubOwnerAddress);
     this.setDeedOwnerAddress(deedOwnerAddress);
     this.setDeedManagerAddress(deedManagerAddress);
-    this.setEarnerAddress(earnerAddress);
   }
 
   public void setAddress(String address) {
@@ -188,10 +183,6 @@ public class Hub implements Cloneable {
     this.deedManagerAddress = StringUtils.lowerCase(deedManagerAddress);
   }
 
-  public void setEarnerAddress(String earnerAddress) {
-    this.earnerAddress = StringUtils.lowerCase(earnerAddress);
-  }
-
   @Override
   public Hub clone() { // NOSONAR
     return new Hub(deedId,
@@ -205,7 +196,6 @@ public class Hub implements Cloneable {
                    hubOwnerAddress,
                    deedOwnerAddress,
                    deedManagerAddress,
-                   earnerAddress,
                    createdDate,
                    untilDate,
                    joinDate,

@@ -41,16 +41,11 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.services.resources.LocaleConfigService;
-import org.exoplatform.wallet.model.reward.RewardPeriodType;
-import org.exoplatform.wallet.model.reward.RewardSettings;
-import org.exoplatform.wallet.reward.service.RewardSettingsService;
-import org.exoplatform.wallet.service.WalletAccountService;
 import org.exoplatform.wiki.model.Page;
 
 import io.meeds.notes.service.NotePageViewService;
 import io.meeds.social.cms.model.CMSSetting;
 import io.meeds.social.cms.service.CMSService;
-import io.meeds.tenant.hub.model.HubConfiguration;
 import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubIdentityStorage;
@@ -78,12 +73,6 @@ public class HubService {
 
   @Autowired
   private OrganizationService   organizationService;
-
-  @Autowired
-  private RewardSettingsService rewardSettingsService;
-
-  @Autowired
-  private WalletAccountService  walletAccountService;
 
   @Autowired
   private HubIdentityStorage    hubIdentityStorage;
@@ -128,7 +117,9 @@ public class HubService {
   }
 
   public HubTenant getHub(boolean forceRefresh) {
-    return hubIdentityStorage.getHub(forceRefresh);
+    HubTenant hub = hubIdentityStorage.getHub(forceRefresh);
+    hub.setUsersCount(computeUsersCount());
+    return hub;
   }
 
   public long getDeedId() {
@@ -148,7 +139,7 @@ public class HubService {
   }
 
   public Instant getHubJoinDate() {
-    return isConnected() ? getHub().getCreatedDate() : null;
+    return isConnected() ? getHub().getJoinDate() : null;
   }
 
   public boolean isDeedManager(String address) {
@@ -165,31 +156,14 @@ public class HubService {
     }
   }
 
-  public Hub getHub(long nftId) throws WomException {
-    return womServiceClient.getHub(nftId);
-  }
-
   public String generateWomToken() throws WomException {
     return womServiceClient.generateToken();
-  }
-
-  public HubConfiguration getConfiguration() {
-    HubConfiguration hubConfiguration = new HubConfiguration();
-    hubConfiguration.setAdminWallet(walletAccountService.getAdminWallet().getAddress());
-    hubConfiguration.setHubAddress(getHubAddress());
-    hubConfiguration.setUsersCount(computeUsersCount());
-    hubConfiguration.setRewardsPeriodType(getRewardsPeriodType().name());
-    hubConfiguration.setWomServerUrl(womServiceClient.getWomUrl());
-    return hubConfiguration;
   }
 
   public WomConnectionResponse connectToWoM(WomConnectionRequest connectionRequest) throws WomException { // NOSONAR
     try {
       String address = hubWalletStorage.getOrCreateHubAddress();
       connectionRequest.setAddress(address);
-      if (StringUtils.isBlank(connectionRequest.getEarnerAddress())) {
-        connectionRequest.setEarnerAddress(walletAccountService.getAdminWallet().getAddress());
-      }
       connectionRequest.setUsersCount(computeUsersCount());
       connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
       setHubCardProperties(connectionRequest);
@@ -290,11 +264,6 @@ public class HubService {
     System.arraycopy(signatureData.getS(), 0, retval, 32, 32);
     System.arraycopy(signatureData.getV(), 0, retval, 64, 1);
     return Numeric.toHexString(retval);
-  }
-
-  private RewardPeriodType getRewardsPeriodType() {
-    RewardSettings settings = rewardSettingsService.getSettings();
-    return settings.getPeriodType();
   }
 
   private void setHubCardProperties(Hub hub) {

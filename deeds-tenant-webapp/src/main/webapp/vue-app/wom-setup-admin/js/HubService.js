@@ -16,16 +16,9 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-export function getHub(nftId, forceRefresh) {
-  const formData = new FormData();
-  if (nftId) {
-    formData.append('nftId', nftId);
-  }
-  if (forceRefresh === true) {
-    formData.append('forceRefresh', true);
-  }
-  const params = new URLSearchParams(formData).toString();
-  return fetch(`/deeds-tenant/rest/hub?${params}`, {
+export function getHub(forceRefresh) {
+  const params = forceRefresh && '?forceRefresh=true' || '';
+  return fetch(`/deeds-tenant/rest/hub${params}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -78,19 +71,6 @@ export function generateToken() {
   }).then((resp) => {
     if (resp?.ok) {
       return resp.text();
-    } else {
-      return Vue.prototype.$tenantUtils.handleResponseError(resp);
-    }
-  });
-}
-
-export function getConfiguration() {
-  return fetch('/deeds-tenant/rest/hub/configuration', {
-    method: 'GET',
-    credentials: 'include',
-  }).then((resp) => {
-    if (resp?.ok) {
-      return resp.json();
     } else {
       return Vue.prototype.$tenantUtils.handleResponseError(resp);
     }

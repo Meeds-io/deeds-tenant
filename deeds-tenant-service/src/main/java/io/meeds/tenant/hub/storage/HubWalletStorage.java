@@ -56,7 +56,7 @@ import org.exoplatform.wallet.utils.WalletUtils;
 import org.exoplatform.web.security.codec.CodecInitializer;
 import org.exoplatform.web.security.security.TokenServiceInitializationException;
 
-import io.meeds.tenant.hub.model.HubReport;
+import io.meeds.tenant.hub.model.BlockchainHubReport;
 import io.meeds.tenant.hub.service.PolygonContractGasProvider;
 import io.meeds.tenant.hub.utils.ContractUtils.ReportSentEventResponse;
 import io.meeds.wom.api.constant.WomException;
@@ -107,16 +107,18 @@ public class HubWalletStorage {
   }
 
   public long sendReportTransaction(HubReportPayload report, String uemAddress, long uemNetworkId) throws WomException {
-    HubReport blockchainReport = new HubReport(report.getHubAddress(),
-                                               BigInteger.valueOf(report.getUsersCount()),
-                                               BigInteger.valueOf(report.getRecipientsCount()),
-                                               BigInteger.valueOf(report.getParticipantsCount()),
-                                               BigInteger.valueOf(report.getAchievementsCount()),
-                                               WalletUtils.convertToDecimals(report.getHubRewardAmount(), 18),
-                                               report.getRewardTokenAddress(),
-                                               BigInteger.valueOf(report.getRewardTokenNetworkId()),
-                                               BigInteger.valueOf(report.getFromDate().getEpochSecond()),
-                                               BigInteger.valueOf(report.getToDate().getEpochSecond()));
+    BlockchainHubReport blockchainReport = new BlockchainHubReport(report.getHubAddress(),
+                                                                   BigInteger.valueOf(report.getUsersCount()),
+                                                                   BigInteger.valueOf(report.getRecipientsCount()),
+                                                                   BigInteger.valueOf(report.getParticipantsCount()),
+                                                                   BigInteger.valueOf(report.getAchievementsCount()),
+                                                                   WalletUtils.convertToDecimals(report.getHubRewardAmount(),
+                                                                                                 getHubContractDecimals()),
+                                                                   report.getRewardTokenAddress(),
+                                                                   BigInteger.valueOf(report.getRewardTokenNetworkId()),
+                                                                   BigInteger.valueOf(report.getFromDate().getEpochSecond()),
+                                                                   BigInteger.valueOf(report.getToDate().getEpochSecond()));
+
     @SuppressWarnings("rawtypes")
     Function function = new Function(FUNC_ADDREPORT,
                                      Arrays.<Type> asList(blockchainReport,
@@ -124,6 +126,7 @@ public class HubWalletStorage {
                                                           new org.web3j.abi.datatypes.generated.Uint256(report.getDeedId())),
                                      Arrays.<TypeReference<?>> asList(new TypeReference<Uint256>() {
                                      }));
+
     RemoteFunctionCall<TransactionReceipt> remoteCall = executeRemoteCallTransaction(getTransactionManager(),
                                                                                      polygonContractGasProvider,
                                                                                      getTransactionReceiptProcessor(),
@@ -223,7 +226,19 @@ public class HubWalletStorage {
     if (matcher.find()) {
       return matcher.group();
     }
+    return getWomContractMessage(message);
+  }
+
+  private String getWomContractMessage(String message) {
+    Matcher matcher = Pattern.compile("wom\\.[a-zA-Z0-9]+").matcher(message);
+    if (matcher.find()) {
+      return matcher.group();
+    }
     return null;
+  }
+
+  private int getHubContractDecimals() {
+    return WalletUtils.getSettings().getContractDetail().getDecimals();
   }
 
   private TransactionManager getTransactionManager() throws WomException {

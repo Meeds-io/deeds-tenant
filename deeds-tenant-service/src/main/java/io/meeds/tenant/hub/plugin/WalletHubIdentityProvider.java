@@ -54,8 +54,6 @@ public class WalletHubIdentityProvider extends IdentityProvider<String> {
 
   public static final String COLOR                    = "HUB_COLOR";
 
-  public static final String EARNER_ADDRESS           = "HUB_EARNER_ADDRESS";
-
   public static final String HUB_OWNER_ADDRESS        = "HUB_OWNER_ADDRESS";
 
   public static final String REWARD_PERIOD_TYPE       = "HUB_PERIOD_TYPE";

@@ -34,7 +34,6 @@ export function init() {
         data: () => ({
           cities: ['TANIT', 'RESHEF', 'ASHTARTE', 'MELQART', 'ESHMUN', 'KUSHOR', 'HAMMON'],
           cardTypes: ['COMMON', 'UNCOMMON', 'RARE', 'LEGENDARY'],
-          configuration: null,
           hub: null,
         }),
         computed: {
@@ -70,8 +69,6 @@ export function init() {
         },
         created() {
           this.$root.$on('wom-hub-changed', hub => this.hub = hub);
-          this.$hubService.getConfiguration()
-            .then(configuration => this.configuration = configuration);
         },
         template: `<wom-setup-admin id="${appId}" />`,
         i18n,
