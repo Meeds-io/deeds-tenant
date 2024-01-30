@@ -28,12 +28,12 @@ import org.springframework.hateoas.server.core.Relation;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
+@Data
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -41,72 +41,60 @@ import lombok.ToString;
 @Relation(collectionRelation = "reports", itemRelation = "report")
 public class HubReport extends HubReportPayload {
 
-  @Getter
-  @Setter
   private long    rewardId;
 
-  @Getter
-  @Setter
   private short   city;
 
-  @Getter
-  @Setter
   private short   cardType;
 
-  @Getter
-  @Setter
   private short   mintingPower;
 
-  @Getter
-  @Setter
   private long    maxUsers;
 
-  @Getter
   private String  deedManagerAddress;
 
-  @Getter
   private String  ownerAddress;
 
-  @Getter
-  @Setter
   private int     ownerMintingPercentage;
 
-  @Getter
-  @Setter
   private double  fixedRewardIndex;
 
-  @Getter
-  @Setter
   private double  ownerFixedIndex;
 
-  @Getter
-  @Setter
   private double  tenantFixedIndex;
 
-  @Getter
-  @Setter
   private boolean fraud;
 
-  @Getter
-  @Setter
-  private double  uemRewardIndex;
-
-  @Getter
-  @Setter
-  private double  uemRewardAmount;
-
-  @Getter
-  @Setter
   private double  lastPeriodUemRewardAmount;
 
+  /**
+   * UEM Computed value
+   */
+  private double  uemRewardAmount;
+
+  private Instant updatedDate;
+
+  public HubReport(HubReportPayload hubReportPayload) {
+    super(hubReportPayload.getReportId(),
+          StringUtils.lowerCase(hubReportPayload.getHubAddress()),
+          hubReportPayload.getDeedId(),
+          hubReportPayload.getFromDate(),
+          hubReportPayload.getToDate(),
+          hubReportPayload.getSentDate(),
+          hubReportPayload.getPeriodType(),
+          hubReportPayload.getUsersCount(),
+          hubReportPayload.getParticipantsCount(),
+          hubReportPayload.getRecipientsCount(),
+          hubReportPayload.getAchievementsCount(),
+          StringUtils.lowerCase(hubReportPayload.getRewardTokenAddress()),
+          hubReportPayload.getRewardTokenNetworkId(),
+          hubReportPayload.getHubRewardAmount(),
+          lowerCase(hubReportPayload.getTransactions()));
+  }
+
   public HubReport(long reportId, // NOSONAR
-                   long rewardId,
                    String hubAddress,
                    long deedId,
-                   short city,
-                   short cardType,
-                   short mintingPower,
-                   long maxUsers,
                    Instant fromDate,
                    Instant toDate,
                    Instant sentDate,
@@ -119,13 +107,23 @@ public class HubReport extends HubReportPayload {
                    long rewardTokenNetworkId,
                    double hubRewardAmount,
                    SortedSet<String> transactions,
+                   long rewardId,
+                   short city,
+                   short cardType,
+                   short mintingPower,
+                   long maxUsers,
                    String deedManagerAddress,
                    String ownerAddress,
                    int ownerMintingPercentage,
-                   double uemRewardIndex,
-                   double uemRewardAmount) {
+                   double fixedRewardIndex,
+                   double ownerFixedIndex,
+                   double tenantFixedIndex,
+                   boolean fraud,
+                   double lastPeriodUemRewardAmount,
+                   double uemRewardAmount,
+                   Instant updatedDate) {
     super(reportId,
-          StringUtils.lowerCase(hubAddress),
+          hubAddress,
           deedId,
           fromDate,
           toDate,
@@ -135,28 +133,25 @@ public class HubReport extends HubReportPayload {
           participantsCount,
           recipientsCount,
           achievementsCount,
-          StringUtils.lowerCase(rewardTokenAddress),
+          rewardTokenAddress,
           rewardTokenNetworkId,
           hubRewardAmount,
-          lowerCase(transactions));
+          transactions);
     this.rewardId = rewardId;
     this.city = city;
     this.cardType = cardType;
     this.mintingPower = mintingPower;
     this.maxUsers = maxUsers;
-    this.deedManagerAddress = StringUtils.lowerCase(deedManagerAddress);
-    this.ownerAddress = StringUtils.lowerCase(ownerAddress);
+    this.deedManagerAddress = deedManagerAddress;
+    this.ownerAddress = ownerAddress;
     this.ownerMintingPercentage = ownerMintingPercentage;
-    this.uemRewardIndex = uemRewardIndex;
+    this.fixedRewardIndex = fixedRewardIndex;
+    this.ownerFixedIndex = ownerFixedIndex;
+    this.tenantFixedIndex = tenantFixedIndex;
+    this.fraud = fraud;
+    this.lastPeriodUemRewardAmount = lastPeriodUemRewardAmount;
     this.uemRewardAmount = uemRewardAmount;
-  }
-
-  public void setDeedManagerAddress(String deedManagerAddress) {
-    this.deedManagerAddress = StringUtils.lowerCase(deedManagerAddress);
-  }
-
-  public void setOwnerAddress(String ownerAddress) {
-    this.ownerAddress = StringUtils.lowerCase(ownerAddress);
+    this.updatedDate = updatedDate;
   }
 
   public double getEd() {
@@ -184,6 +179,10 @@ public class HubReport extends HubReportPayload {
                                 BigDecimal.valueOf(getRecipientsCount())
                                           .divide(BigDecimal.valueOf(getUsersCount()), MathContext.DECIMAL128)
                                           .doubleValue();
+  }
+
+  public double getMp() {
+    return mintingPower / 100d;
   }
 
 }

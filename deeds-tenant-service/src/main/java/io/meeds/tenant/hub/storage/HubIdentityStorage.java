@@ -17,7 +17,7 @@
  */
 package io.meeds.tenant.hub.storage;
 
-import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.ADDRESS;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.*;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.COLOR;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.CREATED_JOIN_DATE;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_CITY;
@@ -125,6 +125,12 @@ public class HubIdentityStorage {
     identityManager.updateProfile(hubProfile);
   }
 
+  public void saveHubAvatarUpdateTime(long avatarUpdateTime) {
+    Profile hubProfile = getHubProfile();
+    hubProfile.setProperty(HUB_AVATAR_UPDATE, String.valueOf(avatarUpdateTime));
+    identityManager.updateProfile(hubProfile);
+  }
+
   public void refreshHubIdentity() {
     // Force Retrieve Hub profile again
     retrievedFromWom = false;
@@ -212,6 +218,7 @@ public class HubIdentityStorage {
     Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
     boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), true)
                       && (untilDate == null || untilDate.isAfter(Instant.now()));
+    long avatarUpdateTime = parseLong((String) hubProfile.getProperty(HUB_AVATAR_UPDATE));
 
     return new HubTenant(parseLong(deedId),
                          parseShort(city),
@@ -238,7 +245,8 @@ public class HubIdentityStorage {
                          walletTokenAdminService.getAdminWalletAddress(),
                          womAddress,
                          uemAddress,
-                         womNetworkId);
+                         womNetworkId,
+                         avatarUpdateTime);
   }
 
   private void clearHubProperties(Profile hubProfile) {
@@ -255,6 +263,7 @@ public class HubIdentityStorage {
       hubProfile.removeProperty(MANAGER_CLAIMABLE_AMOUNT);
       hubProfile.removeProperty(USERS_COUNT);
       hubProfile.removeProperty(HUB_ENABLED);
+      hubProfile.removeProperty(HUB_AVATAR_UPDATE);
       identityManager.updateProfile(hubProfile);
     }
   }

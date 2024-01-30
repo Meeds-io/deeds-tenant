@@ -51,8 +51,8 @@ export default {
       this.$refs.drawer.open();
     },
     refreshAfterClaim() {
-      document.dispatchEventListener(new CustomEvent('wallet-admin-refresh'));
       this.refresh(true);
+      document.dispatchEvent(new CustomEvent('wallet-admin-refresh'));
     },
     refresh(forceRefresh) {
       this.loading = true;
