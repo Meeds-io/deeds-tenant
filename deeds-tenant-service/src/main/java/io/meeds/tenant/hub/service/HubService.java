@@ -59,46 +59,44 @@ import io.meeds.wom.api.model.WomDisconnectionRequest;
 @Service
 public class HubService {
 
-  public static final int       MAX_START_TENTATIVES            = 5;
+  public static final int     MAX_START_TENTATIVES            = 5;
 
-  public static final String    MANAGER_DEFAULT_ROLES_PARAM     = "managerDefaultRoles";
+  public static final String  MANAGER_DEFAULT_ROLES_PARAM     = "managerDefaultRoles";
 
-  public static final String    PUBLIC_SITE_NAME                = "public";
+  public static final String  PUBLIC_SITE_NAME                = "public";
 
-  public static final String    PUBLIC_ACCESS_PERMISSION        = "Everyone";
+  public static final String  PUBLIC_ACCESS_PERMISSION        = "Everyone";
 
-  public static final String    PUBLIC_HUB_SUMMARY_SETTING_NAME = "publicHubSummary";
+  public static final String  PUBLIC_HUB_SUMMARY_SETTING_NAME = "publicHubSummary";
 
-  private static final Log      LOG                             = ExoLogger.getLogger(HubService.class);
-
-  @Autowired
-  private OrganizationService   organizationService;
+  private static final Log    LOG                             = ExoLogger.getLogger(HubService.class);
 
   @Autowired
-  private HubIdentityStorage    hubIdentityStorage;
+  private OrganizationService organizationService;
 
   @Autowired
-  private HubWalletStorage      hubWalletStorage;
+  private HubIdentityStorage  hubIdentityStorage;
 
   @Autowired
-  private BrandingService       brandingService;
+  private HubWalletStorage    hubWalletStorage;
 
   @Autowired
-  private WomClientService      womServiceClient;
+  private BrandingService     brandingService;
 
   @Autowired
-  private CMSService            cmsService;
+  private WomClientService    womServiceClient;
 
   @Autowired
-  private LocaleConfigService   localeConfigService;
+  private CMSService          cmsService;
 
   @Autowired
-  private LayoutService         layoutService;
+  private LocaleConfigService localeConfigService;
 
   @Autowired
-  private NotePageViewService   notePageViewService;
+  private LayoutService       layoutService;
 
-  private long                  synchronizeLogoUpdateDate;
+  @Autowired
+  private NotePageViewService notePageViewService;
 
   public String getHubAddress() {
     return hubIdentityStorage.getHubAddress();
@@ -117,9 +115,7 @@ public class HubService {
   }
 
   public HubTenant getHub(boolean forceRefresh) {
-    HubTenant hub = hubIdentityStorage.getHub(forceRefresh);
-    hub.setUsersCount(computeUsersCount());
-    return hub;
+    return hubIdentityStorage.getHub(forceRefresh);
   }
 
   public long getDeedId() {
@@ -197,26 +193,23 @@ public class HubService {
     if (!isConnected()) {
       return;
     }
-    LOG.info("Updating Hub Card");
 
     String token = womServiceClient.generateToken();
     String hubSignedMessage = signHubMessage(token);
 
     try {
-      Hub hub = getHub();
-      Hub original = hub.clone();
+      HubTenant hub = getHub();
+      HubTenant original = hub.clone();
       setHubCardProperties(hub);
       if (!original.equals(hub)) {
-        LOG.debug("Updating Hub Card on WoM Server");
+        LOG.info("Updating Hub Card on WoM Server");
         womServiceClient.saveHub(hub, hubSignedMessage, token);
       }
       long logoUpdateDate = getLogoUpdateDate();
-      if (synchronizeLogoUpdateDate == 0) {
-        synchronizeLogoUpdateDate = logoUpdateDate;
-      } else if (synchronizeLogoUpdateDate != logoUpdateDate) {
-        LOG.debug("Updating Hub Card Avatar on WoM Server");
+      if (hub.getAvatarUpdateTime() == 0 || hub.getAvatarUpdateTime() < logoUpdateDate) {
+        LOG.info("Updating Hub Card Avatar on WoM Server");
         saveHubAvatar();
-        synchronizeLogoUpdateDate = logoUpdateDate;
+        hubIdentityStorage.saveHubAvatarUpdateTime(logoUpdateDate == 0 ? System.currentTimeMillis() : logoUpdateDate);
       }
     } finally {
       hubIdentityStorage.refreshHubIdentity();
@@ -299,7 +292,7 @@ public class HubService {
 
   private long getLogoUpdateDate() {
     Logo logo = brandingService.getLogo();
-    return logo == null ? synchronizeLogoUpdateDate : logo.getUpdatedDate();
+    return logo == null ? 0 : logo.getUpdatedDate();
   }
 
   private boolean isAfterNow(Instant untilDate) {
