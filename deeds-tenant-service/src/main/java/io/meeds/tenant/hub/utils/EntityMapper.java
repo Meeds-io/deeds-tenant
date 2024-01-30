@@ -34,9 +34,8 @@ import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.model.reward.WalletReward;
 import org.exoplatform.wallet.model.transaction.TransactionDetail;
 
+import io.meeds.tenant.hub.constant.HubReportStatusType;
 import io.meeds.tenant.hub.model.HubReportLocalStatus;
-import io.meeds.wom.api.constant.HubReportStatusType;
-import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportPayload;
 
@@ -90,26 +89,15 @@ public class EntityMapper {
   }
 
   public static HubReportLocalStatus toHubLocalReport(HubReportPayload reportData, // NOSONAR
-                                                      Hub hub,
                                                       long periodId,
                                                       long reportId,
                                                       boolean canRefresh,
                                                       boolean canSend,
                                                       HubReportStatusType statusType,
                                                       String errorMessageKey) {
-    return new HubReportLocalStatus(periodId,
-                                    canRefresh,
-                                    canSend,
-                                    statusType,
-                                    errorMessageKey,
-                                    reportId,
-                                    0l,
+    return new HubReportLocalStatus(reportId,
                                     reportData.getHubAddress(),
                                     reportData.getDeedId(),
-                                    (short) 0,
-                                    (short) 0,
-                                    (short) 0,
-                                    0l,
                                     reportData.getFromDate(),
                                     reportData.getToDate(),
                                     reportData.getSentDate(),
@@ -121,13 +109,12 @@ public class EntityMapper {
                                     reportData.getRewardTokenAddress(),
                                     reportData.getRewardTokenNetworkId(),
                                     reportData.getHubRewardAmount(),
-                                    lowerCase(reportData.getTransactions()),
-                                    hub == null ? null : StringUtils.lowerCase(hub.getDeedManagerAddress()),
-                                    hub == null ? null : StringUtils.lowerCase(hub.getDeedOwnerAddress()),
-                                    0,
-                                    // Computed in WoM Server
-                                    0d,
-                                    0d);
+                                    reportData.getTransactions(),
+                                    periodId,
+                                    canRefresh,
+                                    canSend,
+                                    statusType,
+                                    errorMessageKey);
   }
 
   public static HubReportLocalStatus toHubLocalReport(HubReport report,
@@ -136,19 +123,9 @@ public class EntityMapper {
                                                       boolean canSend,
                                                       HubReportStatusType status,
                                                       String error) {
-    return new HubReportLocalStatus(id,
-                                    canRefresh,
-                                    canSend,
-                                    status,
-                                    error,
-                                    report.getReportId(),
-                                    report.getRewardId(),
+    return new HubReportLocalStatus(report.getReportId(),
                                     report.getHubAddress(),
                                     report.getDeedId(),
-                                    report.getCity(),
-                                    report.getCardType(),
-                                    report.getMintingPower(),
-                                    report.getMaxUsers(),
                                     report.getFromDate(),
                                     report.getToDate(),
                                     report.getSentDate(),
@@ -160,13 +137,12 @@ public class EntityMapper {
                                     report.getRewardTokenAddress(),
                                     report.getRewardTokenNetworkId(),
                                     report.getHubRewardAmount(),
-                                    lowerCase(report.getTransactions()),
-                                    StringUtils.lowerCase(report.getDeedManagerAddress()),
-                                    StringUtils.lowerCase(report.getOwnerAddress()),
-                                    report.getOwnerMintingPercentage(),
-                                    // Computed in WoM Server
-                                    report.getUemRewardIndex(),
-                                    report.getUemRewardAmount());
+                                    report.getTransactions(),
+                                    id,
+                                    canRefresh,
+                                    canSend,
+                                    status,
+                                    error);
   }
 
   public static SortedSet<String> lowerCase(SortedSet<String> hashes) {

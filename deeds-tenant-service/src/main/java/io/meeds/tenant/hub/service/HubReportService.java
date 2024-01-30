@@ -44,15 +44,14 @@ import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
 import io.meeds.gamification.model.filter.RealizationFilter;
 import io.meeds.gamification.service.RealizationService;
+import io.meeds.tenant.hub.constant.HubReportStatusType;
 import io.meeds.tenant.hub.model.HubReportLocalStatus;
 import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubReportStorage;
 import io.meeds.tenant.hub.storage.HubWalletStorage;
-import io.meeds.wom.api.constant.HubReportStatusType;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.constant.WomParsingException;
-import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportPayload;
 import io.meeds.wom.api.model.HubReportVerifiableData;
@@ -311,12 +310,11 @@ public class HubReportService {
     HubReportPayload reportData = toReport(rewardReport);
     long reportId = hubReportStorage.getReportId(rewardPeriod);
 
-    Hub hub = hubService.getHub();
     long periodId = hubReportStorage.getPeriodKey(rewardPeriod);
     boolean canRefresh = statusType.isCanRefresh() && reportId == 0;
     boolean canSend = statusType.isCanSend();
+
     HubReportLocalStatus reportLocalStatus = toHubLocalReport(reportData,
-                                                              hub,
                                                               periodId,
                                                               reportId,
                                                               canRefresh,

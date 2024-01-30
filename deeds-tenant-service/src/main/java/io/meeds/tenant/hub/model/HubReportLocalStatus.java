@@ -23,8 +23,8 @@ import java.util.SortedSet;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import io.meeds.wom.api.constant.HubReportStatusType;
-import io.meeds.wom.api.model.HubReport;
+import io.meeds.tenant.hub.constant.HubReportStatusType;
+import io.meeds.wom.api.model.HubReportPayload;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,7 +34,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonInclude(value = Include.NON_EMPTY)
-public class HubReportLocalStatus extends HubReport {
+public class HubReportLocalStatus extends HubReportPayload {
 
   private long                periodId;
 
@@ -46,19 +46,9 @@ public class HubReportLocalStatus extends HubReport {
 
   private String              error;
 
-  public HubReportLocalStatus(long periodId, // NOSONAR
-                              boolean canRefresh,
-                              boolean canSend,
-                              HubReportStatusType status,
-                              String error,
-                              long reportId,
-                              long rewardId,
+  public HubReportLocalStatus(long reportId, // NOSONAR
                               String hubAddress,
                               long deedId,
-                              short city,
-                              short cardType,
-                              short mintingPower,
-                              long maxUsers,
                               Instant fromDate,
                               Instant toDate,
                               Instant sentDate,
@@ -71,19 +61,14 @@ public class HubReportLocalStatus extends HubReport {
                               long rewardTokenNetworkId,
                               double hubRewardAmount,
                               SortedSet<String> transactions,
-                              String deedManagerAddress,
-                              String ownerAddress,
-                              int ownerMintingPercentage,
-                              double uemRewardIndex,
-                              double uemRewardAmount) {
+                              long periodId,
+                              boolean canRefresh,
+                              boolean canSend,
+                              HubReportStatusType status,
+                              String error) {
     super(reportId,
-          rewardId,
           hubAddress,
           deedId,
-          city,
-          cardType,
-          mintingPower,
-          maxUsers,
           fromDate,
           toDate,
           sentDate,
@@ -95,13 +80,7 @@ public class HubReportLocalStatus extends HubReport {
           rewardTokenAddress,
           rewardTokenNetworkId,
           hubRewardAmount,
-          transactions,
-          deedManagerAddress,
-          ownerAddress,
-          ownerMintingPercentage,
-          uemRewardIndex,
-          uemRewardAmount);
-
+          transactions);
     this.periodId = periodId;
     this.canRefresh = canRefresh;
     this.canSend = canSend;
