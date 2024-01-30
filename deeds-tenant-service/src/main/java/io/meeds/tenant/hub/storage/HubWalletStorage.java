@@ -25,6 +25,7 @@ import static org.exoplatform.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,7 +36,6 @@ import org.springframework.stereotype.Component;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
-import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
@@ -121,11 +121,8 @@ public class HubWalletStorage {
 
     @SuppressWarnings("rawtypes")
     Function function = new Function(FUNC_ADDREPORT,
-                                     Arrays.<Type> asList(blockchainReport,
-                                                          new org.web3j.abi.datatypes.Address(160, report.getHubAddress()),
-                                                          new org.web3j.abi.datatypes.generated.Uint256(report.getDeedId())),
-                                     Arrays.<TypeReference<?>> asList(new TypeReference<Uint256>() {
-                                     }));
+                                     Arrays.<Type> asList(blockchainReport),
+                                     Collections.<TypeReference<?>> emptyList());
 
     RemoteFunctionCall<TransactionReceipt> remoteCall = executeRemoteCallTransaction(getTransactionManager(),
                                                                                      polygonContractGasProvider,

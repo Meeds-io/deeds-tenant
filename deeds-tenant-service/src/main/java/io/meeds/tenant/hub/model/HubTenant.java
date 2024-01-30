@@ -46,6 +46,8 @@ public class HubTenant extends Hub {
 
   private long   networkId;
 
+  private long   avatarUpdateTime;
+
   public HubTenant(long deedId, // NOSONAR
                    short city,
                    short type,
@@ -71,7 +73,8 @@ public class HubTenant extends Hub {
                    String adminAddress,
                    String womAddress,
                    String uemAddress,
-                   long networkId) {
+                   long networkId,
+                   long avatarUpdateTime) {
     super(deedId,
           city,
           type,
@@ -98,6 +101,38 @@ public class HubTenant extends Hub {
     this.womAddress = womAddress;
     this.uemAddress = uemAddress;
     this.networkId = networkId;
+    this.avatarUpdateTime = avatarUpdateTime;
+  }
+
+  @Override
+  public HubTenant clone() { // NOSONAR
+    return new HubTenant(getDeedId(),
+                         getCity(),
+                         getType(),
+                         getAddress(),
+                         getName(),
+                         getDescription(),
+                         getUrl(),
+                         getColor(),
+                         getHubOwnerAddress(),
+                         getDeedOwnerAddress(),
+                         getDeedManagerAddress(),
+                         getCreatedDate(),
+                         getUntilDate(),
+                         getJoinDate(),
+                         getUpdatedDate(),
+                         getUsersCount(),
+                         getRewardsPeriodType(),
+                         getRewardsPerPeriod(),
+                         isConnected(),
+                         getOwnerClaimableAmount(),
+                         getManagerClaimableAmount(),
+                         womServerUrl,
+                         adminAddress,
+                         womAddress,
+                         uemAddress,
+                         networkId,
+                         avatarUpdateTime);
   }
 
 }

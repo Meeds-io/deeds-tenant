@@ -47,9 +47,6 @@
       <template v-else-if="!loading && periodWithoutRewards">
         {{ $t('uem.periodWithoutRewards') }}
       </template>
-      <template v-else-if="!loading && sendingWalletReward">
-        {{ $t('uem.sendingWalletRewards') }}
-      </template>
       <template v-else-if="!loading && reportTransactionSent">
         <span v-sanitized-html="reportSentLabel"></span>
       </template>
@@ -68,6 +65,9 @@
           @click="resendReport">
           {{ $t('uem.retry') }}
         </v-btn>
+      </template>
+      <template v-else-if="!loading && sendingWalletReward">
+        {{ $t('uem.sendingWalletRewards') }}
       </template>
       <template v-else-if="!loading && rewardNotSentYet">
         {{ $t('uem.rewardNotSentYet') }}
