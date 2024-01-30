@@ -182,17 +182,22 @@ export default {
       });
     },
     claimRewardsLabel1() {
-      return this.$t('uem.claimRewardsLabel1', {
+      return this.$t('uem.claimRewardsLabel.part1', {
         0: '<strong>',
         1: this.hubDeedId,
         2: '</strong>',
       });
     },
     claimRewardsLabel2() {
-      return this.$t('uem.claimRewardsLabel2', {
-        0: this.claimableAmountFormatted,
+      return this.$t('uem.claimRewardsLabel.part2', {
+        0: '<strong>',
+        1: this.claimableAmountFormatted,
+        2: '</strong>',
       });
     },
+  },
+  created() {
+    this.$root.$on('uem-claim-success', this.close);
   },
   methods: {
     open() {

@@ -33,15 +33,15 @@ import org.exoplatform.wallet.reward.service.RewardReportService;
 @Component
 public class HubReportStorage {
 
-  private static final Context UEM_CONTEXT                         = Context.GLOBAL.id("UEM");
+  private static final Context UEM_CONTEXT                         = Context.GLOBAL.id("HubUEM");
 
-  private static final String  REWARD_REPORT_ID                    = "UEMReportId";
+  private static final String  REWARD_REPORT_ID                    = "HubReportId";
 
-  private static final String  REWARD_PERIOD_ID                    = "UEMPeriodId";
+  private static final String  REWARD_PERIOD_ID                    = "HubPeriodId";
 
-  private static final String  REWARD_REPORT_STATUS                = "UEMReportStatus";
+  private static final String  REWARD_REPORT_STATUS                = "HubReportStatus";
 
-  private static final String  REWARD_REPORT_SENT_DATE             = "UEMReportSentDate";
+  private static final String  REWARD_REPORT_SENT_DATE             = "HubReportSentDate";
 
   private static final Scope   REWARD_REPORT_STATUS_APPLICATION    = Scope.APPLICATION.id(REWARD_REPORT_STATUS);
 

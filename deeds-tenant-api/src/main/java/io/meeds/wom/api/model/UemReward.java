@@ -20,10 +20,9 @@ package io.meeds.wom.api.model;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 import org.springframework.hateoas.server.core.Relation;
 
@@ -39,78 +38,72 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonInclude(value = Include.NON_EMPTY)
 @Relation(collectionRelation = "rewards", itemRelation = "reward")
-public class UEMReward {
+public class UemReward {
 
   /**
    * UEM Blockchain Id
    */
-  private long                    rewardId;
+  private long              rewardId;
 
   /**
    * UEM Blockchain configured amount for current period
    */
-  private double                  amount;
-
-  /**
-   * UEM Blockchain fromReport
-   */
-  private long                    fromReport;
-
-  /**
-   * UEM Blockchain toReport
-   */
-  private long                    toReport;
+  private double            amount;
 
   /**
    * UEM Blockchain computed fixed Global Index
    */
-  private double                  fixedGlobalIndex;
+  private double            fixedGlobalIndex;
 
   /**
    * UEM Period Start Date
    */
-  private Instant                 fromDate;
+  private Instant           fromDate;
 
   /**
    * UEM Period End Date
    */
-  private Instant                 toDate;
+  private Instant           toDate;
+
+  /**
+   * UEM Blockchain fromReport -> toReport
+   */
+  private List<Long>        reportIds;
+
+  private Set<String>       hubAddresses;
 
   /**
    * Report Id => UEM Reward amount
    */
-  private SortedMap<Long, Double> reportRewards;
-
-  private Set<String>             hubAddresses;
+  private Map<Long, Double> reportRewards;
 
   /**
    * Total internal hub achievements
    */
-  private long                    hubAchievementsCount;
+  private long              hubAchievementsCount;
+
+  /**
+   * Total internal hub achievements
+   */
+  private long              hubParticipantsCount;
 
   /**
    * Total internal hub rewards sent to hub users
    */
-  private double                  hubRewardsAmount;
-
-  public List<Long> getReportIds() {
-    List<Long> reportIds = new ArrayList<>();
-    for (long i = fromReport; i <= toReport; i++) {
-      reportIds.add(i);
-    }
-    return reportIds;
-  }
+  private double            hubRewardsAmount;
 
   public long getReportsCount() {
-    return fromReport == 0 ? 0 : (toReport - fromReport + 1);
+    return reportIds == null ? 0 : reportIds.size();
   }
 
   public double getEw() {
     long hubsCount = getReportsCount();
-    return hubsCount == 0 ? 0d :
-                          BigDecimal.valueOf(fixedGlobalIndex)
-                                    .divide(BigDecimal.valueOf(hubsCount), MathContext.DECIMAL128)
-                                    .doubleValue();
+    return hubsCount == 0 || hubParticipantsCount == 0 ? 1d :
+                                                       BigDecimal.valueOf(hubAchievementsCount)
+                                                                 .divide(BigDecimal.valueOf(hubParticipantsCount),
+                                                                         MathContext.DECIMAL128)
+                                                                 .divide(BigDecimal.valueOf(hubsCount), MathContext.DECIMAL128)
+                                                                 .doubleValue();
   }
 
 }
