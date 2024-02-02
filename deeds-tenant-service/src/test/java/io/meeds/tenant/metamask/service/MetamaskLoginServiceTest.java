@@ -97,13 +97,9 @@ public class MetamaskLoginServiceTest {
 
   @Test
   public void testDontSetRootPasswordOnStartup() {
-    metamaskLoginService.setSecureRootAccessWithMetamask(false);
-    try {
-      metamaskLoginService.init();
-      verifyNoInteractions(organizationService);
-    } finally {
-      metamaskLoginService.setSecureRootAccessWithMetamask(true);
-    }
+    metamaskLoginService.setAllowedRootWallets(Collections.emptyList());
+    metamaskLoginService.init();
+    verifyNoInteractions(organizationService);
   }
 
   @Test
@@ -116,6 +112,7 @@ public class MetamaskLoginServiceTest {
 
     mockSecureRandomService();
 
+    metamaskLoginService.setAllowedRootWallets(Collections.singletonList("0xAddress"));
     metamaskLoginService.init();
     verify(user, times(1)).setPassword("1-2-3");
     verify(userHandler, times(1)).saveUser(user, false);
@@ -164,12 +161,7 @@ public class MetamaskLoginServiceTest {
       metamaskLoginService.setAllowedRootWallets(Collections.emptyList());
     }
 
-    metamaskLoginService.setSecureRootAccessWithMetamask(false);
-    try {
-      assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
-    } finally {
-      metamaskLoginService.setSecureRootAccessWithMetamask(true);
-    }
+    assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
 
     User user = mock(User.class);
     whenFindUserByName(managerAddress).thenReturn(user);
