@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.picketlink.idm.api.SecureRandomProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,17 +76,13 @@ public class MetamaskLoginService {
   private HubService             hubService;
 
   @Setter
-  @Value("${meeds.login.metamask.secureRootAccessWithMetamask:true}")
-  private boolean                secureRootAccessWithMetamask;
-
-  @Setter
   @Value("#{'${meeds.login.metamask.allowedRootAccessWallets:}'.split(',')}")
   private List<String>           allowedRootWallets           = new ArrayList<>();
 
   @PostConstruct
   @ContainerTransactional
   public void init() {
-    if (this.secureRootAccessWithMetamask) {
+    if (CollectionUtils.isNotEmpty(this.allowedRootWallets)) {
       // Avoid allowing to change root password
       accountSetupService.setSkipSetup(true);
       // Generate a new random password for root user
@@ -128,8 +125,7 @@ public class MetamaskLoginService {
    *         allowed to access using root account
    */
   public boolean isSuperUser(String walletAddress) {
-    return secureRootAccessWithMetamask
-           && allowedRootWallets != null
+    return CollectionUtils.isNotEmpty(this.allowedRootWallets)
            && allowedRootWallets.stream().anyMatch(address -> StringUtils.equalsIgnoreCase(address, walletAddress));
   }
 
