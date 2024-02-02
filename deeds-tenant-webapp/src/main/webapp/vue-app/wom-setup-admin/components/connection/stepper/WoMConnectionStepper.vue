@@ -21,6 +21,7 @@
 <template>
   <div class="flex-grow-1 flex-shrink-0">
     <wom-setup-deed-manager-selector
+      v-show="!connecting && stepper <= 2"
       ref="managerSelector"
       :hub="hub"
       :edit="edit"
@@ -31,6 +32,7 @@
       class="mx-auto" />
     <wom-setup-deed-selector
       v-if="stepper === 2"
+      v-show="!connecting"
       v-model="deed"
       :hub="hub"
       :edit="edit"
@@ -38,11 +40,49 @@
       :address="deedManagerAddress"
       :owner.sync="deedOwnerAddress"
       class="mt-5" />
-    <wom-setup-deed-item
-      v-else-if="stepper > 2"
-      :deed="deed"
-      :clearable="!disabled"
-      @clear="clearDeed" />
+    <template v-if="stepper > 2 || connecting">
+      <v-list-item class="pa-0" dense>
+        <v-list-item-avatar
+          color="secondary"
+          class="my-0 white--text"
+          size="20">
+          1
+        </v-list-item-avatar>
+        <v-list-item-content>
+          <v-list-item-title class="subtitle-1 font-weight-bold">
+            {{ $t('wom.crossChainBridging') }}
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-slide-y-transition>
+        <div v-show="!connected && connecting">
+          <wom-bridging-label :deed="deed" />
+        </div>
+      </v-slide-y-transition>
+      <v-list-item class="pa-0" dense>
+        <v-list-item-avatar
+          color="secondary"
+          class="my-0 white--text"
+          size="20">
+          2
+        </v-list-item-avatar>
+        <v-list-item-content>
+          <v-list-item-title class="subtitle-1 font-weight-bold">
+            {{ $t('wom.connection') }}
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-slide-y-transition>
+        <div v-show="transactionInProgress">
+          <wom-connecting-label />
+        </div>
+      </v-slide-y-transition>
+      <v-slide-y-transition>
+        <div v-show="connected && !transactionInProgress">
+          <wom-connection-label :deed="deed" />
+        </div>
+      </v-slide-y-transition>
+    </template>
   </div>
 </template>
 <script>
@@ -53,6 +93,10 @@ export default {
       default: null,
     },
     disabled: {
+      type: Boolean,
+      default: false,
+    },
+    transactionInProgress: {
       type: Boolean,
       default: false,
     },

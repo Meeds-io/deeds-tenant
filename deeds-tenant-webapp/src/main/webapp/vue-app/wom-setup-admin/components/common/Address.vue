@@ -10,22 +10,34 @@
       v-if="!transaction"
       :address="address"
       class="me-2 ms-n2" />
-    <span
-      :title="tooltip"
-      :class="url && 'primary--text' || 'dark-grey-color'"
-      class="me-2">
-      {{ addressPreview }}
-    </span>
-    <v-btn
-      v-if="clearable"
-      :loading="loading"
-      icon
-      outlined
-      small
-      class="me-n2"
-      @click="$emit('clear')">
-      <v-icon size="18" class="error--text">fa-times</v-icon>
-    </v-btn>
+    <v-tooltip v-if="clearable" bottom>
+      <template #activator="{ on, attrs }">
+        <span
+          v-bind="attrs"
+          v-on="on"
+          :class="url && 'primary--text' || 'dark-grey-color'"
+          class="me-2">
+          {{ addressPreview }}
+        </span>
+      </template>
+      {{ tooltip }}
+    </v-tooltip>
+    <v-tooltip v-if="clearable" bottom>
+      <template #activator="{ on, attrs }">
+        <v-btn
+          v-bind="attrs"
+          v-on="on"
+          :loading="loading"
+          icon
+          outlined
+          small
+          class="me-n2"
+          @click="$emit('clear')">
+          <v-icon size="18" class="error--text">fa-times</v-icon>
+        </v-btn>
+      </template>
+      {{ $t('wom.clickToSwitchAddress') }}
+    </v-tooltip>
   </v-chip>
 </template>
 <script>
