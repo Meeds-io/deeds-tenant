@@ -47,6 +47,9 @@
         </span>
       </div>
     </template>
+    <template v-else-if="edit" #title>
+      {{ $t('wom.setup.drawer.title.editConnection') }}
+    </template>
     <template v-else-if="connected" #title>
       {{ $t('wom.setup.drawer.title.hubCard') }}
     </template>
