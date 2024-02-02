@@ -29,13 +29,34 @@
     right
     @expand-updated="expanded = $event"
     @closed="modified = false">
-    <template #title>
-      {{ $t('wom.setup.drawer.title') }}
+    <template v-if="connecting && !synched" #title>
+      {{ $t('wom.setup.drawer.title.bridging') }}
     </template>
-    <template v-if="drawer && initialized" #content>
+    <template v-else-if="connecting || synched && !connected" #title>
+      <div class="d-flex flex-row align-center">
+        <v-btn
+          class="me-2 ms-n2"
+          icon
+          @click="$refs.womConnection.clearDeed()">
+          <v-icon size="20">
+            {{ $vuetify.rtl && 'fa fa-arrow-right' || 'fa fa-arrow-left' }}
+          </v-icon>
+        </v-btn>
+        <span class="align-start text-header-title text-truncate">
+          {{ $t('wom.setup.drawer.title.connecting') }}
+        </span>
+      </div>
+    </template>
+    <template v-else-if="connected" #title>
+      {{ $t('wom.setup.drawer.title.hubCard') }}
+    </template>
+    <template v-else #title>
+      {{ $t('wom.setup.drawer.title.connectToWoM') }}
+    </template>
+    <template v-if="initialized" #content>
       <v-card
         v-show="!loading"
-        class="pa-5"
+        class="pa-4"
         flat>
         <template v-if="!connected || edit">
           <wom-disconnected-label
@@ -57,12 +78,26 @@
             :hub="hub"
             :edit="edit"
             :disabled="connecting || disconnecting"
+            :transaction-in-progress="connecting && synched"
             @modified="modified = $event"
             @validated="canConnect = $event"
             @connecting="connecting = $event"
             @connected="synched = $event"
             @select="selectDeed"
             @reconnect="reconnect = false" />
+          <div
+            v-if="synched && deed"
+            class="d-flex">
+            <v-slide-y-transition>
+              <wom-setup-connect-button
+                v-show="!connecting"
+                :wom-connection-params="womConnectionParams"
+                :deed-manager-address="deedManagerAddress"
+                :deed="deed"
+                class="mx-auto my-2"
+                @connecting="connecting = $event" />
+            </v-slide-y-transition>
+          </div>
           <wom-setup-disconnection-stepper
             v-if="connected && !deed && !connecting"
             ref="womDisconnection"
@@ -80,7 +115,7 @@
         </template>
       </v-card>
     </template>
-    <template v-if="!loading && (modified || edit)" #footer>
+    <template v-if="!loading && !connecting && !synched && (modified || edit)" #footer>
       <div class="d-flex">
         <template v-if="modified">
           <v-btn
@@ -101,15 +136,8 @@
             @click="close">
             {{ $t('wom.cancel') }}
           </v-btn>
-          <wom-setup-connect-button
-            v-if="deed"
-            :wom-connection-params="womConnectionParams"
-            :deed-manager-address="deedManagerAddress"
-            :deed="deed"
-            class="ms-4"
-            @connecting="connecting = $event" />
           <v-btn
-            v-else-if="!synched"
+            v-if="!deed && !synched"
             :disabled="!canConnect"
             :loading="connecting"
             class="btn btn-primary ms-4"
