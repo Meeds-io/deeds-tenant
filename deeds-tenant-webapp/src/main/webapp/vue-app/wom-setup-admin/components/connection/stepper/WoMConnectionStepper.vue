@@ -61,7 +61,7 @@
       </v-slide-y-transition>
       <v-list-item class="pa-0" dense>
         <v-list-item-avatar
-          color="secondary"
+          :color="connected && 'secondary' || 'grey'"
           class="my-0 white--text"
           size="20">
           2
