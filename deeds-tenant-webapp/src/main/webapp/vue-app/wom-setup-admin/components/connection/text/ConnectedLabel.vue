@@ -1,7 +1,7 @@
 <template>
   <div>
     <p
-      class="mb-5 text-center"
+      class="text-subtitle-1 font-weight-bold mb-5 text-center"
       v-sanitized-html="$t('wom.connected')"></p>
     <p class="my-0">
       {{ $t('wom.connected.part1') }}

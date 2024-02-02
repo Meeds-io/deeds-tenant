@@ -24,6 +24,9 @@ import WoMDisconnectionStepper from './components/connection/stepper/WoMDisconne
 import ConnectedLabel from './components/connection/text/ConnectedLabel.vue';
 import DisconnectedLabel from './components/connection/text/DisconnectedLabel.vue';
 import NotConnectedLabel from './components/connection/text/NotConnectedLabel.vue';
+import BridgingLabel from './components/connection/text/BridgingLabel.vue';
+import ConnectionLabel from './components/connection/text/ConnectionLabel.vue';
+import ConnectingLabel from './components/connection/text/ConnectingLabel.vue';
 
 import MetamaskButton from './components/connection/form/MetamaskButton.vue';
 import ConnectButton from './components/connection/form/ConnectButton.vue';
@@ -60,6 +63,9 @@ const components = {
   'wom-connected-label': ConnectedLabel,
   'wom-disconnected-label': DisconnectedLabel,
   'wom-not-connected-label': NotConnectedLabel,
+  'wom-bridging-label': BridgingLabel,
+  'wom-connection-label': ConnectionLabel,
+  'wom-connecting-label': ConnectingLabel,
 
   'wom-setup-hub-rewards': HubRewards,
   'wom-setup-hub-reward-item': HubRewardItem,

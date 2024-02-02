@@ -20,15 +20,13 @@
   <v-btn
     v-if="!validNetwork && targetBlockchain"
     color="primary"
-    outlined
     elevation="0"
-    class="white-background primary-border-color"
     @click="switchMetamaskNetwork">
     <v-img
       src="/deeds-tenant/images/metamask.svg"
       max-height="25px"
       max-width="25px" />
-    <span class="primary--text py-2 ms-2 text-truncate text-none">
+    <span class="white--text py-2 ms-2 text-truncate text-none">
       {{ $t('wom.switchMetamaskNetworkTo', {0: targetNetworkName}) }}
     </span>
   </v-btn>
@@ -110,8 +108,8 @@ export default {
       });
     },
     connect() {
-      this.connecting = true;
       const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+      this.connecting = true;
       return this.$tenantUtils.sendTransaction(
         provider,
         new window.ethers.Contract(
@@ -141,13 +139,15 @@ export default {
           }
         })
         .catch(e => {
-          this.connecting = false;
-          const error = (e?.data?.message || e?.message || e?.cause || String(e));
-          let errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
-          if (!this.$te(errorMessageKey)) {
-            errorMessageKey = 'wom.errorConnectingToWom';
+          if (e?.code !== 4001) { // User denied transaction signature
+            this.connecting = false;
+            const error = (e?.data?.message || e?.message || e?.cause || String(e));
+            let errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
+            if (!this.$te(errorMessageKey)) {
+              errorMessageKey = 'wom.errorConnectingToWom';
+            }
+            this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
           }
-          this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
         });
     },
   },

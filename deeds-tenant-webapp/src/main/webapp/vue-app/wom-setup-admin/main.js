@@ -58,11 +58,13 @@ export function init() {
                 name: 'Polygon',
                 blockexplorer: 'https://polygonscan.com',
                 testnet: false,
+                chainId: '0x89',
               },
               80001: {
                 name: 'Mumbai',
                 blockexplorer: 'https://mumbai.polygonscan.com',
                 testnet: true,
+                chainId: '0x13881',
               },
             };
           },
