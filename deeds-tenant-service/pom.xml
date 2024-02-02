@@ -27,7 +27,7 @@
   <name>Meeds - Deeds Tenant Addon - Services</name>
   <properties>
     <!-- TODO Fix coverage, was 0.65 -->
-    <exo.test.coverage.ratio>0.16</exo.test.coverage.ratio>
+    <exo.test.coverage.ratio>0.36</exo.test.coverage.ratio>
   </properties>
   <dependencies>
     <!-- Provided artifacts in Server Shared library, used for compilation only -->

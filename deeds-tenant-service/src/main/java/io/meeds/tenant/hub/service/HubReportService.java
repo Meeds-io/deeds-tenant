@@ -36,6 +36,8 @@ import org.web3j.crypto.Hash;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.wallet.model.reward.RewardPeriod;
 import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.reward.service.RewardReportService;
@@ -76,6 +78,9 @@ public class HubReportService {
   private static final Log    LOG                              = ExoLogger.getLogger(HubReportService.class);
 
   @Autowired
+  private OrganizationService organizationService;
+
+  @Autowired
   private RewardReportService rewardReportService;
 
   @Autowired
@@ -112,8 +117,7 @@ public class HubReportService {
 
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
     if (!rewardReport.isCompletelyProceeded()) {
-      throw new IllegalStateException("Reward of period '" + rewardPeriod +
-          "' isn't completed proceeded, thus the Rewards report will not be sent");
+      return null;
     } else {
       HubReportPayload reportData = toReport(rewardReport);
 
@@ -174,7 +178,7 @@ public class HubReportService {
       throw new WomException("wom.notSentReward");
     }
     HubReport report = womServiceClient.retrieveReport(reportId);
-    if (report == null || !StringUtils.equalsIgnoreCase(report.getHubAddress(), hubService.getHubAddress())) {
+    if (report == null) {
       throw new WomException("wom.rewardNotFoundInWom");
     } else {
       return toHubLocalReport(report,
@@ -229,7 +233,7 @@ public class HubReportService {
     return toHubReport(rewardReport,
                        hubService.getHubAddress(),
                        hubService.getDeedId(),
-                       hubService.computeUsersCount(),
+                       computeUsersCount(),
                        countParticipants(fromDate, toDate),
                        countAchievements(fromDate, toDate),
                        hubReportStorage.getSentDate(rewardPeriod));
@@ -287,6 +291,15 @@ public class HubReportService {
     }
   }
 
+  public long computeUsersCount() {
+    try {
+      return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
+    } catch (Exception e) {
+      LOG.warn("Error computing Hub users count information, retrieve already computed data", e);
+      return 0;
+    }
+  }
+
   private long countParticipants(Date fromDate, Date toDate) {
     return realizationService.countParticipantsBetweenDates(fromDate, toDate);
   }
@@ -309,7 +322,6 @@ public class HubReportService {
 
     HubReportPayload reportData = toReport(rewardReport);
     long reportId = hubReportStorage.getReportId(rewardPeriod);
-
     long periodId = hubReportStorage.getPeriodKey(rewardPeriod);
     boolean canRefresh = statusType.isCanRefresh() && reportId == 0;
     boolean canSend = statusType.isCanSend();
