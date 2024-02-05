@@ -16,10 +16,7 @@
  */
 package io.meeds.tenant.hub.service;
 
-import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
-
 import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,8 +25,6 @@ import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.Sign;
-import org.web3j.utils.Numeric;
 
 import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.portal.branding.BrandingService;
@@ -38,8 +33,6 @@ import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.portal.mop.service.LayoutService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.services.organization.OrganizationService;
-import org.exoplatform.services.organization.UserStatus;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.wiki.model.Page;
 
@@ -70,9 +63,6 @@ public class HubService {
   public static final String  PUBLIC_HUB_SUMMARY_SETTING_NAME = "publicHubSummary";
 
   private static final Log    LOG                             = ExoLogger.getLogger(HubService.class);
-
-  @Autowired
-  private OrganizationService organizationService;
 
   @Autowired
   private HubIdentityStorage  hubIdentityStorage;
@@ -119,15 +109,15 @@ public class HubService {
   }
 
   public long getDeedId() {
-    return isConnected() ? getHub().getDeedId() : -1; // NOSONAR
+    return isConnected() ? getHub().getDeedId() : -1;
   }
 
   public short getDeedCity() {
-    return isConnected() ? getHub().getCity() : null; // NOSONAR
+    return isConnected() ? getHub().getCity() : -1;
   }
 
   public short getDeedType() {
-    return isConnected() ? getHub().getType() : null; // NOSONAR
+    return isConnected() ? getHub().getType() : -1;
   }
 
   public String getDeedManager() {
@@ -160,8 +150,7 @@ public class HubService {
     try {
       String address = hubWalletStorage.getOrCreateHubAddress();
       connectionRequest.setAddress(address);
-      connectionRequest.setUsersCount(computeUsersCount());
-      connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
+      connectionRequest.setHubSignedMessage(hubWalletStorage.signHubMessage(connectionRequest.getRawMessage()));
       setHubCardProperties(connectionRequest);
       WomConnectionResponse connectionResponse = womServiceClient.connectToWom(connectionRequest);
       hubIdentityStorage.saveHubConnectionResponse(connectionResponse);
@@ -178,10 +167,10 @@ public class HubService {
   }
 
   public void disconnectFromWom(WomDisconnectionRequest disconnectionRequest) throws WomException {
-    if (!isConnected()) {
-      throw new WomException("wom.alreadyDisconnected");
-    }
     try {
+      if (!isConnected()) {
+        throw new WomException("wom.alreadyDisconnected");
+      }
       disconnectionRequest.setHubAddress(getHubAddress());
       womServiceClient.disconnectFromWom(disconnectionRequest);
     } finally {
@@ -195,7 +184,7 @@ public class HubService {
     }
 
     String token = womServiceClient.generateToken();
-    String hubSignedMessage = signHubMessage(token);
+    String hubSignedMessage = hubWalletStorage.signHubMessage(token);
 
     try {
       HubTenant hub = getHub();
@@ -227,7 +216,7 @@ public class HubService {
       return;
     }
     String token = womServiceClient.generateToken();
-    String signedMessage = signHubMessage(token);
+    String signedMessage = hubWalletStorage.signHubMessage(token);
 
     womServiceClient.saveHubAvatar(hubAddress,
                                    signedMessage,
@@ -235,43 +224,20 @@ public class HubService {
                                    new ByteArrayInputStream(logo.getData()));
   }
 
-  public long computeUsersCount() {
-    try {
-      return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
-    } catch (Exception e) {
-      LOG.warn("Error computing Hub users count information, retrieve already computed data", e);
-      return 0;
-    }
-  }
-
-  public String signHubMessage(Object object) throws WomException {
-    String rawRequest = toJsonString(object);
-    return signHubMessage(rawRequest);
-  }
-
-  private String signHubMessage(String rawRequest) throws WomException {
-    byte[] encodedRequest = rawRequest.getBytes(StandardCharsets.UTF_8);
-    Sign.SignatureData signatureData = Sign.signPrefixedMessage(encodedRequest, hubWalletStorage.getHubWallet());
-    byte[] retval = new byte[65];
-    System.arraycopy(signatureData.getR(), 0, retval, 0, 32);
-    System.arraycopy(signatureData.getS(), 0, retval, 32, 32);
-    System.arraycopy(signatureData.getV(), 0, retval, 64, 1);
-    return Numeric.toHexString(retval);
-  }
-
   private void setHubCardProperties(Hub hub) {
     String enLanguage = Locale.ENGLISH.toLanguageTag();
     hub.setName(Collections.singletonMap(enLanguage, brandingService.getCompanyName()));
-    hub.setDescription(Collections.singletonMap(enLanguage, getPublicDescription(enLanguage)));
+    hub.setDescription(Collections.singletonMap(enLanguage, getPublicDescription()));
     hub.setColor(brandingService.getThemeStyle().get("primaryColor"));
     hub.setUrl(CommonsUtils.getCurrentDomain());
   }
 
-  private String getPublicDescription(String enLanguage) {
+  private String getPublicDescription() {
     Page note = null;
     if (isPublisSitePublished()) {
       CMSSetting setting = cmsService.getSetting(NotePageViewService.CMS_CONTENT_TYPE, PUBLIC_HUB_SUMMARY_SETTING_NAME);
       if (setting != null) {
+        String enLanguage = Locale.ENGLISH.toLanguageTag();
         String defaultLanguage = localeConfigService.getDefaultLocaleConfig().getLanguage();
         note = notePageViewService.getNotePage(setting.getName(), defaultLanguage);
         if ((note == null || StringUtils.isBlank(note.getContent()))

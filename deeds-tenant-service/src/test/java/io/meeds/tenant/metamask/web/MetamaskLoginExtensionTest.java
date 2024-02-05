@@ -42,7 +42,7 @@ import jakarta.servlet.http.HttpSession;
 @SpringBootTest(classes = {
   MetamaskLoginExtension.class,
 })
-public class MetamaskLoginExtensionTest {
+class MetamaskLoginExtensionTest {
 
   @MockBean
   private MetamaskLoginService   metamaskLoginService;
@@ -54,13 +54,13 @@ public class MetamaskLoginExtensionTest {
   private MetamaskLoginExtension metamaskLoginExtension;
 
   @Test
-  public void testGetExtensionName() {
+  void testGetExtensionName() {
     assertEquals(Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME),
                  metamaskLoginExtension.getExtensionNames());
   }
 
   @Test
-  public void testExtendParameters() {
+  void testExtendParameters() {
     String rawMessage = "rawMessage";
 
     ControllerContext controllerContext = mock(ControllerContext.class);

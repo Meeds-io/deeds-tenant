@@ -29,9 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import io.meeds.tenant.hub.service.HubService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
@@ -48,8 +45,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("hub")
 @Tag(name = "hub", description = "An endpoint to manage current Hub as a WoM member")
 public class HubController {
-
-  private static final Log LOG = ExoLogger.getLogger(HubController.class);
 
   @Autowired
   private HubService       hubService;
@@ -98,7 +93,6 @@ public class HubController {
     try {
       return hubService.connectToWoM(connectionRequest);
     } catch (WomException e) {
-      logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
   }
@@ -125,7 +119,6 @@ public class HubController {
     try {
       hubService.disconnectFromWom(disconnectionRequest);
     } catch (WomException e) {
-      logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
   }
@@ -139,7 +132,6 @@ public class HubController {
     try {
       return hubService.generateWomToken();
     } catch (WomException e) {
-      logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
   }
@@ -159,13 +151,8 @@ public class HubController {
     try {
       return hubService.isDeedManager(address, nftId);
     } catch (WomException e) {
-      logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
-  }
-
-  private void logWomException(WomException e) {
-    LOG.debug(e.getErrorCode().getMessageKey(), e);
   }
 
 }
