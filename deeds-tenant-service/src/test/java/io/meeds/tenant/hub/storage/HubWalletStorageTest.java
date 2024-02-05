@@ -188,7 +188,7 @@ public class HubWalletStorageTest {
   private MockedStatic<Contract>      contract;
 
   @BeforeEach
-  public void init() {
+  void init() {
     walletUtils = mockStatic(WalletUtils.class);
     contract = mockStatic(Contract.class);
     walletUtils.when(WalletUtils::getNetworkId).thenReturn(rewardTokenNetworkId);
@@ -198,26 +198,26 @@ public class HubWalletStorageTest {
   }
 
   @AfterEach
-  public void close() {
+  void close() {
     walletUtils.close();
     contract.close();
   }
 
   @Test
-  public void getOrCreateHubAddressWhenExists()  {
+  void getOrCreateHubAddressWhenExists()  {
     when(hubIdentityStorage.getHubAddress()).thenReturn(hubAddress);
     assertEquals(hubAddress, hubWalletStorage.getOrCreateHubAddress());
     verifyNoInteractions(codecInitializer, walletAccountService);
   }
 
   @Test
-  public void getOrCreateHubAddressWhenAdminWalletNotExists() {
+  void getOrCreateHubAddressWhenAdminWalletNotExists() {
     String createdHubAddress = hubWalletStorage.getOrCreateHubAddress();
     assertNull(createdHubAddress);
   }
 
   @Test
-  public void getOrCreateHubAddressWhenNotExists() {
+  void getOrCreateHubAddressWhenNotExists() {
     String newHubAddress = generateWallet();
     assertEquals(hubAddress.replace("0x", "").toLowerCase(), newHubAddress.replace("0x", "").toLowerCase());
 
@@ -232,7 +232,7 @@ public class HubWalletStorageTest {
 
   @Test
   @SneakyThrows
-  public void getOrCreateHubAddressWhenError() {
+  void getOrCreateHubAddressWhenError() {
     WalletFile walletFile = org.web3j.crypto.Wallet.createLight(password, hubWallet);
     when(codecInitializer.getCodec()).thenReturn(codec);
     when(walletAccountService.getPrivateKeyByTypeAndId(WalletType.ADMIN.getId(),
@@ -243,7 +243,7 @@ public class HubWalletStorageTest {
   }
 
   @Test
-  public void signHubMessage() throws WomException {
+  void signHubMessage() throws WomException {
     when(hubIdentityStorage.getHubWallet()).thenAnswer(invocation -> {
       WalletFile walletFile = org.web3j.crypto.Wallet.createLight(password, hubWallet);
       when(codecInitializer.getCodec()).thenReturn(codec);
@@ -260,7 +260,7 @@ public class HubWalletStorageTest {
   @SuppressWarnings("rawtypes")
   @Test
   @SneakyThrows
-  public void sendReportTransaction() {
+  void sendReportTransaction() {
     walletUtils.when(WalletUtils::getSettings).thenReturn(globalSettings);
     walletUtils.when(() -> WalletUtils.convertToDecimals(anyDouble(), anyInt())).thenCallRealMethod();
     when(globalSettings.getContractDetail()).thenReturn(contractDetail);
@@ -326,7 +326,7 @@ public class HubWalletStorageTest {
   @SuppressWarnings("rawtypes")
   @Test
   @SneakyThrows
-  public void sendReportTransactionWhenReceiptError() {
+  void sendReportTransactionWhenReceiptError() {
     walletUtils.when(WalletUtils::getSettings).thenReturn(globalSettings);
     walletUtils.when(() -> WalletUtils.convertToDecimals(anyDouble(), anyInt())).thenCallRealMethod();
     when(globalSettings.getContractDetail()).thenReturn(contractDetail);
@@ -413,7 +413,7 @@ public class HubWalletStorageTest {
   @SuppressWarnings("rawtypes")
   @Test
   @SneakyThrows
-  public void sendReportTransactionWhenEstimationError() {
+  void sendReportTransactionWhenEstimationError() {
     walletUtils.when(WalletUtils::getSettings).thenReturn(globalSettings);
     walletUtils.when(() -> WalletUtils.convertToDecimals(anyDouble(), anyInt())).thenCallRealMethod();
     when(globalSettings.getContractDetail()).thenReturn(contractDetail);
@@ -464,7 +464,7 @@ public class HubWalletStorageTest {
   @SuppressWarnings("rawtypes")
   @Test
   @SneakyThrows
-  public void sendReportTransactionWhenEstimationJsonRpcErrorInMessage() {
+  void sendReportTransactionWhenEstimationJsonRpcErrorInMessage() {
     walletUtils.when(WalletUtils::getSettings).thenReturn(globalSettings);
     walletUtils.when(() -> WalletUtils.convertToDecimals(anyDouble(), anyInt())).thenCallRealMethod();
     when(globalSettings.getContractDetail()).thenReturn(contractDetail);
@@ -508,7 +508,7 @@ public class HubWalletStorageTest {
   @SuppressWarnings("rawtypes")
   @Test
   @SneakyThrows
-  public void sendReportTransactionWhenEstimationJsonRpcErrorInData() {
+  void sendReportTransactionWhenEstimationJsonRpcErrorInData() {
     walletUtils.when(WalletUtils::getSettings).thenReturn(globalSettings);
     walletUtils.when(() -> WalletUtils.convertToDecimals(anyDouble(), anyInt())).thenCallRealMethod();
     when(globalSettings.getContractDetail()).thenReturn(contractDetail);
@@ -561,7 +561,7 @@ public class HubWalletStorageTest {
     return walletFile.getAddress();
   }
 
-  public void mockReportSentEventResponse() {
+  void mockReportSentEventResponse() {
     EventValues eventValues = new EventValues(Arrays.asList(new Address(hubAddress), new Uint256(reportId)), null);
     contract.when(() -> Contract.staticExtractEventParameters(any(), any())).thenReturn(eventValues);
   }

@@ -90,20 +90,20 @@ public class MetamaskLoginServiceTest {
   MetamaskLoginService           metamaskLoginService;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     when(organizationService.getUserHandler()).thenReturn(userHandler);
     when(userAcl.getSuperUser()).thenReturn(SUPER_USER);
   }
 
   @Test
-  public void testDontSetRootPasswordOnStartup() {
+  void testDontSetRootPasswordOnStartup() {
     metamaskLoginService.setAllowedRootWallets(Collections.emptyList());
     metamaskLoginService.init();
     verifyNoInteractions(organizationService);
   }
 
   @Test
-  public void testSetRootPasswordOnStartup() throws Exception {
+  void testSetRootPasswordOnStartup() throws Exception {
     metamaskLoginService.init();
     verify(userHandler, times(0)).saveUser(any(), anyBoolean());
 
@@ -118,7 +118,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testIsAllowUserRegistration() {
+  void testIsAllowUserRegistration() {
     assertFalse(metamaskLoginService.isAllowUserRegistration());
 
     when(securitySettingService.getRegistrationType()).thenReturn(UserRegistrationType.OPEN);
@@ -129,7 +129,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testIsAddressAllowedToRegister() {
+  void testIsAddressAllowedToRegister() {
     String managerAddress = "managerAddress";
     assertFalse(metamaskLoginService.isAllowUserRegistration(managerAddress));
 
@@ -145,7 +145,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testGetUserWithWalletAddress() throws Exception {
+  void testGetUserWithWalletAddress() throws Exception {
     String managerAddress = "managerAddress";
 
     assertNull(metamaskLoginService.getUserWithWalletAddress(managerAddress));
@@ -173,7 +173,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testValidateSignedMessage() {
+  void testValidateSignedMessage() {
     String walletAddress = "0x927f51a2996Ff74d1C380F92DC9006b53A225CeF";
     String rawMessage = "-2037692822791791745-3891968992033463560-1384458414145506416";
     String signedMessage =
@@ -191,7 +191,7 @@ public class MetamaskLoginServiceTest {
   }
 
   @Test
-  public void testGenerateLoginMessage() {
+  void testGenerateLoginMessage() {
     mockSecureRandomService();
 
     assertNotNull(metamaskLoginService.generateLoginMessage(null));

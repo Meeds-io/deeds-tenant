@@ -77,7 +77,7 @@ public class HubReportStorageTest {
   private Instant             sentDate = Instant.now().minusSeconds(500);
 
   @Test
-  public void saveStatus() {
+  void saveStatus() {
     String status = "NEW";
 
     hubReportStorage.saveStatus(periodId, status);
@@ -88,7 +88,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void saveStatusByPeriodHavingId() {
+  void saveStatusByPeriodHavingId() {
     String status = "NEW";
     when(rewardPeriod.getId()).thenReturn(periodId);
 
@@ -100,13 +100,13 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void saveStatusByPeriodNotHavingId() {
+  void saveStatusByPeriodNotHavingId() {
     String status = "NEW";
     assertThrows(IllegalStateException.class, () -> hubReportStorage.saveStatus(rewardPeriod, status));
   }
 
   @Test
-  public void saveStatusByPeriodHavingIdRetrievedFromStore() {
+  void saveStatusByPeriodHavingIdRetrievedFromStore() {
     String status = "NEW";
     RewardPeriodType periodType = RewardPeriodType.WEEK;
     LocalDate periodMedianDate = LocalDate.now();
@@ -126,7 +126,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void saveReportPeriodId() {
+  void saveReportPeriodId() {
     when(rewardPeriod.getId()).thenReturn(periodId);
     hubReportStorage.saveReportPeriodId(rewardPeriod, reportId);
     verify(settingService).set(eq(UEM_CONTEXT),
@@ -141,7 +141,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void saveSentDate() {
+  void saveSentDate() {
     when(rewardPeriod.getId()).thenReturn(periodId);
     hubReportStorage.saveSentDate(rewardPeriod, sentDate);
     verify(settingService).set(eq(UEM_CONTEXT),
@@ -151,7 +151,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void getStatus() {
+  void getStatus() {
     String status = "SENT";
     when(rewardPeriod.getId()).thenReturn(periodId);
     assertNull(hubReportStorage.getStatus(rewardPeriod));
@@ -163,7 +163,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void getReportId() {
+  void getReportId() {
     when(rewardPeriod.getId()).thenReturn(periodId);
     assertEquals(0, hubReportStorage.getReportId(rewardPeriod));
     
@@ -174,7 +174,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void getPeriodId() {
+  void getPeriodId() {
     assertEquals(0, hubReportStorage.getPeriodId(reportId));
 
     when(settingService.get(UEM_CONTEXT,
@@ -184,7 +184,7 @@ public class HubReportStorageTest {
   }
 
   @Test
-  public void getSentDate() {
+  void getSentDate() {
     when(rewardPeriod.getId()).thenReturn(periodId);
     assertNotNull(hubReportStorage.getSentDate(rewardPeriod));
     assertNotEquals(sentDate.toEpochMilli(), hubReportStorage.getSentDate(rewardPeriod).toEpochMilli());

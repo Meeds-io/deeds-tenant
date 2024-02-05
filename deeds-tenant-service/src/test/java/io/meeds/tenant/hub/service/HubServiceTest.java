@@ -152,7 +152,7 @@ public class HubServiceTest {
   private String              signedMessage                       = "signedMessage";
 
   @Test
-  public void getHubAddress() {
+  void getHubAddress() {
     String address = hubService.getHubAddress();
     assertNull(address);
     when(hubIdentityStorage.getHubAddress()).thenReturn(hubAddress);
@@ -161,7 +161,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void isConnected() {
+  void isConnected() {
     assertFalse(hubService.isConnected());
 
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
@@ -178,24 +178,24 @@ public class HubServiceTest {
   }
 
   @Test
-  public void getHub() {
+  void getHub() {
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
     assertEquals(hub, hubService.getHub());
   }
 
   @Test
-  public void getHubNoRefresh() {
+  void getHubNoRefresh() {
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
     assertEquals(hub, hubService.getHub(false));
   }
 
-  public void getHubWithRefresh() {
+  void getHubWithRefresh() {
     when(hubIdentityStorage.getHub(true)).thenReturn(hub);
     assertEquals(hub, hubService.getHub(true));
   }
 
   @Test
-  public void getDeedId() {
+  void getDeedId() {
     assertEquals(-1l, hubService.getDeedId());
 
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
@@ -212,7 +212,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void getDeedCity() {
+  void getDeedCity() {
     assertEquals(-1l, hubService.getDeedCity());
 
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
@@ -230,7 +230,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void getDeedType() {
+  void getDeedType() {
     assertEquals(-1l, hubService.getDeedType());
 
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
@@ -248,7 +248,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void isDeedManager() {
+  void isDeedManager() {
     assertFalse(hubService.isDeedManager(null));
     assertFalse(hubService.isDeedManager(deedManagerAddress));
 
@@ -274,7 +274,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void isDeedManagerByNftId() throws WomException {
+  void isDeedManagerByNftId() throws WomException {
     assertFalse(hubService.isDeedManager(null, deedId));
     assertFalse(hubService.isDeedManager(deedManagerAddress, deedId));
     when(womServiceClient.isDeedManager(deedManagerAddress, deedId)).thenReturn(true);
@@ -282,14 +282,14 @@ public class HubServiceTest {
   }
 
   @Test
-  public void generateWomToken() throws WomException {
+  void generateWomToken() throws WomException {
     assertNull(hubService.generateWomToken());
     when(hubService.generateWomToken()).thenReturn(tokenId);
     assertEquals(tokenId, hubService.generateWomToken());
   }
 
   @Test
-  public void getHubJoinDate() {
+  void getHubJoinDate() {
     assertNull(hubService.getHubJoinDate());
 
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
@@ -307,7 +307,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void getDeedManager() {
+  void getDeedManager() {
     assertNull(hubService.getDeedManager());
 
     when(hubIdentityStorage.getHub(false)).thenReturn(hub);
@@ -327,7 +327,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void connectToWoM() throws WomException  {
+  void connectToWoM() throws WomException  {
     when(hubWalletStorage.getOrCreateHubAddress()).thenReturn(hubAddress);
     when(hubIdentityStorage.getHubAddress()).thenReturn(hubAddress);
     setHubCardProperties();
@@ -352,7 +352,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void disconnectFromWomWhenDisconnected() {
+  void disconnectFromWomWhenDisconnected() {
     WomDisconnectionRequest disconnectionRequest = new WomDisconnectionRequest(hubAddress,
                                                                                deedManagerAddress,
                                                                                signedMessage,
@@ -363,7 +363,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void disconnectFromWomWhenErrorThrown() throws WomException {
+  void disconnectFromWomWhenErrorThrown() throws WomException {
     when(hubIdentityStorage.getHubAddress()).thenReturn(hubAddress);
     setHubConnected();
     
@@ -380,7 +380,7 @@ public class HubServiceTest {
   }
 
   @Test
-  public void disconnectFromWom() throws WomException {
+  void disconnectFromWom() throws WomException {
     when(hubIdentityStorage.getHubAddress()).thenReturn(hubAddress);
     setHubConnected();
 
@@ -396,13 +396,13 @@ public class HubServiceTest {
   }
 
   @Test
-  public void updateHubCardWhenNotConnected() throws WomException {
+  void updateHubCardWhenNotConnected() throws WomException {
     hubService.updateHubCard();
     verifyNoInteractions(womServiceClient);
   }
 
   @Test
-  public void updateHubCardWhenChanged() throws WomException {
+  void updateHubCardWhenChanged() throws WomException {
     when(hubIdentityStorage.getHubAddress()).thenReturn(hubAddress);
     setHubConnected();
     setHubCardProperties();

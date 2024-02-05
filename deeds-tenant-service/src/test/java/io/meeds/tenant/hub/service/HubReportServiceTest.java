@@ -215,19 +215,19 @@ public class HubReportServiceTest {
   private MockedStatic<WalletUtils> walletUtils;
 
   @BeforeEach
-  public void init() {
+  void init() {
     walletUtils = mockStatic(WalletUtils.class);
     walletUtils.when(WalletUtils::getNetworkId).thenReturn(tokenNetworkId);
     walletUtils.when(WalletUtils::getContractAddress).thenReturn(tokenAddress);
   }
 
   @AfterEach
-  public void close() {
+  void close() {
     walletUtils.close();
   }
 
   @Test
-  public void sendReport() throws Exception {
+  void sendReport() throws Exception {
     HubReportLocalStatus report = hubReportService.sendReport(periodId);
     assertNull(report, "Shouldn't send report when Hub reward not found");
 
@@ -312,18 +312,18 @@ public class HubReportServiceTest {
   }
 
   @Test
-  public void getReportWithRefreshWhenNoReportId() {
+  void getReportWithRefreshWhenNoReportId() {
     assertThrows(WomException.class, () -> hubReportService.getReport(periodId, true));
   }
 
   @Test
-  public void getReportWithRefreshWhenReportIdExistsButNotOnWom()  {
+  void getReportWithRefreshWhenReportIdExistsButNotOnWom()  {
     when(hubReportStorage.getReportId(periodId)).thenReturn(reportId);
     assertThrows(WomException.class, () -> hubReportService.getReport(periodId, true));
   }
 
   @Test
-  public void getReportWithRefreshWhenReportIdExists() throws WomException {
+  void getReportWithRefreshWhenReportIdExists() throws WomException {
     when(hubReportStorage.getReportId(periodId)).thenReturn(reportId);
     when(womServiceClient.retrieveReport(reportId)).thenAnswer(invocation -> newHubReport());
 
@@ -355,12 +355,12 @@ public class HubReportServiceTest {
   }
 
   @Test
-  public void getReportWithoutRefreshWhenNoReward() {
+  void getReportWithoutRefreshWhenNoReward() {
     assertThrows(WomException.class, () -> hubReportService.getReport(periodId, false));
   }
 
   @Test
-  public void getReportNotSentToWomWithLocalRewardReport() throws Exception {
+  void getReportNotSentToWomWithLocalRewardReport() throws Exception {
     when(rewardReportService.getRewardReportByPeriodId(periodId)).thenReturn(rewardReport);
     when(rewardReport.getPeriod()).thenReturn(rewardPeriod);
     when(hubService.isConnected()).thenReturn(true);
@@ -425,14 +425,14 @@ public class HubReportServiceTest {
   }
 
   @Test
-  public void getReportsWhenNoLocalRewards() {
+  void getReportsWhenNoLocalRewards() {
     List<HubReportLocalStatus> reports = hubReportService.getReports(0, 10);
     assertNotNull(reports);
     assertEquals(0, reports.size());
   }
 
   @Test
-  public void getReportsWhenLocalRewardsNotSent()  {
+  void getReportsWhenLocalRewardsNotSent()  {
     when(rewardReportService.findRewardReportPeriods(0, 10)).thenReturn(Collections.singletonList(rewardPeriod));
     
     List<HubReportLocalStatus> reports = hubReportService.getReports(0, 10);
@@ -441,7 +441,7 @@ public class HubReportServiceTest {
   }
 
   @Test
-  public void getReportsWhenLocalRewardsSent() {
+  void getReportsWhenLocalRewardsSent() {
     when(rewardReportService.findRewardReportPeriods(0, 10)).thenReturn(Collections.singletonList(rewardPeriod));
     when(rewardReportService.getRewardReportByPeriodId(periodId)).thenReturn(rewardReport);
     when(hubService.isConnected()).thenReturn(true);

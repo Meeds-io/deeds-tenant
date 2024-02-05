@@ -106,40 +106,40 @@ class HubControllerTest {
   private MockMvc               mockMvc;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     mockMvc = MockMvcBuilders.webAppContextSetup(context)
                              .addFilters(filterChain.getFilters().toArray(new Filter[0]))
                              .build();
   }
 
   @Test
-  public void testGetHubWhenAnonymous() throws Exception {
+  void testGetHubWhenAnonymous() throws Exception {
     ResultActions response = mockMvc.perform(get("/hub"));
     response.andExpect(status().isForbidden());
   }
 
   @Test
-  public void testGetHubWhenExistsAndAnonymous() throws Exception {
+  void testGetHubWhenExistsAndAnonymous() throws Exception {
     lenient().when(hubService.getHub(false)).thenReturn(hub);
     ResultActions response = mockMvc.perform(get("/hub"));
     response.andExpect(status().isForbidden());
   }
 
   @Test
-  public void testGetHubNotExistsWhenAdministrator() throws Exception {
+  void testGetHubNotExistsWhenAdministrator() throws Exception {
     ResultActions response = mockMvc.perform(get("/hub").with(testAdministrator()));
     response.andExpect(status().isNotFound());
   }
 
   @Test
-  public void testGetHubWhenExists() throws Exception {
+  void testGetHubWhenExists() throws Exception {
     when(hubService.getHub(false)).thenReturn(hub);
     ResultActions response = mockMvc.perform(get("/hub").with(testAdministrator()));
     response.andExpect(status().isOk());
   }
 
   @Test
-  public void testConnectToWomWithoutBody() throws Exception {
+  void testConnectToWomWithoutBody() throws Exception {
     ResultActions response = mockMvc.perform(post("/hub").with(testAdministrator())
                                                          .contentType(MediaType.APPLICATION_JSON)
                                                          .accept(MediaType.APPLICATION_JSON));
@@ -147,7 +147,7 @@ class HubControllerTest {
   }
 
   @Test
-  public void testConnectToWomWithEmptyBody() throws Exception {
+  void testConnectToWomWithEmptyBody() throws Exception {
     WomConnectionRequest connectionRequest = new WomConnectionRequest();
     ResultActions response = mockMvc.perform(post("/hub").with(testAdministrator())
                                                          .content(asJsonString(connectionRequest))
@@ -157,7 +157,7 @@ class HubControllerTest {
   }
 
   @Test
-  public void testConnectToWomWithEmptyMandatoryField() throws Exception {
+  void testConnectToWomWithEmptyMandatoryField() throws Exception {
     WomConnectionRequest connectionRequest = new WomConnectionRequest();
     connectionRequest.setDeedId(2l);
     ResultActions response = mockMvc.perform(post("/hub").with(testAdministrator())
@@ -189,7 +189,7 @@ class HubControllerTest {
   }
 
   @Test
-  public void testConnectToWomWhenException() throws Exception {
+  void testConnectToWomWhenException() throws Exception {
     WomConnectionRequest connectionRequest = new WomConnectionRequest();
     connectionRequest.setDeedId(2l);
     connectionRequest.setDeedManagerAddress("0x");

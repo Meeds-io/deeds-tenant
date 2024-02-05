@@ -51,7 +51,7 @@ public class MetamaskAuthenticatorTest {
   private MetamaskAuthenticator metamaskAuthenticator;
 
   @Test
-  public void testValidateInvalidCredentialsCount() {
+  void testValidateInvalidCredentialsCount() {
     assertNull(metamaskAuthenticator.validateUser(null));
     assertNull(metamaskAuthenticator.validateUser(new Credential[0]));
     assertNull(metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential(USERNAME) }));
@@ -61,7 +61,7 @@ public class MetamaskAuthenticatorTest {
   }
 
   @Test
-  public void testValidateInvalidPassword() {
+  void testValidateInvalidPassword() {
     assertNull(metamaskAuthenticator.validateUser(new Credential[] {
                                                                      new UsernameCredential(null),
                                                                      new PasswordCredential(null),
@@ -77,7 +77,7 @@ public class MetamaskAuthenticatorTest {
   }
 
   @Test
-  public void testValidateNotExistingUser() {
+  void testValidateNotExistingUser() {
     String walletAddress = "walletAddress";
     String otherUserName = "otherUserName";
     String rawMessage = "rawMessage";
@@ -95,7 +95,7 @@ public class MetamaskAuthenticatorTest {
   }
 
   @Test
-  public void testValidateWithDifferentUsernameAsResult() {
+  void testValidateWithDifferentUsernameAsResult() {
     String walletAddress = "walletAddress";
     String rawMessage = "rawMessage";
     String signedMessage = "signedMessage";

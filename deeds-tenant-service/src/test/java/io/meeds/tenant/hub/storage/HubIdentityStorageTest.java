@@ -146,7 +146,7 @@ public class HubIdentityStorageTest {
   private String                  hubOwnerAddress        = "0x609a6F01b7976439603356e41d5456b42df957b7";
 
   @BeforeEach
-  public void init() {
+  void init() {
     hubIdentityStorage.refreshHubIdentity();
 
     when(identityManager.getOrCreateIdentity(IDENTITY_PROVIDER_NAME, IDENTITY_REMOTE_ID)).thenReturn(hubIdentity);
@@ -157,7 +157,7 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void getHubWhenNotExistsInWom() {
+  void getHubWhenNotExistsInWom() {
     hubProfile = mock(Profile.class);
     when(hubIdentity.getProfile()).thenReturn(hubProfile);
     when(hubProfile.getProperty(ADDRESS)).thenReturn(hubAddress);
@@ -198,7 +198,7 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void getHubWhenExistsInWomButDisconnected() throws WomException {
+  void getHubWhenExistsInWomButDisconnected() throws WomException {
     when(womServiceClient.getHub(hubAddress, false)).thenReturn(hubFromWom);
 
     when(hubFromWom.getCity()).thenReturn(city);
@@ -245,7 +245,7 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void getHubWhenExistsInWomWhenConnected() throws WomException {
+  void getHubWhenExistsInWomWhenConnected() throws WomException {
     when(womServiceClient.getHub(hubAddress, false)).thenReturn(hubFromWom);
 
     when(hubFromWom.isConnected()).thenReturn(true);
@@ -293,14 +293,14 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void getHubAddress() {
+  void getHubAddress() {
     assertEquals(hubAddress, hubIdentityStorage.getHubAddress());
     hubProfile.removeProperty(ADDRESS);
     assertNull(hubIdentityStorage.getHubAddress());
   }
 
   @Test
-  public void getHubWallet() {
+  void getHubWallet() {
     assertNull(hubIdentityStorage.getHubWallet());
     String wallet = "Wallet";
     hubProfile.setProperty(WALLET, wallet);
@@ -308,7 +308,7 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void saveHubWallet() {
+  void saveHubWallet() {
     String wallet = "Wallet";
     hubIdentityStorage.saveHubWallet(hubAddress, wallet);
     assertEquals(wallet, hubProfile.getProperty(WALLET));
@@ -316,7 +316,7 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void saveHubConnectionResponse() {
+  void saveHubConnectionResponse() {
     String womAddress = "womAddress";
     String uemAddress = "uemAddress";
     long networkId = 12l;
@@ -332,7 +332,7 @@ public class HubIdentityStorageTest {
   }
 
   @Test
-  public void saveHubAvatarUpdateTime() {
+  void saveHubAvatarUpdateTime() {
     long avatarUpdateTime = System.currentTimeMillis();
     hubIdentityStorage.saveHubAvatarUpdateTime(avatarUpdateTime);
     assertEquals(String.valueOf(avatarUpdateTime), hubProfile.getProperty(HUB_AVATAR_UPDATE));
