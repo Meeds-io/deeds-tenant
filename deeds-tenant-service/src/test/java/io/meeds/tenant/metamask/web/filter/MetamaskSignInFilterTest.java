@@ -69,7 +69,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
-public class MetamaskSignInFilterTest {
+class MetamaskSignInFilterTest {
 
   private static final String        CONTEXT_PATH = "/portal";  // NOSONAR
 

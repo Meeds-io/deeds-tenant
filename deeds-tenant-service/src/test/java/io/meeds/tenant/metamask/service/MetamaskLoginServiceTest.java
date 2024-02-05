@@ -61,7 +61,7 @@ import jakarta.servlet.http.HttpSession;
 @SpringBootTest(classes = {
   MetamaskLoginService.class,
 })
-public class MetamaskLoginServiceTest {
+class MetamaskLoginServiceTest {
 
   static final String            SUPER_USER = "superUser";
 

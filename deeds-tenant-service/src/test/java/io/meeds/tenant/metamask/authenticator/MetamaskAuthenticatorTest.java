@@ -35,7 +35,7 @@ import io.meeds.tenant.metamask.service.MetamaskLoginService;
 @SpringBootTest(classes = {
   MetamaskAuthenticator.class,
 })
-public class MetamaskAuthenticatorTest {
+class MetamaskAuthenticatorTest {
 
   private static final String   PASSWORD = "password";
 

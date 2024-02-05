@@ -83,7 +83,7 @@ import io.meeds.wom.api.model.WomConnectionResponse;
   HubIdentityStorage.class,
 })
 @ExtendWith(MockitoExtension.class)
-public class HubIdentityStorageTest {
+class HubIdentityStorageTest {
 
   @MockBean
   private IdentityManager         identityManager;

@@ -56,7 +56,7 @@ import org.exoplatform.wallet.reward.service.RewardReportService;
   HubReportStorage.class,
 })
 @ExtendWith(MockitoExtension.class)
-public class HubReportStorageTest {
+class HubReportStorageTest {
 
   @MockBean
   private RewardReportService rewardReportService;

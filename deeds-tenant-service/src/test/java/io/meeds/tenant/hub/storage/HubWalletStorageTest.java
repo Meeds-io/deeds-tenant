@@ -96,7 +96,7 @@ import lombok.SneakyThrows;
                             HubWalletStorage.class,
 })
 @ExtendWith(MockitoExtension.class)
-public class HubWalletStorageTest {
+class HubWalletStorageTest {
 
   @MockBean
   private WalletAccountService        walletAccountService;

@@ -72,7 +72,7 @@ import io.meeds.wom.api.model.WomDisconnectionRequest;
                             HubService.class,
 })
 @ExtendWith(MockitoExtension.class)
-public class HubServiceTest {
+class HubServiceTest {
 
   private static final String PUBLIC_DESCRIPTION_CMS_SETTING_NAME = "publicDescription";
 

@@ -41,7 +41,7 @@ import org.exoplatform.wallet.service.WalletAccountService;
 @SpringBootTest(classes = {
   NewMetamaskCreatedUserListener.class,
 })
-public class NewMetamaskCreatedUserListenerTest {
+class NewMetamaskCreatedUserListenerTest {
 
   @MockBean
   OrganizationService            organizationService;

@@ -90,7 +90,7 @@ import io.meeds.wom.api.model.HubReportVerifiableData;
                             HubReportService.class,
 })
 @ExtendWith(MockitoExtension.class)
-public class HubReportServiceTest {
+class HubReportServiceTest {
 
   @MockBean
   private OrganizationService       organizationService;

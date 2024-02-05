@@ -43,7 +43,7 @@ import jakarta.servlet.http.HttpSession;
 @SpringBootTest(classes = {
   MetamaskRegisterExtension.class,
 })
-public class MetamaskRegisterExtensionTest {
+class MetamaskRegisterExtensionTest {
 
   @MockBean
   private MetamaskLoginService      metamaskLoginService;
