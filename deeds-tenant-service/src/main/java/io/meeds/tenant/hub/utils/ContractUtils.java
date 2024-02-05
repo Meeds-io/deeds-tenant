@@ -18,8 +18,6 @@
  */
 package io.meeds.tenant.hub.utils;
 
-import static org.web3j.utils.RevertReasonExtractor.extractRevertReason;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -50,7 +48,6 @@ import org.web3j.protocol.exceptions.JsonRpcError;
 import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.tx.Contract;
 import org.web3j.tx.TransactionManager;
-import org.web3j.tx.response.EmptyTransactionReceipt;
 import org.web3j.tx.response.TransactionReceiptProcessor;
 
 import io.meeds.tenant.hub.service.PolygonContractGasProvider;
@@ -94,7 +91,6 @@ public class ContractUtils {
                                                        String funcName,
                                                        String uemAddress,
                                                        long uemNetworkId) {
-    TransactionReceipt receipt = null;
     try {
       BigInteger estimatedGas;
 
@@ -126,9 +122,8 @@ public class ContractUtils {
                                                                                         data,
                                                                                         BigInteger.ZERO,
                                                                                         false);
-      receipt = processResponse(transactionReceiptProcessor, ethSendTransaction);
+      return processResponse(transactionReceiptProcessor, ethSendTransaction);
     } catch (JsonRpcError error) {
-
       if (error.getData() != null) {
         throw new TransactionException(error.getData().toString());
       } else {
@@ -139,25 +134,6 @@ public class ContractUtils {
                                                      error.getMessage()));
       }
     }
-
-    if (receipt != null
-        && !receipt.isStatusOK()
-        && !(receipt instanceof EmptyTransactionReceipt)) {
-      throw new TransactionException(
-                                     String.format(
-                                                   "Transaction %s has failed with status: %s. " + "Gas used: %s. " +
-                                                       "Revert reason: '%s'.",
-                                                   receipt.getTransactionHash(),
-                                                   receipt.getStatus(),
-                                                   receipt.getGasUsedRaw() != null ? receipt.getGasUsed().toString() : "unknown",
-                                                   extractRevertReason(receipt,
-                                                                       data,
-                                                                       polygonContractGasProvider.getWeb3j(),
-                                                                       true,
-                                                                       BigInteger.ZERO)),
-                                     receipt);
-    }
-    return receipt;
   }
 
   @SneakyThrows
@@ -168,13 +144,13 @@ public class ContractUtils {
   }
 
   private static TransactionReceipt processResponse(TransactionReceiptProcessor transactionReceiptProcessor,
-                                                    EthSendTransaction transactionResponse) throws IOException,
-                                                                                            TransactionException {
-    if (transactionResponse.hasError()) {
-      throw new JsonRpcError(transactionResponse.getError());
+                                                    EthSendTransaction ethSendTransaction) throws IOException,
+                                                                                           TransactionException {
+    if (ethSendTransaction.hasError()) {
+      throw new JsonRpcError(ethSendTransaction.getError());
     }
 
-    String transactionHash = transactionResponse.getTransactionHash();
+    String transactionHash = ethSendTransaction.getTransactionHash();
 
     return transactionReceiptProcessor.waitForTransactionReceipt(transactionHash);
   }

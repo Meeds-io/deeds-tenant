@@ -43,7 +43,7 @@ import jakarta.servlet.http.HttpSession;
 @SpringBootTest(classes = {
   MetamaskRegisterExtension.class,
 })
-public class MetamaskRegisterExtensionTest {
+class MetamaskRegisterExtensionTest {
 
   @MockBean
   private MetamaskLoginService      metamaskLoginService;
@@ -55,14 +55,14 @@ public class MetamaskRegisterExtensionTest {
   private MetamaskRegisterExtension metamaskRegisterExtension;
 
   @Test
-  public void testGetExtensionName() {
+  void testGetExtensionName() {
     assertEquals(Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
                                LoginHandler.LOGIN_EXTENSION_NAME),
                  metamaskRegisterExtension.getExtensionNames());
   }
 
   @Test
-  public void testExtendParametersForLogin() {
+  void testExtendParametersForLogin() {
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(true);
     Map<String, Object> extendParameters = metamaskRegisterExtension.extendParameters(null, LoginHandler.LOGIN_EXTENSION_NAME);
     assertNotNull(extendParameters);
@@ -76,7 +76,7 @@ public class MetamaskRegisterExtensionTest {
   }
 
   @Test
-  public void testExtendParametersForRegister() {
+  void testExtendParametersForRegister() {
     String rawMessage = "rawMessage";
 
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(true);
