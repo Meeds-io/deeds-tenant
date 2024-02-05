@@ -215,7 +215,7 @@ public class HubReportService {
 
   @SneakyThrows
   private HubReport persistReport(HubReportPayload reportData) throws WomException {
-    String signature = hubService.signHubMessage(reportData);
+    String signature = signHubMessage(reportData);
     String hash = StringUtils.lowerCase(Hash.sha3(signature));
     HubReportVerifiableData reportRequest = new HubReportVerifiableData(hash,
                                                                         signature,
@@ -223,6 +223,11 @@ public class HubReportService {
     HubReport report = womServiceClient.saveReport(reportRequest);
     listenerService.broadcast(REPORT_PERSISTED_EVENT, reportRequest.getReportId(), null);
     return report;
+  }
+
+  private String signHubMessage(HubReportPayload reportData) throws WomException {
+    String rawRequest = toJsonString(reportData);
+    return hubWalletStorage.signHubMessage(rawRequest);
   }
 
   private HubReportPayload toReport(RewardReport rewardReport) {
@@ -291,13 +296,9 @@ public class HubReportService {
     }
   }
 
+  @SneakyThrows
   public long computeUsersCount() {
-    try {
-      return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
-    } catch (Exception e) {
-      LOG.warn("Error computing Hub users count information, retrieve already computed data", e);
-      return 0;
-    }
+    return organizationService.getUserHandler().findAllUsers(UserStatus.ENABLED).getSize();
   }
 
   private long countParticipants(Date fromDate, Date toDate) {

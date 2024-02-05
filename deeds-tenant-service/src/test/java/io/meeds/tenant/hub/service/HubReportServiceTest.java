@@ -285,7 +285,7 @@ public class HubReportServiceTest {
     when(womServiceClient.saveReport(any())).thenReturn(hubReport);
     String signature = "0x22235879963145";
     String hash = StringUtils.lowerCase(Hash.sha3(signature));
-    when(hubService.signHubMessage(any())).thenReturn(signature);
+    when(hubWalletStorage.signHubMessage(any())).thenReturn(signature);
     report = hubReportService.sendReport(periodId);
     assertNotNull(report, "Shouldn't send report when not completely processed yet");
 

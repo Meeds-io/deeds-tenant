@@ -16,10 +16,7 @@
  */
 package io.meeds.tenant.hub.service;
 
-import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
-
 import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,8 +25,6 @@ import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.Sign;
-import org.web3j.utils.Numeric;
 
 import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.portal.branding.BrandingService;
@@ -155,7 +150,7 @@ public class HubService {
     try {
       String address = hubWalletStorage.getOrCreateHubAddress();
       connectionRequest.setAddress(address);
-      connectionRequest.setHubSignedMessage(signHubMessage(connectionRequest.getRawMessage()));
+      connectionRequest.setHubSignedMessage(hubWalletStorage.signHubMessage(connectionRequest.getRawMessage()));
       setHubCardProperties(connectionRequest);
       WomConnectionResponse connectionResponse = womServiceClient.connectToWom(connectionRequest);
       hubIdentityStorage.saveHubConnectionResponse(connectionResponse);
@@ -189,7 +184,7 @@ public class HubService {
     }
 
     String token = womServiceClient.generateToken();
-    String hubSignedMessage = signHubMessage(token);
+    String hubSignedMessage = hubWalletStorage.signHubMessage(token);
 
     try {
       HubTenant hub = getHub();
@@ -221,27 +216,12 @@ public class HubService {
       return;
     }
     String token = womServiceClient.generateToken();
-    String signedMessage = signHubMessage(token);
+    String signedMessage = hubWalletStorage.signHubMessage(token);
 
     womServiceClient.saveHubAvatar(hubAddress,
                                    signedMessage,
                                    token,
                                    new ByteArrayInputStream(logo.getData()));
-  }
-
-  public String signHubMessage(Object object) throws WomException {
-    String rawRequest = toJsonString(object);
-    return signHubMessage(rawRequest);
-  }
-
-  private String signHubMessage(String rawRequest) throws WomException {
-    byte[] encodedRequest = rawRequest.getBytes(StandardCharsets.UTF_8);
-    Sign.SignatureData signatureData = Sign.signPrefixedMessage(encodedRequest, hubWalletStorage.getHubWallet());
-    byte[] retval = new byte[65];
-    System.arraycopy(signatureData.getR(), 0, retval, 0, 32);
-    System.arraycopy(signatureData.getS(), 0, retval, 32, 32);
-    System.arraycopy(signatureData.getV(), 0, retval, 64, 1);
-    return Numeric.toHexString(retval);
   }
 
   private void setHubCardProperties(Hub hub) {
