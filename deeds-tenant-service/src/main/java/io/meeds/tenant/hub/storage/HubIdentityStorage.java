@@ -19,7 +19,7 @@ package io.meeds.tenant.hub.storage;
 
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.*;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.COLOR;
-import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.CREATED_JOIN_DATE;
+import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.CREATED_DATE;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_CITY;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_ID;
 import static io.meeds.tenant.hub.plugin.WalletHubIdentityProvider.DEED_MANAGER_ADDRESS;
@@ -159,7 +159,7 @@ public class HubIdentityStorage {
       throw new IllegalStateException("Error communicating with WoM Server, couldn't retrieve Hub remote status", e);
     }
   }
-  
+
   private void mapToProfile(Profile hubProfile, Hub hub) throws WomParsingException {
     hubProfile.setProperty(DEED_ID, String.valueOf(hub.getDeedId()));
     hubProfile.setProperty(DEED_CITY, String.valueOf(hub.getCity()));
@@ -176,7 +176,7 @@ public class HubIdentityStorage {
     hubProfile.setProperty(HUB_OWNER_ADDRESS, hub.getHubOwnerAddress());
     hubProfile.setProperty(DEED_OWNER_ADDRESS, hub.getDeedOwnerAddress());
     hubProfile.setProperty(DEED_MANAGER_ADDRESS, hub.getDeedManagerAddress());
-    hubProfile.setProperty(CREATED_JOIN_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
+    hubProfile.setProperty(CREATED_DATE, String.valueOf(hub.getCreatedDate().toEpochMilli()));
     hubProfile.setProperty(UPDATED_DATE, String.valueOf(hub.getUpdatedDate().toEpochMilli()));
     if (hub.getJoinDate() == null) {
       hubProfile.removeProperty(START_JOIN_DATE);
@@ -212,11 +212,11 @@ public class HubIdentityStorage {
     String ownerClaimableAmount = (String) hubProfile.getProperty(OWNER_CLAIMABLE_AMOUNT);
     String managerClaimableAmount = (String) hubProfile.getProperty(MANAGER_CLAIMABLE_AMOUNT);
     long womNetworkId = parseLong((String) hubProfile.getProperty(WOM_NETWORK_ID));
-    Instant createdDate = parseInstant(hubProfile, CREATED_JOIN_DATE);
+    Instant createdDate = parseInstant(hubProfile, CREATED_DATE);
+    Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
     Instant joinDate = parseInstant(hubProfile, START_JOIN_DATE);
     Instant untilDate = parseInstant(hubProfile, END_JOIN_DATE);
-    Instant updatedDate = parseInstant(hubProfile, UPDATED_DATE);
-    boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), true)
+    boolean enabled = parseBoolean((String) hubProfile.getProperty(HUB_ENABLED), false)
                       && (untilDate == null || untilDate.isAfter(Instant.now()));
     long avatarUpdateTime = parseLong((String) hubProfile.getProperty(HUB_AVATAR_UPDATE));
 
