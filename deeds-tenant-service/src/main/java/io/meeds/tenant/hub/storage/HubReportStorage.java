@@ -33,23 +33,23 @@ import org.exoplatform.wallet.reward.service.RewardReportService;
 @Component
 public class HubReportStorage {
 
-  private static final Context UEM_CONTEXT                         = Context.GLOBAL.id("HubUEM");
+  public static final Context UEM_CONTEXT                         = Context.GLOBAL.id("HubUEM");
 
-  private static final String  REWARD_REPORT_ID                    = "HubReportId";
+  public static final String  REWARD_REPORT_ID                    = "HubReportId";
 
-  private static final String  REWARD_PERIOD_ID                    = "HubPeriodId";
+  public static final String  REWARD_PERIOD_ID                    = "HubPeriodId";
 
-  private static final String  REWARD_REPORT_STATUS                = "HubReportStatus";
+  public static final String  REWARD_REPORT_STATUS                = "HubReportStatus";
 
-  private static final String  REWARD_REPORT_SENT_DATE             = "HubReportSentDate";
+  public static final String  REWARD_REPORT_SENT_DATE             = "HubReportSentDate";
 
-  private static final Scope   REWARD_REPORT_STATUS_APPLICATION    = Scope.APPLICATION.id(REWARD_REPORT_STATUS);
+  public static final Scope   REWARD_REPORT_STATUS_APPLICATION    = Scope.APPLICATION.id(REWARD_REPORT_STATUS);
 
-  private static final Scope   REWARD_REPORT_SENT_DATE_APPLICATION = Scope.APPLICATION.id(REWARD_REPORT_SENT_DATE);
+  public static final Scope   REWARD_REPORT_SENT_DATE_APPLICATION = Scope.APPLICATION.id(REWARD_REPORT_SENT_DATE);
 
-  private static final Scope   REWARD_REPORT_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_REPORT_ID);
+  public static final Scope   REWARD_REPORT_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_REPORT_ID);
 
-  private static final Scope   REWARD_PERIOD_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_PERIOD_ID);
+  public static final Scope   REWARD_PERIOD_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_PERIOD_ID);
 
   @Autowired
   private RewardReportService  rewardReportService;

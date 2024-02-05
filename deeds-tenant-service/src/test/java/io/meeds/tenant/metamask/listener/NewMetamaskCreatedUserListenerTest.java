@@ -41,7 +41,7 @@ import org.exoplatform.wallet.service.WalletAccountService;
 @SpringBootTest(classes = {
   NewMetamaskCreatedUserListener.class,
 })
-public class NewMetamaskCreatedUserListenerTest {
+class NewMetamaskCreatedUserListenerTest {
 
   @MockBean
   OrganizationService            organizationService;
@@ -56,7 +56,7 @@ public class NewMetamaskCreatedUserListenerTest {
   NewMetamaskCreatedUserListener listener;
 
   @Test
-  public void testNewMetamaskCreatedUserListenerWhenWalletExists() throws Exception {
+  void testNewMetamaskCreatedUserListenerWhenWalletExists() throws Exception {
     String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
     Wallet wallet = new Wallet();
 
@@ -68,7 +68,7 @@ public class NewMetamaskCreatedUserListenerTest {
   }
 
   @Test
-  public void testNewMetamaskCreatedUserListener() throws Exception {
+  void testNewMetamaskCreatedUserListener() throws Exception {
     String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
     String identityId = "2554";
 

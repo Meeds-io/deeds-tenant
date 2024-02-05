@@ -69,7 +69,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 @ExtendWith(MockitoExtension.class)
-public class MetamaskSignInFilterTest {
+class MetamaskSignInFilterTest {
 
   private static final String        CONTEXT_PATH = "/portal";  // NOSONAR
 
@@ -122,7 +122,7 @@ public class MetamaskSignInFilterTest {
   private MetamaskSignInFilter       filter;
 
   @BeforeEach
-  public void setUp() {
+  void setUp() {
     Mockito.reset(metamaskLoginService,
                   request,
                   response,
@@ -143,7 +143,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testFilterDefinition() {
+  void testFilterDefinition() {
     MetamaskSignInFilterDefinition filterDefinition = new MetamaskSignInFilterDefinition(container,
                                                                                          remindPasswordTokenService,
                                                                                          webAppController,
@@ -164,7 +164,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testNotForwardToSetupWhenNotDeedOwner() throws IOException, ServletException {
+  void testNotForwardToSetupWhenNotDeedOwner() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getContextPath()).thenReturn(CONTEXT_PATH);
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
@@ -176,7 +176,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testForwardToSetupWhenDeedOwner() throws Exception {
+  void testForwardToSetupWhenDeedOwner() throws Exception {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getContextPath()).thenReturn(CONTEXT_PATH);
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
@@ -193,7 +193,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testCannotDisplayRegisterFormWhenSingedIn() throws IOException, ServletException {
+  void testCannotDisplayRegisterFormWhenSingedIn() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(USERNAME);
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn(METAMASK_SIGNED_MESSAGE_PREFIX + "fakePassword");
@@ -204,7 +204,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testContinueFilterChainEvenWhenErrorOccurs() throws IOException, ServletException {
+  void testContinueFilterChainEvenWhenErrorOccurs() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getParameter(any())).thenThrow(new FakeTestException());
     filter.doFilter(request, response, chain);
@@ -213,7 +213,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testCannotDisplayRegisterFormWhenDisabled() throws Exception {//NOSONAR
+  void testCannotDisplayRegisterFormWhenDisabled() throws Exception {//NOSONAR
     when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(USERNAME);
     filter.doFilter(request, response, chain);
     verify(chain, times(1)).doFilter(request, response);
@@ -222,7 +222,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testCannotDisplayRegisterFormWhenCredentialsNotValidated() throws Exception {//NOSONAR
+  void testCannotDisplayRegisterFormWhenCredentialsNotValidated() throws Exception {//NOSONAR
     when(request.getParameter(USERNAME_REQUEST_PARAM)).thenReturn(USERNAME);
     when(request.getParameter(PASSWORD_REQUEST_PARAM)).thenReturn("fakePassword");
     filter.doFilter(request, response, chain);
@@ -232,7 +232,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testProceedToLoginWhenUserAlreadyRegistered() throws Exception {// NOSONAR
+  void testProceedToLoginWhenUserAlreadyRegistered() throws Exception {// NOSONAR
     String walletAddress = USERNAME;
     String rawMessageToSign = "rawMessage";
     String signedMessage = "signedMessage";
@@ -256,7 +256,7 @@ public class MetamaskSignInFilterTest {
   }
 
   @Test
-  public void testFailToRegisterWhenNoUsernameInSession() throws Exception {// NOSONAR
+  void testFailToRegisterWhenNoUsernameInSession() throws Exception {// NOSONAR
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
 
     String walletAddress = USERNAME;

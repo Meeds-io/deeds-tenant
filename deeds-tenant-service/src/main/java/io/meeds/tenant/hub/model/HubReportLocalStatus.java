@@ -29,8 +29,10 @@ import io.meeds.wom.api.model.HubReportPayload;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonInclude(value = Include.NON_EMPTY)
