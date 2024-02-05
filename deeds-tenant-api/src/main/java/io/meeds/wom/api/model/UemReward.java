@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.hateoas.server.core.Relation;
@@ -71,26 +70,6 @@ public class UemReward {
   private List<Long>        reportIds;
 
   private Set<String>       hubAddresses;
-
-  /**
-   * Report Id => UEM Reward amount
-   */
-  private Map<Long, Double> reportRewards;
-
-  /**
-   * Total internal hub achievements
-   */
-  private long              hubAchievementsCount;
-
-  /**
-   * Total internal hub achievements
-   */
-  private long              hubParticipantsCount;
-
-  /**
-   * Total internal hub rewards sent to hub users
-   */
-  private double            hubRewardsAmount;
 
   private double            sumEd;
 
