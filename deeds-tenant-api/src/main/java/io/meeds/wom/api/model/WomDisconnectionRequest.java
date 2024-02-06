@@ -28,6 +28,8 @@ public class WomDisconnectionRequest {
 
   private String hubAddress;
 
+  private String hubSignedMessage;
+
   private String deedManagerAddress;
 
   private String signedMessage;
