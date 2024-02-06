@@ -354,6 +354,7 @@ class HubServiceTest {
   @Test
   void disconnectFromWomWhenDisconnected() {
     WomDisconnectionRequest disconnectionRequest = new WomDisconnectionRequest(hubAddress,
+                                                                               null,
                                                                                deedManagerAddress,
                                                                                signedMessage,
                                                                                rawMessage,
@@ -368,6 +369,7 @@ class HubServiceTest {
     setHubConnected();
     
     WomDisconnectionRequest disconnectionRequest = new WomDisconnectionRequest(hubAddress,
+                                                                               null,
                                                                                deedManagerAddress,
                                                                                signedMessage,
                                                                                rawMessage,
@@ -385,6 +387,7 @@ class HubServiceTest {
     setHubConnected();
 
     WomDisconnectionRequest disconnectionRequest = new WomDisconnectionRequest(hubAddress,
+                                                                               signedMessage,
                                                                                deedManagerAddress,
                                                                                signedMessage,
                                                                                rawMessage,

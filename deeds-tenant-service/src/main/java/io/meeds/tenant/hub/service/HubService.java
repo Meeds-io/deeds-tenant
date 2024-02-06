@@ -172,6 +172,7 @@ public class HubService {
         throw new WomException("wom.alreadyDisconnected");
       }
       disconnectionRequest.setHubAddress(getHubAddress());
+      disconnectionRequest.setHubSignedMessage(hubWalletStorage.signHubMessage(disconnectionRequest.getRawMessage()));
       womServiceClient.disconnectFromWom(disconnectionRequest);
     } finally {
       hubIdentityStorage.refreshHubIdentity();
