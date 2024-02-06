@@ -155,8 +155,6 @@ public class HubWalletStorage {
         List<ReportSentEventResponse> reportSentEvents = getReportSentEvents(receipt);
         return reportSentEvents.get(0).reportId.longValue();
       }
-    } catch (WomException e) {
-      throw e;
     } catch (Exception e) {
       String message = getUemContractExceptionMessage(e);
       if (StringUtils.isNotBlank(message)) {
