@@ -82,7 +82,6 @@ public class HubReportController {
     try {
       return reportService.getReport(periodId, refresh);
     } catch (WomException e) {
-      logWomException(e);
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
   }
@@ -99,13 +98,9 @@ public class HubReportController {
     try {
       return reportService.sendReport(periodId);
     } catch (WomException e) {
-      logWomException(e);
+      LOG.warn("Error sending Report for period {} Transaction. Message: {}", periodId, e.getMessage());
       throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
     }
-  }
-
-  private void logWomException(WomException e) {
-    LOG.debug(e.getErrorCode().getMessageKey(), e);
   }
 
 }
