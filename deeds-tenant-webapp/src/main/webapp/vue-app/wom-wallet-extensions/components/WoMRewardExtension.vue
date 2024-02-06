@@ -281,6 +281,7 @@ export default {
     },
     refreshReportFromTriggeredEvent(event) {
       if (event?.detail?.long === this.periodId) {
+        this.report = null;
         this.getReport();
       }
     },
@@ -293,10 +294,7 @@ export default {
     getHub() {
       this.loading = true;
       return this.$hubService.getHub()
-        .then(hub => {
-          this.hub = hub;
-          return this.$nextTick();
-        })
+        .then(hub => this.hub = hub)
         .finally(() => this.loading = false);
     },
   },
