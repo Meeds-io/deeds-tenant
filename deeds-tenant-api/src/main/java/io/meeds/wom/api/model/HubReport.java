@@ -176,7 +176,7 @@ public class HubReport extends HubReportPayload {
 
   public double getDs() {
     return getUsersCount() == 0 ? 0d :
-                                BigDecimal.valueOf(getRecipientsCount())
+                                BigDecimal.valueOf(Math.min(getRecipientsCount(), getMaxUsers()))
                                           .divide(BigDecimal.valueOf(getUsersCount()), MathContext.DECIMAL128)
                                           .doubleValue();
   }
