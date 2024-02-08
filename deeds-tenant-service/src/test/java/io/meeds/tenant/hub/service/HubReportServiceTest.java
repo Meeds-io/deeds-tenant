@@ -238,7 +238,7 @@ class HubReportServiceTest {
     assertNull(report, "Shouldn't send report when not connected yet");
 
     when(hubService.isConnected()).thenReturn(true);
-    when(hubService.getHub()).thenReturn(hub);
+    when(hubService.getHub(true)).thenReturn(hub);
     when(hubService.getHubAddress()).thenReturn(hubAddress);
     lenient().when(hub.getAddress()).thenReturn(hubAddress);
     when(hub.getUemAddress()).thenReturn(uemAddress);

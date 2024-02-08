@@ -121,7 +121,7 @@ public class HubReportService {
     } else {
       HubReportPayload reportData = toReport(rewardReport);
 
-      HubTenant hub = hubService.getHub();
+      HubTenant hub = hubService.getHub(true);
       long start = System.currentTimeMillis();
       LOG.info("Sending: Hub Report of Reward date '{}' to '{}' to UEM",
                rewardPeriod.getStartDateFormatted(DEFAULT_LOG_LANG),
