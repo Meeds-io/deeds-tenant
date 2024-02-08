@@ -42,9 +42,9 @@ import io.meeds.wom.api.model.WomDisconnectionRequest;
 @Component
 public class WomClientService {
 
-  private static final String  WOM_HUBS_URI                  = "/api/hubs";
+  private static final String  WOM_HUBS_URI                  = "/hubs";
 
-  private static final String  WOM_REPORTS_URI               = "/api/hub/reports";
+  private static final String  WOM_REPORTS_URI               = "/hub/reports";
 
   private static final String  HUB_ADDRESS_PARAM             = "{hubAddress}";
 
