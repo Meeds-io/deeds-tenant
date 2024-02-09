@@ -68,9 +68,11 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
                                  long participantsCount,
                                  long recipientsCount,
                                  long achievementsCount,
+                                 long actionsCount,
                                  String rewardTokenAddress,
                                  long rewardTokenNetworkId,
                                  double hubRewardAmount,
+                                 double hubTopReceiverAmount,
                                  SortedSet<String> transactions) {
     super(reportId,
           hubAddress,
@@ -83,9 +85,11 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
           participantsCount,
           recipientsCount,
           achievementsCount,
+          actionsCount,
           rewardTokenAddress,
           rewardTokenNetworkId,
           hubRewardAmount,
+          hubTopReceiverAmount,
           transactions);
     this.hash = hash;
     this.signature = signature;
@@ -107,9 +111,11 @@ public class HubReportVerifiableData extends HubReportPayload implements Verifia
          reportData.getParticipantsCount(),
          reportData.getRecipientsCount(),
          reportData.getAchievementsCount(),
+         reportData.getActionsCount(),
          reportData.getRewardTokenAddress(),
          reportData.getRewardTokenNetworkId(),
          reportData.getHubRewardAmount(),
+         reportData.getHubTopRewardedAmount(),
          reportData.getTransactions());
   }
 

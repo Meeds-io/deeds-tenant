@@ -78,7 +78,7 @@ export function generateToken() {
 }
 
 export function getManagedDeeds(womServerUrl, address) {
-  const url = `${womServerUrl}/api/hubs/managed-deeds/${address}`.replace(/\/\//g, '/').replace(':/', '://');
+  const url = `${womServerUrl}/hubs/managed-deeds/${address}`.replace(/\/\//g, '/').replace(':/', '://');
   return fetch(url, {method: 'Get'})
     .then((resp) => {
       if (resp?.ok) {

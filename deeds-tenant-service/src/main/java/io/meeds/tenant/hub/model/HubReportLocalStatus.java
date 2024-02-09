@@ -59,9 +59,11 @@ public class HubReportLocalStatus extends HubReportPayload {
                               long participantsCount,
                               long recipientsCount,
                               long achievementsCount,
+                              long actionsCount,
                               String rewardTokenAddress,
                               long rewardTokenNetworkId,
                               double hubRewardAmount,
+                              double hubTopReceiverAmount,
                               SortedSet<String> transactions,
                               long periodId,
                               boolean canRefresh,
@@ -79,9 +81,11 @@ public class HubReportLocalStatus extends HubReportPayload {
           participantsCount,
           recipientsCount,
           achievementsCount,
+          actionsCount,
           rewardTokenAddress,
           rewardTokenNetworkId,
           hubRewardAmount,
+          hubTopReceiverAmount,
           transactions);
     this.periodId = periodId;
     this.canRefresh = canRefresh;

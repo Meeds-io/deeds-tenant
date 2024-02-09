@@ -174,7 +174,11 @@ class HubWalletStorageTest {
 
   private int                         achievementsCount    = 55698;
 
+  private int                         actionsCount         = 656;
+
   private double                      tokensSent           = 52.3365d;
+
+  private double                      topReceiverAmount   = 4.6d;
 
   private String                      uemAddress           = "0x290b11b1ab6a31ff95490e4e0eeffec6402cce99";
 
@@ -578,9 +582,11 @@ class HubWalletStorageTest {
                                 participantsCount,
                                 recipientsCount,
                                 achievementsCount,
+                                actionsCount,
                                 rewardTokenAddress,
                                 rewardTokenNetworkId,
                                 tokensSent,
+                                topReceiverAmount,
                                 transactions());
   }
 

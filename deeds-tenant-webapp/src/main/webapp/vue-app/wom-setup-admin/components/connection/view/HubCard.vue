@@ -168,7 +168,7 @@ export default {
     hubLogoUrl() {
       return this.disabled
         && `/portal/rest/v1/platform/branding/logo?v=${Date.now()}`
-        || `${this.womServerUrl}/api/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
+        || `${this.womServerUrl}/hubs/${this.hubAddress}/avatar?v=${this.hubUpdateTime || 0}`;
     },
     hubUsersCount() {
       return this.hub?.usersCount || 0;
