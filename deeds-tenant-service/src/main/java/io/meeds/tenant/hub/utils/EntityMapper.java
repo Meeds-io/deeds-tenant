@@ -45,16 +45,23 @@ public class EntityMapper {
     // Utils Class
   }
 
-  public static HubReportPayload toHubReport(RewardReport rewardReport,
+  public static HubReportPayload toHubReport(RewardReport rewardReport, // NOSONAR
                                              String hubAddress,
                                              long deedId,
                                              long usersCount,
                                              long participantsCount,
                                              long achievementsCount,
+                                             long actionsCount,
                                              Instant sentDate) {
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
     long recipientsCount = rewardReport.getValidRewardCount();
     double hubRewardAmount = rewardReport.getTokensSent();
+    double hubTopReceiverAmount = rewardReport.getValidRewards()
+                                              .stream()
+                                              .filter(Objects::nonNull)
+                                              .mapToDouble(WalletReward::getTokensSent)
+                                              .max()
+                                              .orElse(0d);
     SortedSet<String> transactions = rewardReport.getValidRewards()
                                                  .stream()
                                                  .filter(Objects::nonNull)
@@ -82,9 +89,11 @@ public class EntityMapper {
                                 participantsCount,
                                 recipientsCount,
                                 achievementsCount,
+                                actionsCount,
                                 StringUtils.lowerCase(rewardTokenAddress),
                                 rewardTokenNetworkId,
                                 hubRewardAmount,
+                                hubTopReceiverAmount,
                                 lowerCase(transactions));
   }
 
@@ -106,9 +115,11 @@ public class EntityMapper {
                                     reportData.getParticipantsCount(),
                                     reportData.getRecipientsCount(),
                                     reportData.getAchievementsCount(),
+                                    reportData.getActionsCount(),
                                     reportData.getRewardTokenAddress(),
                                     reportData.getRewardTokenNetworkId(),
                                     reportData.getHubRewardAmount(),
+                                    reportData.getHubTopRewardedAmount(),
                                     reportData.getTransactions(),
                                     periodId,
                                     canRefresh,
@@ -134,9 +145,11 @@ public class EntityMapper {
                                     report.getParticipantsCount(),
                                     report.getRecipientsCount(),
                                     report.getAchievementsCount(),
+                                    report.getActionsCount(),
                                     report.getRewardTokenAddress(),
                                     report.getRewardTokenNetworkId(),
                                     report.getHubRewardAmount(),
+                                    report.getHubTopRewardedAmount(),
                                     report.getTransactions(),
                                     id,
                                     canRefresh,

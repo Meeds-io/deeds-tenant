@@ -89,6 +89,10 @@ public class HubReportPayload implements DataPayload, Cloneable {
   private long              achievementsCount;
 
   @Getter
+  @Setter
+  private long              actionsCount;
+
+  @Getter
   private String            rewardTokenAddress;
 
   @Getter
@@ -98,6 +102,10 @@ public class HubReportPayload implements DataPayload, Cloneable {
   @Getter
   @Setter
   private double            hubRewardAmount;
+
+  @Getter
+  @Setter
+  private double            hubTopRewardedAmount;
 
   @Getter
   private SortedSet<String> transactions;
@@ -144,9 +152,11 @@ public class HubReportPayload implements DataPayload, Cloneable {
                                 participantsCount,
                                 recipientsCount,
                                 achievementsCount,
+                                actionsCount,
                                 rewardTokenAddress,
                                 rewardTokenNetworkId,
                                 hubRewardAmount,
+                                hubTopRewardedAmount,
                                 transactions);
   }
 }
