@@ -42,10 +42,14 @@ import org.exoplatform.wallet.model.reward.RewardPeriod;
 import org.exoplatform.wallet.model.reward.RewardReport;
 import org.exoplatform.wallet.reward.service.RewardReportService;
 
+import io.meeds.gamification.constant.DateFilterType;
+import io.meeds.gamification.constant.EntityStatusType;
 import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
 import io.meeds.gamification.model.filter.RealizationFilter;
+import io.meeds.gamification.model.filter.RuleFilter;
 import io.meeds.gamification.service.RealizationService;
+import io.meeds.gamification.service.RuleService;
 import io.meeds.tenant.hub.constant.HubReportStatusType;
 import io.meeds.tenant.hub.model.HubReportLocalStatus;
 import io.meeds.tenant.hub.model.HubTenant;
@@ -87,6 +91,9 @@ public class HubReportService {
   private RealizationService  realizationService;
 
   @Autowired
+  private RuleService         ruleService;
+
+  @Autowired
   private HubService          hubService;
 
   @Autowired
@@ -110,7 +117,7 @@ public class HubReportService {
     }
   }
 
-  public HubReportLocalStatus sendReport(RewardReport rewardReport) throws WomException {
+  public HubReportLocalStatus sendReport(RewardReport rewardReport) throws WomException { // NOSONAR
     if (!hubService.isConnected()) {
       return null;
     }
@@ -241,6 +248,7 @@ public class HubReportService {
                        computeUsersCount(),
                        countParticipants(fromDate, toDate),
                        countAchievements(fromDate, toDate),
+                       countActions(),
                        hubReportStorage.getSentDate(rewardPeriod));
   }
 
@@ -312,6 +320,15 @@ public class HubReportService {
     realizationFilter.setEarnerType(IdentityType.USER);
     realizationFilter.setStatus(RealizationStatus.ACCEPTED);
     return realizationService.countRealizationsByFilter(realizationFilter);
+  }
+
+  private int countActions() {
+    RuleFilter ruleFilter = new RuleFilter();
+    ruleFilter.setAllSpaces(true);
+    ruleFilter.setStatus(EntityStatusType.ENABLED);
+    ruleFilter.setProgramStatus(EntityStatusType.ENABLED);
+    ruleFilter.setDateFilterType(DateFilterType.STARTED);
+    return ruleService.countRules(ruleFilter);
   }
 
   private HubReportLocalStatus generateNewReport(RewardReport rewardReport) {

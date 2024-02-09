@@ -75,6 +75,7 @@ import org.exoplatform.wallet.utils.WalletUtils;
 import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
 import io.meeds.gamification.service.RealizationService;
+import io.meeds.gamification.service.RuleService;
 import io.meeds.tenant.hub.constant.HubReportStatusType;
 import io.meeds.tenant.hub.model.HubReportLocalStatus;
 import io.meeds.tenant.hub.model.HubTenant;
@@ -100,6 +101,9 @@ class HubReportServiceTest {
 
   @MockBean
   private RealizationService        realizationService;
+
+  @MockBean
+  private RuleService               ruleService;
 
   @MockBean
   private HubService                hubService;
@@ -191,7 +195,11 @@ class HubReportServiceTest {
 
   private int                       achievementsCount         = 55698;
 
+  private int                       actionsCount              = 76698;
+
   private double                    tokensSent                = 52.3365d;
+
+  private double                    topReceiverAmount         = 12.35d;
 
   private String                    tokenAddress              = "0x334d85047da64738c065d36e10b2adeb965000d0";
 
@@ -269,6 +277,7 @@ class HubReportServiceTest {
     when(rewardPeriod.getRewardPeriodType()).thenReturn(RewardPeriodType.WEEK);
 
     when(transaction.getHash()).thenReturn(txHash);
+    when(transaction.getContractAmount()).thenReturn(topReceiverAmount);
     when(transaction.isSucceeded()).thenReturn(true);
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
@@ -278,6 +287,7 @@ class HubReportServiceTest {
                                                                             == periodStartTime
                                                                         && filter.getToDate().getTime() / 1000 == periodEndTime)))
                                                                                                                                   .thenReturn(achievementsCount);
+    when(ruleService.countRules(any())).thenReturn(actionsCount);
 
     when(hubWalletStorage.sendReportTransaction(any(), any(), anyLong())).thenReturn(reportId);
 
@@ -386,6 +396,7 @@ class HubReportServiceTest {
     when(rewardPeriod.getRewardPeriodType()).thenReturn(RewardPeriodType.WEEK);
 
     when(transaction.getHash()).thenReturn(txHash);
+    when(transaction.getContractAmount()).thenReturn(topReceiverAmount);
     when(transaction.isSucceeded()).thenReturn(true);
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
@@ -395,6 +406,7 @@ class HubReportServiceTest {
                                                                             == periodStartTime
                                                                         && filter.getToDate().getTime() / 1000 == periodEndTime)))
                                                                                                                                   .thenReturn(achievementsCount);
+    when(ruleService.countRules(any())).thenReturn(actionsCount);
 
     HubReport hubReport = newHubReport();
     hubReport.setDeedId(-1); // Invalid, thus no deedId
@@ -459,6 +471,7 @@ class HubReportServiceTest {
                                                                             == periodStartTime
                                                                         && filter.getToDate().getTime() / 1000 == periodEndTime)))
                                                                                                                                   .thenReturn(achievementsCount);
+    when(ruleService.countRules(any())).thenReturn(actionsCount);
 
     when(hubReportStorage.getStatus(rewardPeriod)).thenReturn("SENT");
     when(hubReportStorage.getReportId(rewardPeriod)).thenReturn(reportId);
@@ -481,9 +494,11 @@ class HubReportServiceTest {
                                 participantsCount,
                                 recipientsCount,
                                 achievementsCount,
+                                actionsCount,
                                 StringUtils.lowerCase(tokenAddress),
                                 tokenNetworkId,
                                 tokensSent,
+                                topReceiverAmount,
                                 transactions());
   }
 
@@ -499,9 +514,11 @@ class HubReportServiceTest {
                          participantsCount,
                          recipientsCount,
                          achievementsCount,
+                         actionsCount,
                          tokenAddress,
                          tokenNetworkId,
                          tokensSent,
+                         topReceiverAmount,
                          transactions(),
                          rewardId,
                          city,
