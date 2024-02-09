@@ -65,12 +65,14 @@ public class HubReport extends HubReportPayload {
 
   private boolean fraud;
 
+  /**
+   * UEM Computed values
+   */
   private double  lastPeriodUemRewardAmount;
 
-  /**
-   * UEM Computed value
-   */
   private double  uemRewardAmount;
+
+  private double  engagementScore;
 
   private Instant updatedDate;
 
@@ -86,9 +88,11 @@ public class HubReport extends HubReportPayload {
           hubReportPayload.getParticipantsCount(),
           hubReportPayload.getRecipientsCount(),
           hubReportPayload.getAchievementsCount(),
+          hubReportPayload.getActionsCount(),
           StringUtils.lowerCase(hubReportPayload.getRewardTokenAddress()),
           hubReportPayload.getRewardTokenNetworkId(),
           hubReportPayload.getHubRewardAmount(),
+          hubReportPayload.getHubTopRewardedAmount(),
           lowerCase(hubReportPayload.getTransactions()));
   }
 
@@ -103,9 +107,11 @@ public class HubReport extends HubReportPayload {
                    long participantsCount,
                    long recipientsCount,
                    long achievementsCount,
+                   long actionsCount,
                    String rewardTokenAddress,
                    long rewardTokenNetworkId,
                    double hubRewardAmount,
+                   double hubTopReceiverAmount,
                    SortedSet<String> transactions,
                    long rewardId,
                    short city,
@@ -133,9 +139,11 @@ public class HubReport extends HubReportPayload {
           participantsCount,
           recipientsCount,
           achievementsCount,
+          actionsCount,
           rewardTokenAddress,
           rewardTokenNetworkId,
           hubRewardAmount,
+          hubTopReceiverAmount,
           transactions);
     this.rewardId = rewardId;
     this.city = city;
@@ -152,6 +160,74 @@ public class HubReport extends HubReportPayload {
     this.lastPeriodUemRewardAmount = lastPeriodUemRewardAmount;
     this.uemRewardAmount = uemRewardAmount;
     this.updatedDate = updatedDate;
+  }
+
+  public HubReport(long reportId, // NOSONAR
+                   String hubAddress,
+                   long deedId,
+                   Instant fromDate,
+                   Instant toDate,
+                   Instant sentDate,
+                   String periodType,
+                   long usersCount,
+                   long participantsCount,
+                   long recipientsCount,
+                   long achievementsCount,
+                   long actionsCount,
+                   String rewardTokenAddress,
+                   long rewardTokenNetworkId,
+                   double hubRewardAmount,
+                   double hubTopReceiverAmount,
+                   SortedSet<String> transactions,
+                   long rewardId,
+                   short city,
+                   short cardType,
+                   short mintingPower,
+                   long maxUsers,
+                   String deedManagerAddress,
+                   String ownerAddress,
+                   int ownerMintingPercentage,
+                   double fixedRewardIndex,
+                   double ownerFixedIndex,
+                   double tenantFixedIndex,
+                   boolean fraud,
+                   double lastPeriodUemRewardAmount,
+                   double uemRewardAmount,
+                   Instant updatedDate,
+                   double engagementScore) {
+    this(reportId,
+         hubAddress,
+         deedId,
+         fromDate,
+         toDate,
+         sentDate,
+         periodType,
+         usersCount,
+         participantsCount,
+         recipientsCount,
+         achievementsCount,
+         actionsCount,
+         rewardTokenAddress,
+         rewardTokenNetworkId,
+         hubRewardAmount,
+         hubTopReceiverAmount,
+         transactions,
+         rewardId,
+         city,
+         cardType,
+         mintingPower,
+         maxUsers,
+         deedManagerAddress,
+         ownerAddress,
+         ownerMintingPercentage,
+         fixedRewardIndex,
+         ownerFixedIndex,
+         tenantFixedIndex,
+         fraud,
+         lastPeriodUemRewardAmount,
+         uemRewardAmount,
+         updatedDate);
+    this.engagementScore = engagementScore;
   }
 
   public double getEd() {
