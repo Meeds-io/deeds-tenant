@@ -19,13 +19,16 @@
 package io.meeds.tenant.hub.service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.tx.gas.ContractEIP1559GasProvider;
 
 import org.exoplatform.wallet.blockchain.service.EthereumClientConnector;
@@ -50,7 +53,7 @@ public class PolygonContractGasProvider implements ContractEIP1559GasProvider {
   public long getChainId() {
     if (chainId == 0) {
       try {
-        chainId = web3j.ethChainId().send().getChainId().longValue();
+        chainId = getWeb3j().ethChainId().send().getChainId().longValue();
       } catch (IOException e) {
         LOG.warn("Error retrieving Network Identifier", e);
         return 137l; // Polygon Mainnet in case it fails on production
@@ -62,19 +65,25 @@ public class PolygonContractGasProvider implements ContractEIP1559GasProvider {
   @Override
   @SneakyThrows
   public BigInteger getGasPrice() {
-    return web3j.ethGasPrice().send().getGasPrice();
+    BigInteger baseFeePerGas = getWeb3j().ethGetBlockByNumber(DefaultBlockParameterName.LATEST, false)
+                                         .send()
+                                         .getBlock()
+                                         .getBaseFeePerGas();
+    return new BigDecimal(baseFeePerGas).multiply(BigDecimal.valueOf(1.2))
+                                        .setScale(0, RoundingMode.HALF_EVEN)
+                                        .toBigInteger();
   }
 
   @Override
   @SneakyThrows
   public BigInteger getMaxFeePerGas(String contractFunc) {
-    return getMaxPriorityFeePerGas(contractFunc);
+    return getGasPrice().add(getMaxPriorityFeePerGas(contractFunc));
   }
 
   @Override
   @SneakyThrows
   public BigInteger getMaxPriorityFeePerGas(String contractFunc) {
-    return web3j.ethMaxPriorityFeePerGas().send().getMaxPriorityFeePerGas();
+    return getWeb3j().ethMaxPriorityFeePerGas().send().getMaxPriorityFeePerGas();
   }
 
   @Override
