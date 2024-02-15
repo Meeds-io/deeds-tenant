@@ -95,13 +95,12 @@ public class ContractUtils {
       BigInteger estimatedGas;
 
       String fromAddress = transactionManager.getFromAddress();
-      BigInteger maxPriorityFeePerGas = polygonContractGasProvider.getMaxPriorityFeePerGas(funcName);
-      BigInteger maxFeePerGas = polygonContractGasProvider.getMaxFeePerGas(funcName);
+      BigInteger gasPrice = polygonContractGasProvider.getGasPrice(funcName);
       BigInteger gasLimit = polygonContractGasProvider.getGasLimit(funcName);
       BigInteger nonce = getNonce(polygonContractGasProvider.getWeb3j(), fromAddress);
       Transaction tx = Transaction.createFunctionCallTransaction(fromAddress,
                                                                  nonce,
-                                                                 maxFeePerGas,
+                                                                 gasPrice,
                                                                  gasLimit,
                                                                  uemAddress,
                                                                  data);
@@ -112,17 +111,14 @@ public class ContractUtils {
         estimatedGas = gasEstimate.getAmountUsed();
       }
 
-      EthSendTransaction ethSendTransaction = transactionManager.sendEIP1559Transaction(uemNetworkId,
-                                                                                        maxPriorityFeePerGas,
-                                                                                        maxFeePerGas,
-                                                                                        BigDecimal.valueOf(estimatedGas.doubleValue())
-                                                                                                  .multiply(BigDecimal.valueOf(1.2d))
-                                                                                                  .toBigInteger(),
-                                                                                        uemAddress,
-                                                                                        data,
-                                                                                        BigInteger.ZERO,
-                                                                                        false);
-      return processResponse(transactionReceiptProcessor, ethSendTransaction);
+      EthSendTransaction sendTransactionCall = transactionManager.sendTransaction(gasPrice,
+                                                                                  BigDecimal.valueOf(estimatedGas.doubleValue())
+                                                                                            .multiply(BigDecimal.valueOf(1.2d))
+                                                                                            .toBigInteger(),
+                                                                                  uemAddress,
+                                                                                  data,
+                                                                                  BigInteger.ZERO);
+      return processResponse(transactionReceiptProcessor, sendTransactionCall);
     } catch (JsonRpcError error) {
       if (error.getData() != null) {
         throw new TransactionException(error.getData().toString());
