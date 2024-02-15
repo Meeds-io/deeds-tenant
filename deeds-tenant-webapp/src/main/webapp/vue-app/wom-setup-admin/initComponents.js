@@ -30,6 +30,7 @@ import ConnectingLabel from './components/connection/text/ConnectingLabel.vue';
 
 import MetamaskButton from './components/connection/form/MetamaskButton.vue';
 import ConnectButton from './components/connection/form/ConnectButton.vue';
+import DisconnectButton from './components/connection/form/DisconnectButton.vue';
 import DeedManagerSelector from './components/connection/form/DeedManagerSelector.vue';
 import DeedSelector from './components/connection/form/DeedSelector.vue';
 import DeedItem from './components/connection/form/DeedItem.vue';
@@ -57,6 +58,7 @@ const components = {
   'wom-setup-deed-manager-selector': DeedManagerSelector,
   'wom-setup-metamask-button': MetamaskButton,
   'wom-setup-connect-button': ConnectButton,
+  'wom-setup-disconnect-button': DisconnectButton,
   'wom-setup-deed-chip': DeedChip,
   'wom-setup-hub-card': HubCard,
 
