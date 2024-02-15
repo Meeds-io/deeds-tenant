@@ -178,7 +178,7 @@ class HubWalletStorageTest {
 
   private double                      tokensSent           = 52.3365d;
 
-  private double                      topReceiverAmount   = 4.6d;
+  private double                      topReceiverAmount    = 4.6d;
 
   private String                      uemAddress           = "0x290b11b1ab6a31ff95490e4e0eeffec6402cce99";
 
@@ -300,24 +300,19 @@ class HubWalletStorageTest {
       return request;
     });
 
-    BigInteger maxPriorityFeePerGas = BigInteger.valueOf(35l);
-    BigInteger maxFeePerGas = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getMaxPriorityFeePerGas(any())).thenReturn(maxPriorityFeePerGas);
-    when(polygonContractGasProvider.getMaxFeePerGas(any())).thenReturn(maxFeePerGas);
+    BigInteger gasPrice = BigInteger.valueOf(31l);
+    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
     EthSendTransaction ethSendTransaction = mock(EthSendTransaction.class);
     TransactionReceipt receipt = mock(TransactionReceipt.class);
-    when(transactionManager.sendEIP1559Transaction(eq(uemNetworkId),
-                                                   eq(maxPriorityFeePerGas),
-                                                   eq(maxFeePerGas),
-                                                   eq(BigDecimal.valueOf(estimatedGas.doubleValue())
-                                                                .multiply(BigDecimal.valueOf(1.2d))
-                                                                .toBigInteger()),
-                                                   eq(uemAddress),
-                                                   anyString(),
-                                                   eq(BigInteger.ZERO),
-                                                   eq(false))).thenReturn(ethSendTransaction);
+    when(transactionManager.sendTransaction(eq(gasPrice),
+                                            eq(BigDecimal.valueOf(estimatedGas.doubleValue())
+                                                         .multiply(BigDecimal.valueOf(1.2d))
+                                                         .toBigInteger()),
+                                            eq(uemAddress),
+                                            anyString(),
+                                            eq(BigInteger.ZERO))).thenReturn(ethSendTransaction);
     when(transactionReceiptProcessor.waitForTransactionReceipt(any())).thenReturn(receipt);
     when(receipt.isStatusOK()).thenReturn(true);
     when(receipt.getLogs()).thenReturn(Collections.singletonList(mock(Log.class)));
@@ -366,24 +361,19 @@ class HubWalletStorageTest {
       return request;
     });
 
-    BigInteger maxPriorityFeePerGas = BigInteger.valueOf(35l);
-    BigInteger maxFeePerGas = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getMaxPriorityFeePerGas(any())).thenReturn(maxPriorityFeePerGas);
-    when(polygonContractGasProvider.getMaxFeePerGas(any())).thenReturn(maxFeePerGas);
+    BigInteger gasPrice = BigInteger.valueOf(31l);
+    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
     EthSendTransaction ethSendTransaction = mock(EthSendTransaction.class);
     when(ethSendTransaction.getTransactionHash()).thenReturn(txHash);
-    when(transactionManager.sendEIP1559Transaction(eq(uemNetworkId),
-                                                   eq(maxPriorityFeePerGas),
-                                                   eq(maxFeePerGas),
-                                                   eq(BigDecimal.valueOf(estimatedGas.doubleValue())
-                                                                .multiply(BigDecimal.valueOf(1.2d))
-                                                                .toBigInteger()),
-                                                   eq(uemAddress),
-                                                   anyString(),
-                                                   eq(BigInteger.ZERO),
-                                                   eq(false))).thenReturn(ethSendTransaction);
+    when(transactionManager.sendTransaction(eq(gasPrice),
+                                            eq(BigDecimal.valueOf(estimatedGas.doubleValue())
+                                                         .multiply(BigDecimal.valueOf(1.2d))
+                                                         .toBigInteger()),
+                                            eq(uemAddress),
+                                            anyString(),
+                                            eq(BigInteger.ZERO))).thenReturn(ethSendTransaction);
 
     WomException exception = assertThrows(WomException.class,
                                           () -> hubWalletStorage.sendReportTransaction(reportPayload, uemAddress, uemNetworkId));
@@ -454,10 +444,8 @@ class HubWalletStorageTest {
       return request;
     });
 
-    BigInteger maxPriorityFeePerGas = BigInteger.valueOf(35l);
-    BigInteger maxFeePerGas = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getMaxPriorityFeePerGas(any())).thenReturn(maxPriorityFeePerGas);
-    when(polygonContractGasProvider.getMaxFeePerGas(any())).thenReturn(maxFeePerGas);
+    BigInteger gasPrice = BigInteger.valueOf(31l);
+    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
     WomException exception = assertThrows(WomException.class,
@@ -495,10 +483,8 @@ class HubWalletStorageTest {
       when(ethGetTransactionCount.getTransactionCount()).thenReturn(nonce);
       return request;
     });
-    BigInteger maxPriorityFeePerGas = BigInteger.valueOf(35l);
-    BigInteger maxFeePerGas = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getMaxPriorityFeePerGas(any())).thenReturn(maxPriorityFeePerGas);
-    when(polygonContractGasProvider.getMaxFeePerGas(any())).thenReturn(maxFeePerGas);
+    BigInteger gasPrice = BigInteger.valueOf(35l);
+    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
 
@@ -539,10 +525,8 @@ class HubWalletStorageTest {
       when(ethGetTransactionCount.getTransactionCount()).thenReturn(nonce);
       return request;
     });
-    BigInteger maxPriorityFeePerGas = BigInteger.valueOf(35l);
-    BigInteger maxFeePerGas = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getMaxPriorityFeePerGas(any())).thenReturn(maxPriorityFeePerGas);
-    when(polygonContractGasProvider.getMaxFeePerGas(any())).thenReturn(maxFeePerGas);
+    BigInteger gasPrice = BigInteger.valueOf(31l);
+    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
 
