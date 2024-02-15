@@ -17,13 +17,23 @@
   Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 -->
 <template>
-  <exo-confirm-dialog
-    ref="confirmDialog"
-    :title="$t('wom.disconnectFromWomConfirmTitle')"
-    :message="$t('wom.disconnectFromWomConfirmMessage')"
-    :ok-label="$t('wom.confirm')"
-    :cancel-label="$t('wom.cancel')"
-    @ok="disconnect" />
+  <exo-drawer
+    ref="drawer"
+    v-model="drawer"
+    :loading="disconnecting"
+    go-back-button
+    right>
+    <template #title>
+      {{ $t('uem.womDisconnection') }}
+    </template>
+    <template #content>
+      <div class="d-flex flex-column pa-5">
+        <div class="text-subtitle-1 font-weight-bold mx-auto mb-5">{{ $t('uem.disconnectQuestion') }}</div>
+        <div class="mb-5">{{ $t('uem.disconnectDescription') }}</div>
+        <wom-setup-disconnect-button :hub="hub" class="mx-auto" />
+      </div>
+    </template>
+  </exo-drawer>
 </template>
 <script>
 export default {
@@ -49,52 +59,15 @@ export default {
   },
   watch: {
     disconnecting() {
-      this.$emit('disconnecting', this.disconnecting);
+      this.$emit('disconnecting', this.loading);
     },
   },
   methods: {
     open() {
-      this.$refs.confirmDialog.open();
+      this.$refs.drawer.open();
     },
-    disconnect() {
-      this.disconnecting = true;
-      const provider = new window.ethers.providers.Web3Provider(window.ethereum);
-      return this.$tenantUtils.sendTransaction(
-        provider,
-        new window.ethers.Contract(
-          this.womAddress,
-          this.disconnectAbi,
-          provider
-        ),
-        'disconnect(address)',
-        {gasLimit: '200000'},
-        [this.hubAddress]
-      )
-        .then(receipt => {
-          if (receipt?.wait) {
-            return receipt.wait(1);
-          } else {
-            throw new Error('wom.errorDisconnectingToWom');
-          }
-        })
-        .then(receipt => {
-          if (receipt?.status) {
-            this.$root.$emit('alert-message', this.$t('wom.disconnectedFromWoMSuccessfully'), 'success');
-            this.$root.$emit('wom-disconnection-success');
-            this.disconnecting = false;
-          } else {
-            throw new Error('wom.errorDisconnectingToWom');
-          }
-        })
-        .catch(e => {
-          this.disconnecting = false;
-          const error = (e?.data?.message || e?.message || e?.cause || String(e));
-          let errorMessageKey = error.includes('wom.') && `wom.${error.split('wom.')[1].split(/[^A-Za-z0-9]/g)[0]}` || error;
-          if (!this.$te(errorMessageKey)) {
-            errorMessageKey = 'wom.errorDisconnectingToWom';
-          }
-          this.$root.$emit('alert-message', this.$t(errorMessageKey), 'error');
-        });
+    close() {
+      this.$refs.drawer.close();
     },
   },
 };
