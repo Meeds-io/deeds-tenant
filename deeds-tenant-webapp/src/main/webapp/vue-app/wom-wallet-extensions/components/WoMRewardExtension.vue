@@ -158,8 +158,11 @@ export default {
     periodEndDate() {
       return this.rewardReport?.period?.endDateInSeconds && this.rewardReport?.period?.endDateInSeconds * 1000;
     },
+    periodEndDatePlusWeek() {
+      return this.periodEndDate + 604800000;
+    },
     periodNonEligible() {
-      return this.hubJoinDate > this.periodEndDate;
+      return this.periodEndDatePlusWeek < this.hubJoinDate;
     },
     periodNotEnded() {
       return this.periodStartDate <= Date.now() && this.periodEndDate > Date.now();
