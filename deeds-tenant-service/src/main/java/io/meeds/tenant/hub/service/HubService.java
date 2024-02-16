@@ -31,6 +31,7 @@ import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.branding.model.Logo;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.portal.mop.service.LayoutService;
+import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.resources.LocaleConfigService;
@@ -49,10 +50,18 @@ import io.meeds.wom.api.model.WomConnectionRequest;
 import io.meeds.wom.api.model.WomConnectionResponse;
 import io.meeds.wom.api.model.WomDisconnectionRequest;
 
+import lombok.SneakyThrows;
+
 @Service
 public class HubService {
 
   public static final int     MAX_START_TENTATIVES            = 5;
+
+  public static final String  HUB_CONNECTED_EVENT             = "deed.tenant.hub.connected";
+
+  public static final String  HUB_DISCONNECTED_EVENT          = "deed.tenant.hub.disconnected";
+
+  public static final String  HUB_UPDATE_ON_WOM_EVENT         = "deed.tenant.hub.updatedOnWoM";
 
   public static final String  MANAGER_DEFAULT_ROLES_PARAM     = "managerDefaultRoles";
 
@@ -87,6 +96,9 @@ public class HubService {
 
   @Autowired
   private NotePageViewService notePageViewService;
+
+  @Autowired
+  private ListenerService     listenerService;
 
   public String getHubAddress() {
     return hubIdentityStorage.getHubAddress();
@@ -146,6 +158,7 @@ public class HubService {
     return womServiceClient.generateToken();
   }
 
+  @SneakyThrows
   public WomConnectionResponse connectToWoM(WomConnectionRequest connectionRequest) throws WomException { // NOSONAR
     try {
       String address = hubWalletStorage.getOrCreateHubAddress();
@@ -160,18 +173,22 @@ public class HubService {
         LOG.warn("Error while saving Hub Avatar. This isn't be blocker, thus continue processing WoM Connection",
                  e);
       }
+      hubIdentityStorage.getHub(true); // Must refresh from wom, thus force
+                                       // refresh
       return connectionResponse;
     } finally {
       hubIdentityStorage.refreshHubIdentity();
     }
   }
 
+  @SneakyThrows
   public void disconnectFromWom(WomDisconnectionRequest disconnectionRequest) throws WomException {
     try {
       if (!isConnected()) {
         throw new WomException("wom.alreadyDisconnected");
       }
-      disconnectionRequest.setHubAddress(getHubAddress());
+      HubTenant hub = getHub();
+      disconnectionRequest.setHubAddress(hub.getAddress());
       disconnectionRequest.setHubSignedMessage(hubWalletStorage.signHubMessage(disconnectionRequest.getRawMessage()));
       womServiceClient.disconnectFromWom(disconnectionRequest);
     } finally {
@@ -179,6 +196,7 @@ public class HubService {
     }
   }
 
+  @SneakyThrows
   public void updateHubCard() throws WomException { // NOSONAR
     if (!isConnected()) {
       return;
@@ -191,15 +209,21 @@ public class HubService {
       HubTenant hub = getHub();
       HubTenant original = hub.clone();
       setHubCardProperties(hub);
+      boolean updated = false;
       if (!original.equals(hub)) {
         LOG.info("Updating Hub Card on WoM Server");
         womServiceClient.saveHub(hub, hubSignedMessage, token);
+        updated = true;
       }
       long logoUpdateDate = getLogoUpdateDate();
       if (hub.getAvatarUpdateTime() == 0 || hub.getAvatarUpdateTime() < logoUpdateDate) {
         LOG.info("Updating Hub Card Avatar on WoM Server");
         saveHubAvatar();
         hubIdentityStorage.saveHubAvatarUpdateTime(logoUpdateDate == 0 ? System.currentTimeMillis() : logoUpdateDate);
+        updated = true;
+      }
+      if (updated) {
+        listenerService.broadcast(HUB_DISCONNECTED_EVENT, original, hub);
       }
     } finally {
       hubIdentityStorage.refreshHubIdentity();

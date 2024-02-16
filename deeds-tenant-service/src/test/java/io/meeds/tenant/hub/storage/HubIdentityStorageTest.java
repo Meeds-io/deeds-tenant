@@ -49,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -68,6 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
@@ -80,7 +82,7 @@ import io.meeds.wom.api.model.Hub;
 import io.meeds.wom.api.model.WomConnectionResponse;
 
 @SpringBootTest(classes = {
-  HubIdentityStorage.class,
+                            HubIdentityStorage.class,
 })
 @ExtendWith(MockitoExtension.class)
 class HubIdentityStorageTest {
@@ -93,6 +95,9 @@ class HubIdentityStorageTest {
 
   @MockBean
   private WalletTokenAdminService walletTokenAdminService;
+
+  @MockBean
+  private ListenerService         listenerService;
 
   @Autowired
   private HubIdentityStorage      hubIdentityStorage;
@@ -160,7 +165,9 @@ class HubIdentityStorageTest {
   void getHubWhenNotExistsInWom() {
     hubProfile = mock(Profile.class);
     when(hubIdentity.getProfile()).thenReturn(hubProfile);
+    when(hubProfile.getProperty(any())).thenReturn(null);
     when(hubProfile.getProperty(ADDRESS)).thenReturn(hubAddress);
+    when(hubProfile.getProperty(NAME)).thenReturn("{\"name\":\"" + name + "\"}"); // NOSONAR
     when(hubProfile.getIdentity()).thenReturn(hubIdentity);
     when(hubProfile.getIdentity().getId()).thenReturn(hubIdentityId);
 
@@ -222,6 +229,13 @@ class HubIdentityStorageTest {
 
     HubTenant hub = hubIdentityStorage.getHub();
     assertNotNull(hub);
+    verify(identityManager, never()).updateProfile(hubProfile);
+
+    hubProfile.setProperty(NAME, "{\"name\":\"" + name + "\"}");
+
+    hubIdentityStorage.refreshHubIdentity();
+    hub = hubIdentityStorage.getHub();
+    assertNotNull(hub);
     verify(identityManager).updateProfile(hubProfile);
 
     assertFalse(hub.isConnected());
@@ -269,6 +283,13 @@ class HubIdentityStorageTest {
     when(hubFromWom.getUsersCount()).thenReturn(usersCount);
 
     HubTenant hub = hubIdentityStorage.getHub();
+    assertNotNull(hub);
+    verify(identityManager, never()).updateProfile(hubProfile);
+
+    hubProfile.setProperty(NAME, "{\"name\":\"" + name + "\"}");
+
+    hubIdentityStorage.refreshHubIdentity();
+    hub = hubIdentityStorage.getHub();
     assertNotNull(hub);
     verify(identityManager).updateProfile(hubProfile);
 
