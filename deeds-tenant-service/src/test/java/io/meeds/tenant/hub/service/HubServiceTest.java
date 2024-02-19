@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -52,6 +53,7 @@ import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.branding.model.Logo;
 import org.exoplatform.portal.config.model.PortalConfig;
 import org.exoplatform.portal.mop.service.LayoutService;
+import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.resources.LocaleConfig;
 import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.wiki.model.Page;
@@ -99,6 +101,9 @@ class HubServiceTest {
 
   @MockBean
   private NotePageViewService notePageViewService;
+
+  @MockBean
+  private ListenerService     listenerService;
 
   @Mock
   private HubTenant           hub;
@@ -349,6 +354,7 @@ class HubServiceTest {
     when(brandingService.getLogo()).thenReturn(logo);
     hubService.connectToWoM(connectionRequest);
     verify(womServiceClient).saveHubAvatar(eq(hubAddress), anyString(), anyString(), any());
+    verify(hubIdentityStorage, atLeast(1)).getHub(true); // Must refresh from WoM
   }
 
   @Test
