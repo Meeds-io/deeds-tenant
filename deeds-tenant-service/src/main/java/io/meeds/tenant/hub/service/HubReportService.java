@@ -179,6 +179,14 @@ public class HubReportService {
     }
   }
 
+  public long getReportId(long periodId) {
+    return hubReportStorage.getReportId(periodId);
+  }
+
+  public long getPeriodId(long reportId) {
+    return hubReportStorage.getPeriodId(reportId);
+  }
+
   private HubReportLocalStatus retrieveReport(long periodId) throws WomException {
     long reportId = hubReportStorage.getReportId(periodId);
     if (reportId == 0) {
