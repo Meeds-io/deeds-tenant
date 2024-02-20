@@ -32,7 +32,7 @@
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
         max-width="25px" />
-      <span :class="!primary && 'primary--text'" class="py-2 ms-2 text-truncate text-none primary--text">{{ $t('wom.installMetamask') }}</span>
+      <span :class="!primary && 'primary--text'" class="py-2 ms-2 text-truncate text-none">{{ $t('wom.installMetamask') }}</span>
     </v-btn>
     <v-btn
       v-else
