@@ -16,6 +16,7 @@
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+
 export function isMetamaskInstalled() {
   return MetaMaskOnboarding.isMetaMaskInstalled();
 }
@@ -57,4 +58,8 @@ export async function chooseAccount(isMobile) {
 export function retrieveAddress() {
   return window.ethereum.request({ method: 'eth_accounts' })
     .then(address => address?.length && address[0] || null);
+}
+
+export function isAddress(address) {
+  return window.ethers.utils.isAddress(address);
 }

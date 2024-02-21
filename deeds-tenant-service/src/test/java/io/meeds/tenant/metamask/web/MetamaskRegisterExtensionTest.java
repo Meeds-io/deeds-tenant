@@ -16,51 +16,53 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 import org.exoplatform.web.register.RegisterHandler;
 
+import io.meeds.tenant.hub.service.HubService;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@ExtendWith(MockitoExtension.class)
-public class MetamaskRegisterExtensionTest {
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
-  @Mock
+@SpringBootTest(classes = {
+  MetamaskRegisterExtension.class,
+})
+class MetamaskRegisterExtensionTest {
+
+  @MockBean
   private MetamaskLoginService      metamaskLoginService;
 
+  @MockBean
+  private HubService                hubService;
+
+  @Autowired
   private MetamaskRegisterExtension metamaskRegisterExtension;
 
-  @BeforeEach
-  public void setUp() {
-    reset(metamaskLoginService);
-    metamaskRegisterExtension = new MetamaskRegisterExtension(metamaskLoginService);
-  }
-
   @Test
-  public void testGetExtensionName() {
+  void testGetExtensionName() {
     assertEquals(Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
                                LoginHandler.LOGIN_EXTENSION_NAME),
                  metamaskRegisterExtension.getExtensionNames());
   }
 
   @Test
-  public void testExtendParametersForLogin() {
+  void testExtendParametersForLogin() {
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(true);
     Map<String, Object> extendParameters = metamaskRegisterExtension.extendParameters(null, LoginHandler.LOGIN_EXTENSION_NAME);
     assertNotNull(extendParameters);
@@ -74,7 +76,7 @@ public class MetamaskRegisterExtensionTest {
   }
 
   @Test
-  public void testExtendParametersForRegister() {
+  void testExtendParametersForRegister() {
     String rawMessage = "rawMessage";
 
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(true);

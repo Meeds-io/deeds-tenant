@@ -16,40 +16,27 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpSession;
-
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
-import org.exoplatform.web.login.UIParamsExtension;
 
-import io.meeds.tenant.metamask.service.MetamaskLoginService;
-import io.meeds.tenant.model.DeedTenantHost;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * A Login extension to submit Login parameters to UI
  */
-public class MetamaskLoginExtension implements UIParamsExtension {
-
-  private static final List<String> EXTENSION_NAMES = Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
-
-  protected MetamaskLoginService    metamaskLoginService;
-
-  public MetamaskLoginExtension(MetamaskLoginService metamaskLoginService) {
-    this.metamaskLoginService = metamaskLoginService;
-  }
+@Service
+public class MetamaskLoginExtension extends BaseMetamaskExtension {
 
   @Override
   public List<String> getExtensionNames() {
-    return EXTENSION_NAMES;
+    return Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
   }
 
   @Override
@@ -60,30 +47,8 @@ public class MetamaskLoginExtension implements UIParamsExtension {
     HttpSession httpSession = controllerContext.getRequest().getSession(true);
     params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
 
-    addDeedTenantParameters(httpSession, params, false);
+    addDeedTenantParameters(httpSession, params);
     return params;
-  }
-
-  protected void addDeedTenantParameters(HttpSession httpSession, Map<String, Object> params, boolean needManagerMail) {
-    if (metamaskLoginService.isDeedTenant()) {
-      params.put("nftId", metamaskLoginService.getDeedId());
-      params.put("isDeedTenant", true);
-
-      DeedTenantHost deedTenantHost = DeedTenantHost.getInstance();
-      if (deedTenantHost != null) {
-        params.put("cityIndex", deedTenantHost.getCityIndex());
-        params.put("cardTypeIndex", deedTenantHost.getCardType());
-        String walletAddress = (String) httpSession.getAttribute(USERNAME_REQUEST_PARAM);
-        if (needManagerMail
-            && StringUtils.isNotBlank(walletAddress)
-            && metamaskLoginService.isTenantManager(walletAddress)) {
-          params.put("isTenantManager", true);
-          if (StringUtils.isNotBlank(deedTenantHost.getManagerEmail())) {
-            params.put("tenantManagerEmail", deedTenantHost.getManagerEmail());
-          }
-        }
-      }
-    }
   }
 
 }

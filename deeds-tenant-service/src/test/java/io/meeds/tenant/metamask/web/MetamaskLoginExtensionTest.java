@@ -16,49 +16,51 @@
  */
 package io.meeds.tenant.metamask.web;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
 
+import io.meeds.tenant.hub.service.HubService;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@ExtendWith(MockitoExtension.class)
-public class MetamaskLoginExtensionTest {
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
-  @Mock
+@SpringBootTest(classes = {
+  MetamaskLoginExtension.class,
+})
+class MetamaskLoginExtensionTest {
+
+  @MockBean
   private MetamaskLoginService   metamaskLoginService;
 
+  @MockBean
+  private HubService             hubService;
+
+  @Autowired
   private MetamaskLoginExtension metamaskLoginExtension;
 
-  @BeforeEach
-  public void setUp() {
-    reset(metamaskLoginService);
-    metamaskLoginExtension = new MetamaskLoginExtension(metamaskLoginService);
-  }
-
   @Test
-  public void testGetExtensionName() {
+  void testGetExtensionName() {
     assertEquals(Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME),
                  metamaskLoginExtension.getExtensionNames());
   }
 
   @Test
-  public void testExtendParameters() {
+  void testExtendParameters() {
     String rawMessage = "rawMessage";
 
     ControllerContext controllerContext = mock(ControllerContext.class);

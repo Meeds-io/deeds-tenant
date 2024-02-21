@@ -18,27 +18,44 @@ package io.meeds.tenant.metamask.authenticator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.gatein.sso.agent.tomcat.ServletAccess;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import org.exoplatform.services.organization.auth.AuthenticatorPlugin;
-import org.exoplatform.services.security.*;
+import org.exoplatform.services.organization.auth.OrganizationAuthenticatorImpl;
+import org.exoplatform.services.security.Authenticator;
+import org.exoplatform.services.security.Credential;
+import org.exoplatform.services.security.PasswordCredential;
+import org.exoplatform.services.security.UsernameCredential;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 import io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter;
 
+import jakarta.annotation.PostConstruct;
+
 /**
  * An authenticator plugin to authenticate Metamask users
  */
+@Component
 public class MetamaskAuthenticator extends AuthenticatorPlugin {
 
+  @Autowired
   private MetamaskLoginService metamaskLoginService;
 
-  public MetamaskAuthenticator(MetamaskLoginService metamaskLoginService) {
-    this.metamaskLoginService = metamaskLoginService;
+  @Autowired
+  private Authenticator        authenticator;
+
+  @PostConstruct
+  public void init() {
+    if (authenticator instanceof OrganizationAuthenticatorImpl organizationAuthenticatorImpl) {
+      organizationAuthenticatorImpl.addAuthenticatorPlugin(this);
+    }
   }
 
   @Override
   public String validateUser(Credential[] credentials) { // NOSONAR
-    if (credentials != null && credentials.length == 2 && credentials[0] instanceof UsernameCredential usernameCredential
+    if (credentials != null && credentials.length == 2
+        && credentials[0] instanceof UsernameCredential usernameCredential
         && credentials[1] instanceof PasswordCredential passwordCredential) {
       String compoundPassword = passwordCredential.getPassword();
       String[] passwordParts = StringUtils.split(compoundPassword, MetamaskSignInFilter.SEPARATOR);

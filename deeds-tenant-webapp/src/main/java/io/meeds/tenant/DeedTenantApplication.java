@@ -16,42 +16,31 @@
 package io.meeds.tenant;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.PropertySource;
 
 import io.meeds.spring.AvailableIntegration;
 import io.meeds.spring.kernel.PortalApplicationContextInitializer;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-
 @SpringBootApplication(scanBasePackages = {
     "io.meeds.tenant",
     AvailableIntegration.KERNEL_MODULE,
     AvailableIntegration.WEB_SECURITY_MODULE,
     AvailableIntegration.WEB_TRANSACTION_MODULE,
-  }, excludeName = {
-    "org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration",
-    "org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration",
-    "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration",
-    "org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration",
-    "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
+  }, exclude = {
+    LiquibaseAutoConfiguration.class,
+    DataSourceAutoConfiguration.class,
+    DataSourceTransactionManagerAutoConfiguration.class,
+    HibernateJpaAutoConfiguration.class
 })
 @EnableCaching
-@PropertySource("classpath:tenant.properties")
 @PropertySource("classpath:application.properties")
+@PropertySource("classpath:application-common.properties")
+@PropertySource("classpath:tenant.properties")
 public class DeedTenantApplication extends PortalApplicationContextInitializer {
-
-  @Override
-  public void onStartup(ServletContext servletContext) throws ServletException {
-    // Avoid creating Deed Tenants Indexes in Deed Tenant Elasticsearch
-    // When the ES is misconfigured
-    System.setProperty("meeds.elasticsearch.autoCreateIndex", "false");
-    // Disable ListenerService until verifying whether the tenant is included in
-    // WoM or not
-    System.setProperty("meeds.listenerService.enabled", "false");
-
-    super.onStartup(servletContext);
-  }
 
 }

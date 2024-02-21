@@ -18,41 +18,40 @@ package io.meeds.tenant.metamask.authenticator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
+import org.exoplatform.services.security.Authenticator;
 import org.exoplatform.services.security.Credential;
 import org.exoplatform.services.security.PasswordCredential;
 import org.exoplatform.services.security.UsernameCredential;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
 
-@ExtendWith(MockitoExtension.class)
-public class MetamaskAuthenticatorTest {
+@SpringBootTest(classes = {
+  MetamaskAuthenticator.class,
+})
+class MetamaskAuthenticatorTest {
 
   private static final String   PASSWORD = "password";
 
   private static final String   USERNAME = "username";
 
-  @Mock
+  @MockBean
   private MetamaskLoginService  metamaskLoginService;
 
+  @MockBean
+  private Authenticator         authenticator;
+
+  @Autowired
   private MetamaskAuthenticator metamaskAuthenticator;
 
-  @BeforeEach
-  public void setUp() {
-    reset(metamaskLoginService);
-    metamaskAuthenticator = new MetamaskAuthenticator(metamaskLoginService);
-  }
-
   @Test
-  public void testValidateInvalidCredentialsCount() {
+  void testValidateInvalidCredentialsCount() {
     assertNull(metamaskAuthenticator.validateUser(null));
     assertNull(metamaskAuthenticator.validateUser(new Credential[0]));
     assertNull(metamaskAuthenticator.validateUser(new Credential[] { new UsernameCredential(USERNAME) }));
@@ -62,7 +61,7 @@ public class MetamaskAuthenticatorTest {
   }
 
   @Test
-  public void testValidateInvalidPassword() {
+  void testValidateInvalidPassword() {
     assertNull(metamaskAuthenticator.validateUser(new Credential[] {
                                                                      new UsernameCredential(null),
                                                                      new PasswordCredential(null),
@@ -78,7 +77,7 @@ public class MetamaskAuthenticatorTest {
   }
 
   @Test
-  public void testValidateNotExistingUser() {
+  void testValidateNotExistingUser() {
     String walletAddress = "walletAddress";
     String otherUserName = "otherUserName";
     String rawMessage = "rawMessage";
@@ -96,7 +95,7 @@ public class MetamaskAuthenticatorTest {
   }
 
   @Test
-  public void testValidateWithDifferentUsernameAsResult() {
+  void testValidateWithDifferentUsernameAsResult() {
     String walletAddress = "walletAddress";
     String rawMessage = "rawMessage";
     String signedMessage = "signedMessage";

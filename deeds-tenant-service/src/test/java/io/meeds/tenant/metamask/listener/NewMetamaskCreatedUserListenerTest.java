@@ -18,14 +18,16 @@ package io.meeds.tenant.metamask.listener;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
@@ -36,58 +38,60 @@ import org.exoplatform.wallet.model.Wallet;
 import org.exoplatform.wallet.model.WalletProvider;
 import org.exoplatform.wallet.service.WalletAccountService;
 
-import io.meeds.tenant.service.TenantManagerService;
+@SpringBootTest(classes = {
+  NewMetamaskCreatedUserListener.class,
+})
+class NewMetamaskCreatedUserListenerTest {
 
-@ExtendWith(MockitoExtension.class)
-public class NewMetamaskCreatedUserListenerTest {
+  @MockBean
+  OrganizationService            organizationService;
 
-  @Mock
-  IdentityManager      identityManager;
+  @MockBean
+  WalletAccountService           walletAccountService;
 
-  @Mock
-  OrganizationService  organizationService;
+  @MockBean
+  IdentityManager                identityManager;
 
-  @Mock
-  TenantManagerService tenantManagerService;
-
-  @Mock
-  WalletAccountService walletAccountService;
+  @Autowired
+  NewMetamaskCreatedUserListener listener;
 
   @Test
-  public void testNewMetamaskCreatedUserListener() throws Exception {
+  void testNewMetamaskCreatedUserListenerWhenWalletExists() throws Exception {
     String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
-    NewMetamaskCreatedUserListener listener = new NewMetamaskCreatedUserListener(identityManager,
-                                                                                 organizationService,
-                                                                                 walletAccountService,
-                                                                                 tenantManagerService);
+    Wallet wallet = new Wallet();
+
+    when(walletAccountService.getWalletByAddress(username)).thenReturn(wallet);
+    User user = new UserImpl(username);
+    listener.postSave(user, true);
+    verifyNoInteractions(identityManager);
+    verify(walletAccountService, times(0)).saveWallet(any(), anyBoolean());
+  }
+
+  @Test
+  void testNewMetamaskCreatedUserListener() throws Exception {
+    String username = "0x8714924ADEdB61b790d639F19c3D6F0FE2Cb7576";
+    String identityId = "2554";
+
+    Identity identity = mock(Identity.class);
+    when(identity.getId()).thenReturn(identityId);
+    when(identityManager.getOrCreateUserIdentity(username)).thenReturn(identity);
+
+    Wallet wallet = mock(Wallet.class);
+    when(walletAccountService.createWalletInstance(WalletProvider.METAMASK,
+                                                   username,
+                                                   Long.valueOf(identity.getId()))).thenReturn(wallet);
+    when(walletAccountService.saveWallet(any(), anyBoolean())).thenAnswer(invocation -> invocation.getArgument(0));
 
     User user = new UserImpl("not an address");
     listener.postSave(user, true);
-    verify(walletAccountService, times(0)).saveWallet(any(Wallet.class), anyBoolean());
+    verify(walletAccountService, times(0)).saveWallet(any(), anyBoolean());
 
     user = new UserImpl(username);
     listener.postSave(user, false);
-    verify(walletAccountService, times(0)).saveWallet(any(Wallet.class), anyBoolean());
-
-    Wallet wallet = new Wallet();
-    wallet.setAddress(username);
-    Identity userIdentity = new Identity();
-    userIdentity.setId(String.valueOf(1l));
-
-    when(walletAccountService.getWalletByAddress(username)).thenReturn(wallet);
-    listener.postSave(user, true);
-    verify(walletAccountService, times(0)).saveWallet(any(Wallet.class), anyBoolean());
-
-    when(walletAccountService.getWalletByAddress(username)).thenReturn(null);
-    when(walletAccountService.createWalletInstance(WalletProvider.METAMASK,
-                                                   username,
-                                                   1l)).thenReturn(wallet);
-    when(walletAccountService.saveWallet(any(Wallet.class),
-                                         anyBoolean())).thenAnswer(invocation -> invocation.getArgument(0, Wallet.class));
-    when(identityManager.getOrCreateUserIdentity(username)).thenReturn(userIdentity);
+    verify(walletAccountService, times(0)).saveWallet(any(), anyBoolean());
 
     listener.postSave(user, true);
-    verify(walletAccountService, times(1)).saveWallet(any(Wallet.class), anyBoolean());
+    verify(walletAccountService, times(1)).saveWallet(any(), anyBoolean());
   }
 
 }

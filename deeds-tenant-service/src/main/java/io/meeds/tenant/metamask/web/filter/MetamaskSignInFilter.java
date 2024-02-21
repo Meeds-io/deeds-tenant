@@ -21,16 +21,8 @@ import static org.exoplatform.web.security.security.CookieTokenService.EXTERNAL_
 import java.io.IOException;
 import java.util.Collections;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
+
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
@@ -46,6 +38,15 @@ import org.exoplatform.web.register.ExternalRegisterHandler;
 import org.exoplatform.web.security.security.RemindPasswordTokenService;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * A Login extension to submit Login parameters to UI for used network, contract
@@ -136,7 +137,7 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
                                                                     EXTERNAL_REGISTRATION_TOKEN);
 
             String path = servletContext.getContextPath() + "/external-registration?token=" + tokenId;
-            if (metamaskLoginService.isDeedTenant() && metamaskLoginService.isTenantManager(walletAddress)) {
+            if (metamaskLoginService.isDeedHub() && metamaskLoginService.isDeedManager(walletAddress)) {
               path += "&" + INITIAL_URI_REQUEST_PARAM + "=/portal/tenantSetup";
             }
             response.sendRedirect(path);
@@ -202,8 +203,8 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     String walletAddress = request.getRemoteUser();
     return StringUtils.isNotBlank(walletAddress)
         && StringUtils.equals(request.getRequestURI(), request.getContextPath() + "/tenantSetup")
-        && metamaskLoginService.isDeedTenant()
-        && metamaskLoginService.isTenantManager(walletAddress);
+        && metamaskLoginService.isDeedHub()
+        && metamaskLoginService.isDeedManager(walletAddress);
   }
 
 }

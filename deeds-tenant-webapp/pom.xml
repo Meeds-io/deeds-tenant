@@ -87,17 +87,19 @@
         <executions>
           <execution>
             <id>login</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
             <configuration>
               <sourceDirectory>${project.build.directory}/src/main/webapp/skin/less</sourceDirectory>
               <outputDirectory>${project.build.directory}/${project.build.finalName}/css/</outputDirectory>
               <compress>false</compress>
               <includes>
                 <include>login.less</include>
+                <include>womSetupAdmin.less</include>
               </includes>
             </configuration>
-            <goals>
-              <goal>compile</goal>
-            </goals>
           </execution>
         </executions>
       </plugin>

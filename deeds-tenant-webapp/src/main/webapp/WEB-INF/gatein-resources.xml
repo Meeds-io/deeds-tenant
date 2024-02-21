@@ -31,6 +31,52 @@
     <css-path>/css/login.css</css-path>
   </portlet-skin>
 
+  <portlet-skin>
+    <application-name>deeds-tenant</application-name>
+    <portlet-name>WoMSetupAdmin</portlet-name>
+    <skin-name>Enterprise</skin-name>
+    <css-path>/css/womSetupAdmin.css</css-path>
+  </portlet-skin>
+
+  <portlet>
+    <name>WoMSetupAdmin</name>
+    <module>
+      <script>
+        <minify>false</minify>
+        <path>/js/womSetup.js</path>
+      </script>
+      <depends>
+        <module>vue</module>
+      </depends>
+      <depends>
+        <module>vuetify</module>
+      </depends>
+      <depends>
+        <module>eXoVueI18n</module>
+      </depends>
+      <depends>
+        <module>extensionRegistry</module>
+      </depends>
+      <depends>
+        <module>commonVueComponents</module>
+      </depends>
+      <depends>
+        <module>metamaskOnboarding</module>
+        <as>MetaMaskOnboarding</as>
+      </depends>
+      <depends>
+        <module>Jdenticon</module>
+        <as>jdenticon</as>
+      </depends>
+      <depends>
+        <module>ethers</module>
+      </depends>
+      <depends>
+        <module>animationComponents</module>
+      </depends>
+    </module>
+  </portlet>
+
   <module>
     <name>metamaskLoginExtension</name>
     <load-group>login-extensions</load-group>
@@ -111,6 +157,74 @@
     <depends>
       <module>jquery</module>
       <as>$</as>
+    </depends>
+  </module>
+
+  <module>
+    <name>WoMWalletRewardingExtension</name>
+    <load-group>wallet-rewarding</load-group>
+    <script>
+      <minify>false</minify>
+      <path>/js/womWalletExtensions.js</path>
+    </script>
+    <depends>
+      <module>vue</module>
+    </depends>
+    <depends>
+      <module>vuetify</module>
+    </depends>
+    <depends>
+      <module>eXoVueI18n</module>
+    </depends>
+    <depends>
+      <module>extensionRegistry</module>
+    </depends>
+    <depends>
+      <module>commonVueComponents</module>
+    </depends>
+    <depends>
+      <module>metamaskOnboarding</module>
+      <as>MetaMaskOnboarding</as>
+    </depends>
+    <depends>
+      <module>ethers</module>
+    </depends>
+    <depends>
+      <module>animationComponents</module>
+    </depends>
+  </module>
+
+  <module>
+    <name>WoMWalletAdministrationExtension</name>
+    <load-group>wallet-administration</load-group>
+    <script>
+      <minify>false</minify>
+      <path>/js/womWalletExtensions.js</path>
+    </script>
+    <depends>
+      <module>vue</module>
+    </depends>
+    <depends>
+      <module>vuetify</module>
+    </depends>
+    <depends>
+      <module>eXoVueI18n</module>
+    </depends>
+    <depends>
+      <module>extensionRegistry</module>
+    </depends>
+    <depends>
+      <module>commonVueComponents</module>
+    </depends>
+    <depends>
+      <module>metamaskOnboarding</module>
+      <as>MetaMaskOnboarding</as>
+    </depends>
+    <depends>
+      <module>ethers</module>
+    </depends>
+    <depends>
+      <module>animationComponents</module>
     </depends>
   </module>
 
