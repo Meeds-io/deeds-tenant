@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.Map;
 
+import org.exoplatform.commons.api.settings.ExoFeatureService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,6 +49,9 @@ class MetamaskLoginExtensionTest {
   private MetamaskLoginService   metamaskLoginService;
 
   @MockBean
+  private ExoFeatureService exoFeatureService;
+
+  @MockBean
   private HubService             hubService;
 
   @Autowired
@@ -68,6 +72,7 @@ class MetamaskLoginExtensionTest {
     HttpSession session = mock(HttpSession.class);
     when(controllerContext.getRequest()).thenReturn(request);
     when(request.getSession(anyBoolean())).thenReturn(session);
+    when(exoFeatureService.isActiveFeature("metamaskLogin")).thenReturn(true);
     when(metamaskLoginService.generateLoginMessage(session)).thenReturn(rawMessage);
 
     Map<String, Object> extendParameters = metamaskLoginExtension.extendParameters(controllerContext, null);
@@ -76,4 +81,21 @@ class MetamaskLoginExtensionTest {
     assertEquals(rawMessage, extendParameters.get("rawMessage"));
   }
 
+  @Test
+  void testDisableExtension () {
+    String rawMessage = "rawMessage";
+
+    ControllerContext controllerContext = mock(ControllerContext.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    HttpSession session = mock(HttpSession.class);
+    when(controllerContext.getRequest()).thenReturn(request);
+    when(request.getSession(anyBoolean())).thenReturn(session);
+    when(metamaskLoginService.generateLoginMessage(session)).thenReturn(rawMessage);
+    when(exoFeatureService.isActiveFeature("metamaskLogin")).thenReturn(false);
+
+    Map<String, Object> extendParameters = metamaskLoginExtension.extendParameters(controllerContext, null);
+    assertNotNull(extendParameters);
+    assertEquals(false, extendParameters.get("metamaskEnabled"));
+
+  }
 }
