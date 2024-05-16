@@ -38,13 +38,8 @@ public class MetamaskLoginExtension extends BaseMetamaskExtension {
 
   private static final String            METAMASK_LOGIN = "metamaskLogin";
 
-  protected            ExoFeatureService exoFeatureService;
-
   @Autowired
-  public MetamaskLoginExtension(ExoFeatureService exoFeatureService) {
-    super();
-    this.exoFeatureService = exoFeatureService;
-  }
+  protected            ExoFeatureService exoFeatureService;
 
   @Override
   public List<String> getExtensionNames() {
