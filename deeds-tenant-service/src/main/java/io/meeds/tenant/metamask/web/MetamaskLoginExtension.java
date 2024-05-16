@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.exoplatform.commons.api.settings.ExoFeatureService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.exoplatform.web.ControllerContext;
@@ -34,6 +36,11 @@ import jakarta.servlet.http.HttpSession;
 @Service
 public class MetamaskLoginExtension extends BaseMetamaskExtension {
 
+  private static final String            METAMASK_LOGIN = "metamaskLogin";
+
+  @Autowired
+  protected            ExoFeatureService exoFeatureService;
+
   @Override
   public List<String> getExtensionNames() {
     return Collections.singletonList(LoginHandler.LOGIN_EXTENSION_NAME);
@@ -42,7 +49,7 @@ public class MetamaskLoginExtension extends BaseMetamaskExtension {
   @Override
   public Map<String, Object> extendParameters(ControllerContext controllerContext, String extensionName) {
     Map<String, Object> params = new HashMap<>();
-    params.put("metamaskEnabled", true);
+    params.put("metamaskEnabled", exoFeatureService.isActiveFeature(METAMASK_LOGIN));
 
     HttpSession httpSession = controllerContext.getRequest().getSession(true);
     params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
