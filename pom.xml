@@ -43,9 +43,9 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <addon.exo.wallet.version>7.0.x-SNAPSHOT</addon.exo.wallet.version>
-    <addon.exo.gamification.version>7.0.x-SNAPSHOT</addon.exo.gamification.version>
-    <addon.exo.notes.version>7.0.x-SNAPSHOT</addon.exo.notes.version>
+    <addon.meeds.wallet.version>7.0.x-SNAPSHOT</addon.meeds.wallet.version>
+    <addon.meeds.gamification.version>7.0.x-SNAPSHOT</addon.meeds.gamification.version>
+    <addon.meeds.notes.version>7.0.x-SNAPSHOT</addon.meeds.notes.version>
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
@@ -55,23 +55,23 @@
     <dependencies>
       <!-- Import versions from platform project -->
       <dependency>
-        <groupId>org.exoplatform.addons.wallet</groupId>
+        <groupId>io.meeds.addons.wallet</groupId>
         <artifactId>wallet</artifactId>
-        <version>${addon.exo.wallet.version}</version>
+        <version>${addon.meeds.wallet.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.exoplatform.addons.gamification</groupId>
+        <groupId>io.meeds.addons.gamification</groupId>
         <artifactId>gamification</artifactId>
-        <version>${addon.exo.gamification.version}</version>
+        <version>${addon.meeds.gamification.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.exoplatform.addons.notes</groupId>
+        <groupId>io.meeds.addons.notes</groupId>
         <artifactId>notes</artifactId>
-        <version>${addon.exo.notes.version}</version>
+        <version>${addon.meeds.notes.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
