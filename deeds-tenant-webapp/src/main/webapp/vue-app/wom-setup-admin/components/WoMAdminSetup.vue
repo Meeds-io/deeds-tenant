@@ -22,30 +22,28 @@
 <template>
   <v-app flat>
     <div class="px-6">
-      <v-list-item class="px-0" two-line>
+      <v-list-item class="px-0" two-line dense>
         <v-list-item-content>
-          <v-list-item-title>
-            <h4 class="my-0">
-              <help-label
-                label="wom.setup.title"
-                label-class="header-color"
-                tooltip="wom.whatIsWoM">
-                <template slot="helpContent">
-                  <v-card-text class="text-color pa-0 mb-4">
-                    {{ $t('wom.whatIsWoM.paragraph1') }}
-                  </v-card-text>
-                  <v-card-text class="text-color pa-0 mb-4">
-                    {{ $t('wom.whatIsWoM.paragraph2') }}
-                  </v-card-text>
-                  <v-card-text
-                    v-sanitized-html="$t('wom.whatIsWoM.paragraph3', {
-                      0: `<a href='https://www.meeds.io/whitepaper' target='_blank'>`,
-                      1: '</a>'
-                    })"
-                    class="text-color pa-0 mb-4" />
-                </template>
-              </help-label>
-            </h4>
+          <v-list-item-title class="text-title">
+            <help-label
+              label="wom.setup.title"
+              label-class="text-title"
+              tooltip="wom.whatIsWoM">
+              <template slot="helpContent">
+                <v-card-text class="text-color pa-0 mb-4">
+                  {{ $t('wom.whatIsWoM.paragraph1') }}
+                </v-card-text>
+                <v-card-text class="text-color pa-0 mb-4">
+                  {{ $t('wom.whatIsWoM.paragraph2') }}
+                </v-card-text>
+                <v-card-text
+                  v-sanitized-html="$t('wom.whatIsWoM.paragraph3', {
+                    0: `<a href='https://www.meeds.io/whitepaper' target='_blank'>`,
+                    1: '</a>'
+                  })"
+                  class="text-color pa-0 mb-4" />
+              </template>
+            </help-label>
           </v-list-item-title>
           <v-list-item-subtitle>
             <help-label
