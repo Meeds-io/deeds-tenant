@@ -38,19 +38,19 @@
       <artifactId>deeds-tenant-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.exoplatform.addons.wallet</groupId>
+      <groupId>io.meeds.wallet</groupId>
       <artifactId>wallet-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.exoplatform.addons.wallet</groupId>
+      <groupId>io.meeds.wallet</groupId>
       <artifactId>wallet-services</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.exoplatform.addons.gamification</groupId>
+      <groupId>io.meeds.gamification</groupId>
       <artifactId>gamification-services</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.exoplatform.addons.notes</groupId>
+      <groupId>io.meeds.notes</groupId>
       <artifactId>notes-service</artifactId>
     </dependency>
 
