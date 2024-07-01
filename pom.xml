@@ -21,8 +21,8 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>addons-parent-pom</artifactId>
-    <groupId>org.exoplatform.addons</groupId>
-    <version>18-M03</version>
+    <groupId>io.meeds.addons</groupId>
+    <version>18-M04</version>
   </parent>
   <groupId>io.meeds.deeds-tenant</groupId>
   <artifactId>deeds-tenant-parent</artifactId>
@@ -43,35 +43,34 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <addon.exo.wallet.version>7.0.x-exo-SNAPSHOT</addon.exo.wallet.version>
-    <addon.exo.gamification.version>7.0.x-exo-SNAPSHOT</addon.exo.gamification.version>
-    <addon.exo.notes.version>7.0.x-exo-SNAPSHOT</addon.exo.notes.version>
+    <addon.meeds.wallet.version>7.0.x-exo-SNAPSHOT</addon.meeds.wallet.version>
+    <addon.meeds.gamification.version>7.0.x-exo-SNAPSHOT</addon.meeds.gamification.version>
+    <addon.meeds.notes.version>7.0.x-exo-SNAPSHOT</addon.meeds.notes.version>
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
-    <exo.snapshots.repo.url>https://repository.exoplatform.org/content/repositories/meeds-snapshots</exo.snapshots.repo.url>
   </properties>
   <dependencyManagement>
     <dependencies>
       <!-- Import versions from platform project -->
       <dependency>
-        <groupId>org.exoplatform.addons.wallet</groupId>
+        <groupId>io.meeds.wallet</groupId>
         <artifactId>wallet</artifactId>
-        <version>${addon.exo.wallet.version}</version>
+        <version>${addon.meeds.wallet.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.exoplatform.addons.gamification</groupId>
+        <groupId>io.meeds.gamification</groupId>
         <artifactId>gamification</artifactId>
-        <version>${addon.exo.gamification.version}</version>
+        <version>${addon.meeds.gamification.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>org.exoplatform.addons.notes</groupId>
+        <groupId>io.meeds.notes</groupId>
         <artifactId>notes</artifactId>
-        <version>${addon.exo.notes.version}</version>
+        <version>${addon.meeds.notes.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
