@@ -176,7 +176,7 @@ class MetamaskSignInFilterTest {
   }
 
   @Test
-  void testForwardToSetupWhenDeedOwner() throws Exception {
+  void testForwardToSetupWhenDeedOwner() throws Exception { // NOSONAR
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
     when(request.getContextPath()).thenReturn(CONTEXT_PATH);
     when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
@@ -186,7 +186,7 @@ class MetamaskSignInFilterTest {
     when(servletContext.getRequestDispatcher(any())).thenReturn(requestDispatcher);
     when(request.getContextPath()).thenReturn(CONTEXT_PATH);
     when(localeConfigService.getDefaultLocaleConfig()).thenReturn(new LocaleConfigImpl());
-    when(javascriptConfigService.getJSConfig(any(), any())).thenReturn(new JSONObject());
+    when(javascriptConfigService.getJSConfig()).thenReturn(new JSONObject());
 
     filter.doFilter(request, response, chain);
     verify(servletContext, times(1)).getRequestDispatcher(METAMASK_TENANT_SETUP_FORM);
