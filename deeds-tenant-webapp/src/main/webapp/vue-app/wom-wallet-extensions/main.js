@@ -22,7 +22,7 @@ import '../wom-setup-admin/services.js';
 
 const lang = window.eXo?.env?.portal?.language || 'en';
 const urls = [
-  `${eXo.env.portal.context}/${eXo.env.portal.rest}/i18n/bundle/locale.portlet.WoMSetupAdmin-${lang}.json`
+  `/deeds-tenant/i18n/locale.portlet.WoMSetupAdmin?lang=${lang}`
 ];
 
 export function init() {
