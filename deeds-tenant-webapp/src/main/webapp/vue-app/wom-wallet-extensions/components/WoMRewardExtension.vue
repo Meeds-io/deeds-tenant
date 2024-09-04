@@ -96,8 +96,8 @@ export default {
     },
   },
   data: () => ({
-    womConnectionUri: '/portal/administration/home/recognition/setup#wom',
-    rewardingUri: '/portal/administration/home/recognition/reward',
+    womConnectionUri: '/portal/administration/home/rewards/setup#wom',
+    rewardingUri: '/portal/administration/home/rewards/reward',
     hub: null,
     report: null,
     loading: true,
