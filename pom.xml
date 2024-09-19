@@ -43,9 +43,9 @@
   </scm>
   <properties>
     <!-- 3rd party libraries versions -->
-    <addon.meeds.wallet.version>7.0.x-exo-SNAPSHOT</addon.meeds.wallet.version>
-    <addon.meeds.gamification.version>7.0.x-exo-SNAPSHOT</addon.meeds.gamification.version>
-    <addon.meeds.notes.version>7.0.x-exo-SNAPSHOT</addon.meeds.notes.version>
+    <addon.meeds.wallet.version>7.0.0-exo-20240919</addon.meeds.wallet.version>
+    <addon.meeds.gamification.version>7.0.0-exo-20240919</addon.meeds.gamification.version>
+    <addon.meeds.notes.version>7.0.0-exo-20240919</addon.meeds.notes.version>
 
     <!-- Sonar properties -->
     <sonar.organization>meeds-io</sonar.organization>
