@@ -233,6 +233,7 @@
   <module>
     <name>ethers</name>
     <script>
+      <minify>false</minify>
       <path>/js/ethers.umd.min.js</path>
     </script>
   </module>
