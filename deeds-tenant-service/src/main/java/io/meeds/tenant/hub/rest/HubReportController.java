@@ -19,7 +19,13 @@ package io.meeds.tenant.hub.rest;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,14 +63,13 @@ public class HubReportController {
   @Operation(summary = "Retrieves the list of Hub Reward reports", method = "GET")
   @ApiResponse(responseCode = "200", description = "Request fulfilled")
   @ApiResponse(responseCode = "400", description = "Bad request")
-  public List<HubReportLocalStatus> getReports(
-                                               @Parameter(description = "Offset of query results", required = true)
-                                               @RequestParam("offset")
-                                               int offset,
-                                               @Parameter(description = "Limit of query results", required = true)
-                                               @RequestParam("limit")
-                                               int limit) {
-    return reportService.getReports(offset, limit);
+  public PagedModel<EntityModel<HubReportLocalStatus>> getReports(HttpServletRequest request,
+                                                                  Pageable pageable,
+                                                                  PagedResourcesAssembler<HubReportLocalStatus> assembler) {
+
+    Page<HubReportLocalStatus> hubReportLocalStatusPage = reportService.getReports(pageable);
+    return assembler.toModel(hubReportLocalStatusPage);
+
   }
 
   @GetMapping("{periodId}")

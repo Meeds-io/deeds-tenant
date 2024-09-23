@@ -34,9 +34,9 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.impl.UserImpl;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.manager.IdentityManager;
-import org.exoplatform.wallet.model.Wallet;
-import org.exoplatform.wallet.model.WalletProvider;
-import org.exoplatform.wallet.service.WalletAccountService;
+import io.meeds.wallet.wallet.model.Wallet;
+import io.meeds.wallet.wallet.model.WalletProvider;
+import io.meeds.wallet.wallet.service.WalletAccountService;
 
 @SpringBootTest(classes = {
   NewMetamaskCreatedUserListener.class,

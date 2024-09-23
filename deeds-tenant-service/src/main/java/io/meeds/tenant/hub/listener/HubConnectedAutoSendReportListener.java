@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
+import io.meeds.wallet.reward.service.RewardReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +32,7 @@ import org.exoplatform.services.listener.Listener;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.wallet.model.reward.RewardReport;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.common.ContainerTransactional;
 import io.meeds.tenant.hub.service.HubReportService;
