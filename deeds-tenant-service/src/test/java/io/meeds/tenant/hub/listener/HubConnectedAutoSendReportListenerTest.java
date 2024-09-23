@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 
+import io.meeds.wallet.reward.service.RewardReportService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -35,9 +36,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.ListenerService;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.model.reward.RewardReport;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.wallet.model.reward.RewardPeriod;
+import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.tenant.hub.service.HubReportService;
 import io.meeds.wom.api.model.Hub;

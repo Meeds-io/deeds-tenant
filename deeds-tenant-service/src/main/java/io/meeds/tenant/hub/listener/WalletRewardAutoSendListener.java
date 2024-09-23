@@ -24,7 +24,7 @@ import org.exoplatform.services.listener.Asynchronous;
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.Listener;
 import org.exoplatform.services.listener.ListenerService;
-import org.exoplatform.wallet.model.reward.RewardReport;
+import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.common.ContainerTransactional;
 import io.meeds.tenant.hub.service.HubReportService;
