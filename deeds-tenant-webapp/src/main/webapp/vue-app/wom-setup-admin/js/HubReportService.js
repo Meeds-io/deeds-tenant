@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-export function getReports(offset, limit) {
-  return fetch(`/deeds-tenant/rest/reports?offset=${offset || 0}&limit=${limit || 10}`, {
+export function getReports(page, size) {
+  return fetch(`/deeds-tenant/rest/reports?page=${page || 0}&size=${size || 10}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {

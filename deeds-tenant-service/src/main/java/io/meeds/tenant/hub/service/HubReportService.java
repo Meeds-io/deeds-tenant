@@ -26,10 +26,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Hash;
 
@@ -38,9 +42,8 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.UserStatus;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.model.reward.RewardReport;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.wallet.model.reward.RewardPeriod;
+import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.gamification.constant.DateFilterType;
 import io.meeds.gamification.constant.EntityStatusType;
@@ -153,17 +156,21 @@ public class HubReportService {
     }
   }
 
-  public List<HubReportLocalStatus> getReports(int offset, int limit) {
-    List<RewardPeriod> rewardPeriods = rewardReportService.findRewardReportPeriods(offset, limit);
-    if (CollectionUtils.isEmpty(rewardPeriods)) {
-      return Collections.emptyList();
-    } else {
-      return rewardPeriods.stream()
-                          .map(p -> rewardReportService.getRewardReport(p.getPeriodMedianDate()))
-                          .filter(Objects::nonNull)
-                          .map(this::generateNewReport)
-                          .toList();
+  public Page<HubReportLocalStatus> getReports(Pageable pageable) {
+    Page<RewardPeriod> rewardPeriods = rewardReportService.findRewardReportPeriods(pageable);
+
+    if (rewardPeriods == null || rewardPeriods.isEmpty()) {
+      return new PageImpl<>(Collections.emptyList(), pageable, 0);
     }
+
+    List<HubReportLocalStatus> newReports = rewardPeriods.getContent()
+                                                         .stream()
+                                                         .map(p -> rewardReportService.getRewardReport(p.getPeriodMedianDate()))
+                                                         .filter(Objects::nonNull)
+                                                         .map(this::generateNewReport)
+                                                         .collect(Collectors.toList());
+
+    return new PageImpl<>(newReports, pageable, rewardPeriods.getTotalElements());
   }
 
   public HubReportLocalStatus getReport(long periodId, boolean refresh) throws WomException {
