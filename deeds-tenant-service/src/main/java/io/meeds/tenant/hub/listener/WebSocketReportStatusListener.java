@@ -32,7 +32,7 @@ import org.exoplatform.services.listener.Asynchronous;
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.Listener;
 import org.exoplatform.services.listener.ListenerService;
-import org.exoplatform.wallet.service.WalletWebSocketService;
+import io.meeds.wallet.service.WalletWebSocketService;
 
 import io.meeds.common.ContainerTransactional;
 import io.meeds.gamification.service.ProgramService;
