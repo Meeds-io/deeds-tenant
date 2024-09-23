@@ -59,7 +59,7 @@ import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.identity.model.Profile;
 import org.exoplatform.social.core.manager.IdentityManager;
-import org.exoplatform.wallet.service.WalletTokenAdminService;
+import io.meeds.wallet.wallet.service.WalletTokenAdminService;
 
 import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
