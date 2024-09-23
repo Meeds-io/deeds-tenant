@@ -19,6 +19,7 @@ package io.meeds.tenant.hub.storage;
 
 import java.time.Instant;
 
+import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -27,8 +28,7 @@ import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.api.settings.data.Context;
 import org.exoplatform.commons.api.settings.data.Scope;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.wallet.model.reward.RewardPeriod;
 
 @Component
 public class HubReportStorage {
@@ -52,7 +52,7 @@ public class HubReportStorage {
   public static final Scope   REWARD_PERIOD_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_PERIOD_ID);
 
   @Autowired
-  private RewardReportService  rewardReportService;
+  private RewardReportService rewardReportService;
 
   @Autowired
   private SettingService       settingService;
