@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 import java.time.LocalDate;
 
+import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,9 +49,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.model.reward.RewardPeriodType;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.wallet.model.reward.RewardPeriod;
+import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
 
 @SpringBootTest(classes = {
   HubReportStorage.class,
