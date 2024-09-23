@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 import org.web3j.tx.gas.ContractGasProvider;
 
-import org.exoplatform.wallet.blockchain.service.EthereumClientConnector;
+import io.meeds.wallet.blockchain.service.EthereumClientConnector;
 
 import lombok.SneakyThrows;
 
