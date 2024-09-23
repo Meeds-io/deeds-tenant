@@ -61,14 +61,6 @@ export default {
     hasMore: false,
     expandedIndex: null,
   }),
-  computed: {
-    offset() {
-      return (this.page - 1) * this.pageSize;
-    },
-    limit() {
-      return this.pageSize;
-    },
-  },
   created() {
     this.init();
   },
@@ -77,13 +69,16 @@ export default {
       this.loadMore();
     },
     loadMore() {
-      this.page++;
       this.loading = true;
-      return this.$hubReportService.getReports(this.offset, this.limit + 1)
-        .then(reports => {
+      return this.$hubReportService.getReports(this.page, this.pageSize)
+        .then(data => {
+          const reports = data?._embedded?.hubReportLocalStatusList;
           if (reports?.length) {
-            this.reports.push(...reports.slice(0, this.limit));
-            this.hasMore = reports && reports.length > this.limit;
+            this.reports.push(...reports);
+            this.hasMore = data?.page?.number > data?.page?.totalPages - 1;
+            if (this.hasMore) {
+              this.page++;
+            }
           } else {
             this.hasMore = false;
           }

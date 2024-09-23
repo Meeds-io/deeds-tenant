@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
+import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.web3j.crypto.Hash;
 
 import org.exoplatform.commons.utils.ListAccess;
@@ -64,13 +68,12 @@ import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.services.organization.UserStatus;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.model.reward.RewardPeriodType;
-import org.exoplatform.wallet.model.reward.RewardReport;
-import org.exoplatform.wallet.model.reward.WalletReward;
-import org.exoplatform.wallet.model.transaction.TransactionDetail;
-import org.exoplatform.wallet.reward.service.RewardReportService;
-import org.exoplatform.wallet.utils.WalletUtils;
+import io.meeds.wallet.wallet.model.reward.RewardPeriod;
+import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
+import io.meeds.wallet.wallet.model.reward.RewardReport;
+import io.meeds.wallet.wallet.model.reward.WalletReward;
+import io.meeds.wallet.wallet.model.transaction.TransactionDetail;
+import io.meeds.wallet.wallet.utils.WalletUtils;
 
 import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
@@ -87,11 +90,11 @@ import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportPayload;
 import io.meeds.wom.api.model.HubReportVerifiableData;
 
-@SpringBootTest(classes = {
-                            HubReportService.class,
-})
+@SpringBootTest(classes = { HubReportService.class, })
 @ExtendWith(MockitoExtension.class)
 class HubReportServiceTest {
+
+  private static final Pageable     PAGEABLE                  = Pageable.ofSize(10);
 
   @MockBean
   private OrganizationService       organizationService;
@@ -265,11 +268,7 @@ class HubReportServiceTest {
     when(rewardReport.isCompletelyProceeded()).thenReturn(true);
     when(rewardReport.getValidRewardCount()).thenReturn(recipientsCount);
     when(rewardReport.getTokensSent()).thenReturn(tokensSent);
-    when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null,
-                                                                                           null,
-                                                                                           transaction,
-                                                                                           null,
-                                                                                           null)));
+    when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null, transaction, 0, 0, 0, null)));
 
     when(rewardPeriod.getId()).thenReturn(periodId);
     when(rewardPeriod.getStartDateInSeconds()).thenReturn(periodStartTime);
@@ -281,12 +280,10 @@ class HubReportServiceTest {
     when(transaction.isSucceeded()).thenReturn(true);
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
-                                                                        && filter.getEarnerType() == IdentityType.USER
-                                                                        && filter.getStatus() == RealizationStatus.ACCEPTED
-                                                                        && filter.getFromDate().getTime() / 1000
-                                                                            == periodStartTime
-                                                                        && filter.getToDate().getTime() / 1000 == periodEndTime)))
-                                                                                                                                  .thenReturn(achievementsCount);
+        && filter.getEarnerType() == IdentityType.USER && filter.getStatus() == RealizationStatus.ACCEPTED && filter.getFromDate()
+                                                                                                                    .getTime()
+            / 1000 == periodStartTime
+        && filter.getToDate().getTime() / 1000 == periodEndTime))).thenReturn(achievementsCount);
     when(ruleService.countRules(any())).thenReturn(actionsCount);
 
     when(hubWalletStorage.sendReportTransaction(any(), any(), anyLong())).thenReturn(reportId);
@@ -299,9 +296,7 @@ class HubReportServiceTest {
     report = hubReportService.sendReport(periodId);
     assertNotNull(report, "Shouldn't send report when not completely processed yet");
 
-    verify(hubWalletStorage).sendReportTransaction(newHubReportPayload(),
-                                                   uemAddress,
-                                                   networkId);
+    verify(hubWalletStorage).sendReportTransaction(newHubReportPayload(), uemAddress, networkId);
     verify(hubReportStorage).saveStatus(rewardPeriod, HubReportStatusType.SENDING.name());
     verify(listenerService).broadcast(REPORT_SENDING_IN_PROGRESS_EVENT, rewardPeriod.getId(), null);
 
@@ -311,9 +306,7 @@ class HubReportServiceTest {
     verify(listenerService).broadcast(REPORT_SENT_EVENT, rewardPeriod.getId(), reportId);
     verify(listenerService, never()).broadcast(REPORT_SENDING_ERROR_EVENT, rewardPeriod.getId(), null);
 
-    verify(womServiceClient).saveReport(new HubReportVerifiableData(hash,
-                                                                    signature,
-                                                                    hubReport));
+    verify(womServiceClient).saveReport(new HubReportVerifiableData(hash, signature, hubReport));
     verify(listenerService).broadcast(REPORT_PERSISTED_EVENT, reportId, null);
 
     when(hubWalletStorage.sendReportTransaction(any(), any(), anyLong())).thenThrow(IllegalStateException.class);
@@ -385,9 +378,8 @@ class HubReportServiceTest {
     when(rewardReport.getValidRewardCount()).thenReturn(recipientsCount);
     when(rewardReport.getTokensSent()).thenReturn(tokensSent);
     when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null,
-                                                                                           null,
                                                                                            transaction,
-                                                                                           null,
+                                                                                           0,0,0,
                                                                                            null)));
 
     lenient().when(rewardPeriod.getId()).thenReturn(periodId);
@@ -438,23 +430,23 @@ class HubReportServiceTest {
 
   @Test
   void getReportsWhenNoLocalRewards() {
-    List<HubReportLocalStatus> reports = hubReportService.getReports(0, 10);
-    assertNotNull(reports);
-    assertEquals(0, reports.size());
+    Page<HubReportLocalStatus> reports = hubReportService.getReports(PAGEABLE);
+    assertNotNull(reports.getContent());
+    assertEquals(0, reports.getContent().size());
   }
 
   @Test
   void getReportsWhenLocalRewardsNotSent()  {
-    when(rewardReportService.findRewardReportPeriods(0, 10)).thenReturn(Collections.singletonList(rewardPeriod));
+    when(rewardReportService.findRewardReportPeriods(PAGEABLE)).thenReturn(new PageImpl<>(List.of(rewardPeriod)));
     
-    List<HubReportLocalStatus> reports = hubReportService.getReports(0, 10);
-    assertNotNull(reports);
-    assertEquals(0, reports.size());
+    Page<HubReportLocalStatus> reports = hubReportService.getReports(PAGEABLE);
+    assertNotNull(reports.getContent());
+    assertEquals(0, reports.getContent().size());
   }
 
   @Test
   void getReportsWhenLocalRewardsSent() {
-    when(rewardReportService.findRewardReportPeriods(0, 10)).thenReturn(Collections.singletonList(rewardPeriod));
+    when(rewardReportService.findRewardReportPeriods(PAGEABLE)).thenReturn(new PageImpl<>(List.of(rewardPeriod)));
     when(rewardReportService.getRewardReportByPeriodId(periodId)).thenReturn(rewardReport);
     when(hubService.isConnected()).thenReturn(true);
     when(hubService.getHub()).thenReturn(hub);
@@ -477,9 +469,9 @@ class HubReportServiceTest {
     when(hubReportStorage.getReportId(rewardPeriod)).thenReturn(reportId);
     when(hubReportStorage.getPeriodKey(rewardPeriod)).thenReturn(periodId);
 
-    List<HubReportLocalStatus> reports = hubReportService.getReports(0, 10);
+    Page<HubReportLocalStatus> reports = hubReportService.getReports(PAGEABLE);
     assertNotNull(reports);
-    assertEquals(0, reports.size());
+    assertEquals(0, reports.getContent().size());
   }
 
   private HubReportPayload newHubReportPayload() {
