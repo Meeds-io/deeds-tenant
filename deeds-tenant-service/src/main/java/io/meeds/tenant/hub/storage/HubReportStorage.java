@@ -21,6 +21,7 @@ import java.time.Instant;
 
 import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
+import org.exoplatform.container.ExoContainerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,9 +51,6 @@ public class HubReportStorage {
   public static final Scope   REWARD_REPORT_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_REPORT_ID);
 
   public static final Scope   REWARD_PERIOD_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_PERIOD_ID);
-
-  @Autowired
-  private RewardReportService rewardReportService;
 
   @Autowired
   private SettingService       settingService;
@@ -141,9 +139,10 @@ public class HubReportStorage {
     if (rewardPeriod.getId() > 0) {
       return rewardPeriod.getId();
     } else {
+      RewardReportService rewardReportService = ExoContainerContext.getService(RewardReportService.class);
       rewardPeriod = rewardReportService.getRewardPeriod(rewardPeriod.getRewardPeriodType(), rewardPeriod.getPeriodMedianDate());
       if (rewardPeriod == null || rewardPeriod.getId() == 0) {
-        throw new IllegalStateException("Selected Rewrd period, doesn't have a matching id: " + rewardPeriod);
+        throw new IllegalStateException("Selected Reward period, doesn't have a matching id: " + rewardPeriod);
       } else {
         return rewardPeriod.getId();
       }
