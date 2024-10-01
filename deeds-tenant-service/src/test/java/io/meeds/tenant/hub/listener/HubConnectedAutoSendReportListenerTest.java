@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 
 import io.meeds.wallet.reward.service.RewardReportService;
+import org.exoplatform.container.PortalContainer;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,9 +44,7 @@ import io.meeds.wallet.wallet.model.reward.RewardReport;
 import io.meeds.tenant.hub.service.HubReportService;
 import io.meeds.wom.api.model.Hub;
 
-@SpringBootTest(classes = {
-                            HubConnectedAutoSendReportListener.class,
-})
+@SpringBootTest(classes = { HubConnectedAutoSendReportListener.class, })
 @ExtendWith(MockitoExtension.class)
 public class HubConnectedAutoSendReportListenerTest {
 
@@ -72,7 +72,21 @@ public class HubConnectedAutoSendReportListenerTest {
   @Autowired
   private HubConnectedAutoSendReportListener listener;
 
-  private long                               periodId = 3l;
+  private final long                         periodId = 3l;
+
+  private PortalContainer                  container;
+
+  @BeforeEach
+  void init() {
+    if (container == null) {
+      container = PortalContainer.getInstance();
+      RewardReportService walletRewardReportService = container.getComponentInstanceOfType(RewardReportService.class);
+      if (walletRewardReportService != null) {
+        container.unregisterComponent(RewardReportService.class);
+      }
+      container.registerComponentInstance(RewardReportService.class, rewardReportService);
+    }
+  }
 
   @Test
   public void autoSendLastReportOnEvent() throws Exception {
