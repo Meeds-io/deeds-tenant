@@ -47,6 +47,7 @@ import java.util.TreeSet;
 
 import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
+import org.exoplatform.container.PortalContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -225,11 +226,21 @@ class HubReportServiceTest {
 
   private MockedStatic<WalletUtils> walletUtils;
 
+  private PortalContainer                  container;
+
   @BeforeEach
   void init() {
     walletUtils = mockStatic(WalletUtils.class);
     walletUtils.when(WalletUtils::getNetworkId).thenReturn(tokenNetworkId);
     walletUtils.when(WalletUtils::getContractAddress).thenReturn(tokenAddress);
+    if (container == null) {
+      container = PortalContainer.getInstance();
+      RewardReportService walletRewardReportService = container.getComponentInstanceOfType(RewardReportService.class);
+      if (walletRewardReportService != null) {
+        container.unregisterComponent(RewardReportService.class);
+      }
+      container.registerComponentInstance(RewardReportService.class, rewardReportService);
+    }
   }
 
   @AfterEach
