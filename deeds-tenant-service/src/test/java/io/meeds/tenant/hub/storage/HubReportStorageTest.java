@@ -28,20 +28,27 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mockStatic;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
 import io.meeds.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.wallet.service.BlockchainTransactionService;
+import io.meeds.wallet.wallet.utils.WalletUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.exoplatform.container.PortalContainer;
+import org.exoplatform.social.core.manager.IdentityManager;
+import org.exoplatform.social.core.space.spi.SpaceService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,6 +58,7 @@ import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
 import io.meeds.wallet.wallet.model.reward.RewardPeriod;
 import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
+import org.web3j.tx.Contract;
 
 @SpringBootTest(classes = {
   HubReportStorage.class,
@@ -59,10 +67,10 @@ import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
 class HubReportStorageTest {
 
   @MockBean
-  private RewardReportService rewardReportService;
+  private SettingService      settingService;
 
   @MockBean
-  private SettingService      settingService;
+  private RewardReportService      rewardReportService;
 
   @Autowired
   private HubReportStorage    hubReportStorage;
@@ -75,6 +83,21 @@ class HubReportStorageTest {
   private long                reportId = 356l;
 
   private Instant             sentDate = Instant.now().minusSeconds(500);
+
+  protected PortalContainer container;
+
+  @BeforeEach
+  void init() {
+    if (container == null) {
+      container = PortalContainer.getInstance();
+      RewardReportService walletRewardReportService =
+              container.getComponentInstanceOfType(RewardReportService.class);
+      if (walletRewardReportService != null) {
+        container.unregisterComponent(RewardReportService.class);
+      }
+      container.registerComponentInstance(RewardReportService.class, rewardReportService);
+    }
+  }
 
   @Test
   void saveStatus() {
