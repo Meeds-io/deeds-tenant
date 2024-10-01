@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 
 import io.meeds.wallet.reward.service.RewardReportService;
+import org.exoplatform.container.ExoContainerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,9 +54,6 @@ public class HubConnectedAutoSendReportListener extends Listener<Hub, Object> {
   private static final Log    LOG = ExoLogger.getLogger(HubConnectedAutoSendReportListener.class);
 
   @Autowired
-  private RewardReportService rewardReportService;
-
-  @Autowired
   private HubReportService    hubReportService;
 
   @Autowired
@@ -63,9 +61,10 @@ public class HubConnectedAutoSendReportListener extends Listener<Hub, Object> {
 
   @Override
   @ContainerTransactional
-  public void onEvent(Event<Hub, Object> event) throws Exception { // NOSONAR
+  public void onEvent(Event<Hub, Object> event) { // NOSONAR
     Hub hub = event.getSource();
     if (hub.isConnected() && hub.getJoinDate() != null && Instant.now().minusSeconds(hub.getJoinDate().getEpochSecond()).getEpochSecond() < 3600l) {
+      RewardReportService rewardReportService = ExoContainerContext.getService(RewardReportService.class);
       RewardReport rewardReport = rewardReportService.getRewardReport(LocalDate.ofInstant(hub.getJoinDate(), ZoneOffset.UTC)
                                                                                .minusWeeks(1));
       if (rewardReport != null && rewardReport.isCompletelyProceeded()) {
