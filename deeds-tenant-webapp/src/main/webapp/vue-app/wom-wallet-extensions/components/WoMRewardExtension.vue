@@ -41,7 +41,7 @@
       :disabled="sending"
       class="btn btn-primary"
       @click="resendReport">
-      Send
+      {{ $t('wom.send') }}
     </v-btn>
   </div>
   <div v-else>
