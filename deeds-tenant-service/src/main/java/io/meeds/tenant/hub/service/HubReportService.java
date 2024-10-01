@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
+import org.exoplatform.container.ExoContainerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -88,9 +89,6 @@ public class HubReportService {
   private OrganizationService organizationService;
 
   @Autowired
-  private RewardReportService rewardReportService;
-
-  @Autowired
   private RealizationService  realizationService;
 
   @Autowired
@@ -111,8 +109,10 @@ public class HubReportService {
   @Autowired
   private ListenerService     listenerService;
 
+  private RewardReportService rewardReportService;
+
   public HubReportLocalStatus sendReport(long periodId) throws WomException {
-    RewardReport rewardReport = rewardReportService.getRewardReportByPeriodId(periodId);
+    RewardReport rewardReport = getRewardReportService().getRewardReportByPeriodId(periodId);
     if (rewardReport == null) {
       return null;
     } else {
@@ -157,7 +157,7 @@ public class HubReportService {
   }
 
   public Page<HubReportLocalStatus> getReports(Pageable pageable) {
-    Page<RewardPeriod> rewardPeriods = rewardReportService.findRewardReportPeriods(pageable);
+    Page<RewardPeriod> rewardPeriods = getRewardReportService().findRewardReportPeriods(pageable);
 
     if (rewardPeriods == null || rewardPeriods.isEmpty()) {
       return new PageImpl<>(Collections.emptyList(), pageable, 0);
@@ -165,7 +165,7 @@ public class HubReportService {
 
     List<HubReportLocalStatus> newReports = rewardPeriods.getContent()
                                                          .stream()
-                                                         .map(p -> rewardReportService.getRewardReport(p.getPeriodMedianDate()))
+                                                         .map(p -> getRewardReportService().getRewardReport(p.getPeriodMedianDate()))
                                                          .filter(Objects::nonNull)
                                                          .map(this::generateNewReport)
                                                          .collect(Collectors.toList());
@@ -177,7 +177,7 @@ public class HubReportService {
     if (refresh) {
       return retrieveReport(periodId);
     } else {
-      RewardReport rewardReport = rewardReportService.getRewardReportByPeriodId(periodId);
+      RewardReport rewardReport = getRewardReportService().getRewardReportByPeriodId(periodId);
       if (rewardReport == null) {
         throw new WomException("wom.unableToRetrieveReward");
       } else {
@@ -370,6 +370,13 @@ public class HubReportService {
       reportLocalStatus.setDeedId(-1);
     }
     return reportLocalStatus;
+  }
+
+  protected RewardReportService getRewardReportService() {
+    if (rewardReportService == null) {
+      rewardReportService = ExoContainerContext.getService(RewardReportService.class);
+    }
+    return rewardReportService;
   }
 
 }
