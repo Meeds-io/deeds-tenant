@@ -26,6 +26,24 @@
       target="_blank"
       class="text-decoration-underline">{{ reportSentDate }}</a>
   </div>
+  <div v-else-if="!loading && (reportTransactionError || reportTransactionNotSent)" class="d-flex">
+    <div v-if="sending" class="text-subtitle pe-2 align-self-center">{{ $t('wom.SendingReport') }}... </div>
+    <div v-else class="text-subtitle pe-2 align-self-center">
+      <v-icon
+        color="orange darken-2"
+        class="pe-2"
+        size="16">
+        fas fa-exclamation-triangle
+      </v-icon>
+      {{ $t('wom.reportNotSent') }}
+    </div>
+    <v-btn
+      :disabled="sending"
+      class="btn btn-primary"
+      @click="resendReport">
+      Send
+    </v-btn>
+  </div>
   <div v-else>
     {{ $t('wom.rewardSent') }} {{ rewardSentDate }}
   </div>
@@ -42,6 +60,7 @@ export default {
     hub: null,
     report: null,
     loading: true,
+    sending: false,
     lang: eXo.env.portal.language,
     dateFormat: {
       year: 'numeric',
@@ -77,6 +96,30 @@ export default {
       const sentDate = this.report?.sentDate && new Date(this.report?.sentDate) || null;
       return sentDate?.toLocaleString(this.lang, this.dateFormat);
     },
+    reportTransactionError() {
+      return this.report?.error;
+    },
+    periodWithoutRewards() {
+      return !this.rewardReport?.validRewardCount;
+    },
+    sendingWalletReward() {
+      return this.rewardReport?.pendingTransactionCount;
+    },
+    reportTransactionSending() {
+      return this.report?.status === 'SENDING';
+    },
+    rewardNotSentYet() {
+      return !this.periodWithoutRewards
+          && !this.sendingWalletReward
+          && !this.rewardReport?.successTransactionCount
+          && this.rewardReport?.tokensToSend;
+    },
+    reportTransactionNotSent() {
+      return !this.periodWithoutRewards
+          && !this.rewardNotSentYet
+          && !this.reportId
+          && !this.reportTransactionSending;
+    },
   },
   created() {
     this.getHub();
@@ -91,6 +134,15 @@ export default {
     document.removeEventListener('deed.tenant.report.error', this.refreshReportFromTriggeredEvent);
   },
   methods: {
+    resendReport() {
+      this.sending = true;
+      return this.$hubReportService.sendReport(this.periodId)
+        .then(() => {
+          // refresh report async
+          this.getReport();
+        })
+        .finally(() => this.sending = false);
+    },
     refreshReportFromTriggeredEvent(event) {
       if (event?.detail?.long === this.periodId) {
         this.report = null;
