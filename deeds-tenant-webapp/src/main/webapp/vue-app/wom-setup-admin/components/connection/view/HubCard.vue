@@ -140,6 +140,10 @@ export default {
       default: false,
     },
   },
+  data: () => ({
+    cities: ['TANIT', 'RESHEF', 'ASHTARTE', 'MELQART', 'ESHMUN', 'KUSHOR', 'HAMMON'],
+    cardTypes: ['COMMON', 'UNCOMMON', 'RARE', 'LEGENDARY'],
+  }),
   computed: {
     language() {
       return eXo.env.portal.language;
@@ -202,10 +206,10 @@ export default {
       return this.hub?.type;
     },
     city() {
-      return this.$root.cities[this.cityIndex];
+      return this.cities[this.cityIndex];
     },
     cardType() {
-      return this.$root.cardTypes[this.cardTypeIndex];
+      return this.cardTypes[this.cardTypeIndex];
     },
     cardImage() {
       return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city.toLowerCase()}-${this.cardType.toLowerCase()}.png`;
