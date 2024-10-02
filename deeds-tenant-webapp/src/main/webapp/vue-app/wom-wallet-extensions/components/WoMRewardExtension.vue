@@ -20,7 +20,10 @@
 
 -->
 <template>
-  <div v-if="reportId">
+  <div v-if="!connected">
+    {{ $t('wom.rewardSent') }} {{ rewardSentDate }}
+  </div>
+  <div v-else-if="reportId">
     {{ $t('wom.reportSent') }} <a
       :href="fullReportUrl"
       target="_blank"
@@ -44,9 +47,6 @@
       {{ $t('wom.send') }}
     </v-btn>
   </div>
-  <div v-else>
-    {{ $t('wom.rewardSent') }} {{ rewardSentDate }}
-  </div>
 </template>
 <script>
 export default {
@@ -69,6 +69,12 @@ export default {
     },
   }),
   computed: {
+    hubDeedId() {
+      return this.hub?.deedId;
+    },
+    connected() {
+      return this.hub?.connected && this.hub?.address && this.hubDeedId > 0;
+    },
     rewardSentDate() {
       const reward = this.rewardReport?.rewards?.find(reward => reward?.transaction?.succeeded);
       const sentDate = new Date(reward?.transaction?.timestamp);
