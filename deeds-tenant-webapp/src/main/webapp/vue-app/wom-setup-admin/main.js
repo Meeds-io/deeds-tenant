@@ -32,8 +32,6 @@ export function init() {
     .then(i18n => {
       Vue.createApp({
         data: () => ({
-          cities: ['TANIT', 'RESHEF', 'ASHTARTE', 'MELQART', 'ESHMUN', 'KUSHOR', 'HAMMON'],
-          cardTypes: ['COMMON', 'UNCOMMON', 'RARE', 'LEGENDARY'],
           hub: null,
         }),
         computed: {
