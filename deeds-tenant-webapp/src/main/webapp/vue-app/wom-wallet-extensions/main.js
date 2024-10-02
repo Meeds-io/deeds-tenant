@@ -25,6 +25,8 @@ const urls = [
   `/deeds-tenant/i18n/locale.portlet.WoMSetupAdmin?lang=${lang}`
 ];
 
+const appId = 'WoMStatusReward';
+
 export function init() {
   extensionRegistry.registerComponent('WalletAdministration', 'wallet-admin-header-extensions', {
     id: 'wom-extension',
@@ -38,8 +40,57 @@ export function init() {
     vueComponent: Vue.options.components['wom-reward-extension'],
     rank: 3,
   });
+  extensionRegistry.registerComponent('WalletRewardingCard', 'wallet-reward-cards-extensions', {
+    id: 'wom-extension',
+    isEnabled: () => true,
+    vueComponent: Vue.options.components['wom-status-reward-extension'],
+    rank: 3,
+  });
   exoi18n.loadLanguageAsync(lang, urls)
     .then(i18n => {
-      new Vue(i18n); // Inject retrieved I18N
+      Vue.createApp({
+        data: () => ({
+          hub: null,
+        }),
+        computed: {
+          blockchains() {
+            return {
+              0: {
+                name: this.$t('wom.unkownBlockchain'),
+                blockexplorer: '',
+                testnet: true,
+              },
+              1: {
+                name: 'Mainnet',
+                blockexplorer: 'https://etherscan.io',
+                testnet: false,
+              },
+              5: {
+                name: 'Goerli',
+                blockexplorer: 'https://goerli.etherscan.io',
+                testnet: true,
+              },
+              137: {
+                name: 'Polygon',
+                blockexplorer: 'https://polygonscan.com',
+                testnet: false,
+                chainId: '0x89',
+              },
+              80001: {
+                name: 'Mumbai',
+                blockexplorer: 'https://mumbai.polygonscan.com',
+                testnet: true,
+                chainId: '0x13881',
+              },
+            };
+          },
+        },
+        created() {
+          this.$root.$on('wom-hub-changed', hub => this.hub = hub);
+        },
+        template: `<wom-status-reward-extension id="${appId}" />`,
+        i18n,
+        vuetify: Vue.prototype.vuetifyOptions,
+      }, `#${appId}`, 'WoM Status');
     });
 }
