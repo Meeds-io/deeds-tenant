@@ -19,15 +19,14 @@
 package io.meeds.tenant.hub.listener;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 
-import io.meeds.wallet.reward.service.RewardReportService;
-import org.exoplatform.container.PortalContainer;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -38,10 +37,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.ListenerService;
-import io.meeds.wallet.wallet.model.reward.RewardPeriod;
-import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.tenant.hub.service.HubReportService;
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.model.RewardReport;
+import io.meeds.wallet.reward.service.RewardReportService;
+import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 
 @SpringBootTest(classes = { HubConnectedAutoSendReportListener.class, })
@@ -72,24 +73,10 @@ public class HubConnectedAutoSendReportListenerTest {
   @Autowired
   private HubConnectedAutoSendReportListener listener;
 
-  private final long                         periodId = 3l;
-
-  private PortalContainer                  container;
-
-  @BeforeEach
-  void init() {
-    if (container == null) {
-      container = PortalContainer.getInstance();
-      RewardReportService walletRewardReportService = container.getComponentInstanceOfType(RewardReportService.class);
-      if (walletRewardReportService != null) {
-        container.unregisterComponent(RewardReportService.class);
-      }
-      container.registerComponentInstance(RewardReportService.class, rewardReportService);
-    }
-  }
+  private long                               periodId = 3l;
 
   @Test
-  public void autoSendLastReportOnEvent() throws Exception {
+  public void autoSendLastReportOnEvent() throws WomException {
     when(event.getSource()).thenReturn(hub);
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now());
@@ -98,14 +85,14 @@ public class HubConnectedAutoSendReportListenerTest {
     when(rewardReport.getPeriod()).thenReturn(period);
     when(period.getId()).thenReturn(periodId);
     when(hubReportService.getReportId(periodId)).thenReturn(0l);
-    
+
     listener.onEvent(event);
 
     verify(hubReportService).sendReport(periodId);
   }
 
   @Test
-  public void avoidAutoSendWhenNoLastReport() throws Exception {
+  public void avoidAutoSendWhenNoLastReport() {
     when(event.getSource()).thenReturn(hub);
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now());
@@ -115,7 +102,7 @@ public class HubConnectedAutoSendReportListenerTest {
   }
 
   @Test
-  public void avoidAutoSendLastReportWhenNotCompleted() throws Exception {
+  public void avoidAutoSendLastReportWhenNotCompleted() {
     when(event.getSource()).thenReturn(hub);
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now());
@@ -127,7 +114,7 @@ public class HubConnectedAutoSendReportListenerTest {
   }
 
   @Test
-  public void avoidAutoSendLastReportWhenAlreadySent() throws Exception {
+  public void avoidAutoSendLastReportWhenAlreadySent() throws WomException {
     when(event.getSource()).thenReturn(hub);
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now());
@@ -143,7 +130,7 @@ public class HubConnectedAutoSendReportListenerTest {
   }
 
   @Test
-  public void avoidAutoSendLastReportWhenJoinDateIsBeforeOneHour() throws Exception {
+  public void avoidAutoSendLastReportWhenJoinDateIsBeforeOneHour() {
     when(event.getSource()).thenReturn(hub);
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now().minusSeconds(7200l));
@@ -155,10 +142,10 @@ public class HubConnectedAutoSendReportListenerTest {
   }
 
   @Test
-  public void avoidAutoSendLastReportWhenJoinDateIsNull() throws Exception {
+  public void avoidAutoSendLastReportWhenJoinDateIsNull() {
     when(event.getSource()).thenReturn(hub);
     when(hub.isConnected()).thenReturn(true);
-    
+
     listener.onEvent(event);
 
     verify(hub).isConnected();
@@ -166,7 +153,7 @@ public class HubConnectedAutoSendReportListenerTest {
   }
 
   @Test
-  public void avoidAutoSendLastReportWhenNotConnected() throws Exception {
+  public void avoidAutoSendLastReportWhenNotConnected() {
     when(event.getSource()).thenReturn(hub);
 
     listener.onEvent(event);

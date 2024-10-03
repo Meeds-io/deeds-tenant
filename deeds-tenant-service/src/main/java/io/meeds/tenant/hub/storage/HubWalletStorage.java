@@ -19,9 +19,9 @@ package io.meeds.tenant.hub.storage;
 
 import static io.meeds.tenant.hub.utils.ContractUtils.executeRemoteCallTransaction;
 import static io.meeds.tenant.hub.utils.ContractUtils.getReportSentEvents;
+import static io.meeds.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
 import static io.meeds.wom.api.utils.JsonUtils.fromJsonString;
 import static io.meeds.wom.api.utils.JsonUtils.toJsonString;
-import static io.meeds.wallet.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -53,9 +53,10 @@ import org.web3j.utils.Numeric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.meeds.wallet.wallet.model.WalletType;
-import io.meeds.wallet.wallet.service.WalletAccountService;
-import io.meeds.wallet.wallet.utils.WalletUtils;
+import io.meeds.wallet.model.WalletType;
+import io.meeds.wallet.service.WalletAccountService;
+import io.meeds.wallet.utils.WalletUtils;
+
 import org.exoplatform.web.security.codec.CodecInitializer;
 import org.exoplatform.web.security.security.TokenServiceInitializationException;
 

@@ -18,8 +18,8 @@
  */
 package io.meeds.tenant.hub.storage;
 
-import static io.meeds.wallet.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
-import static io.meeds.wallet.wallet.utils.WalletUtils.toJsonString;
+import static io.meeds.wallet.utils.WalletUtils.WALLET_ADMIN_REMOTE_ID;
+import static io.meeds.wallet.utils.WalletUtils.toJsonString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -77,12 +77,13 @@ import org.web3j.tx.Contract;
 import org.web3j.tx.TransactionManager;
 import org.web3j.tx.response.TransactionReceiptProcessor;
 
-import io.meeds.wallet.wallet.model.ContractDetail;
-import io.meeds.wallet.wallet.model.WalletType;
-import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
-import io.meeds.wallet.wallet.model.settings.GlobalSettings;
-import io.meeds.wallet.wallet.service.WalletAccountService;
-import io.meeds.wallet.wallet.utils.WalletUtils;
+import io.meeds.wallet.model.ContractDetail;
+import io.meeds.wallet.model.GlobalSettings;
+import io.meeds.wallet.model.RewardPeriodType;
+import io.meeds.wallet.model.WalletType;
+import io.meeds.wallet.service.WalletAccountService;
+import io.meeds.wallet.utils.WalletUtils;
+
 import org.exoplatform.web.security.codec.AbstractCodec;
 import org.exoplatform.web.security.codec.CodecInitializer;
 
