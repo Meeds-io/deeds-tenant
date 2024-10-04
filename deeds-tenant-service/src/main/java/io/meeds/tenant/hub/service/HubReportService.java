@@ -26,11 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.container.ExoContainerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -43,8 +40,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.UserStatus;
-import io.meeds.wallet.wallet.model.reward.RewardPeriod;
-import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.gamification.constant.DateFilterType;
 import io.meeds.gamification.constant.EntityStatusType;
@@ -60,6 +55,9 @@ import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubReportStorage;
 import io.meeds.tenant.hub.storage.HubWalletStorage;
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.model.RewardReport;
+import io.meeds.wallet.reward.service.RewardReportService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.constant.WomParsingException;
 import io.meeds.wom.api.model.HubReport;
@@ -109,10 +107,11 @@ public class HubReportService {
   @Autowired
   private ListenerService     listenerService;
 
+  @Autowired
   private RewardReportService rewardReportService;
 
   public HubReportLocalStatus sendReport(long periodId) throws WomException {
-    RewardReport rewardReport = getRewardReportService().getRewardReportByPeriodId(periodId);
+    RewardReport rewardReport = rewardReportService.getRewardReportByPeriodId(periodId);
     if (rewardReport == null) {
       return null;
     } else {
@@ -157,7 +156,7 @@ public class HubReportService {
   }
 
   public Page<HubReportLocalStatus> getReports(Pageable pageable) {
-    Page<RewardPeriod> rewardPeriods = getRewardReportService().findRewardReportPeriods(pageable);
+    Page<RewardPeriod> rewardPeriods = rewardReportService.findRewardReportPeriods(pageable);
 
     if (rewardPeriods == null || rewardPeriods.isEmpty()) {
       return new PageImpl<>(Collections.emptyList(), pageable, 0);
@@ -165,10 +164,10 @@ public class HubReportService {
 
     List<HubReportLocalStatus> newReports = rewardPeriods.getContent()
                                                          .stream()
-                                                         .map(p -> getRewardReportService().getRewardReport(p.getPeriodMedianDate()))
+                                                         .map(p -> rewardReportService.getRewardReport(p.getPeriodMedianDate()))
                                                          .filter(Objects::nonNull)
                                                          .map(this::generateNewReport)
-                                                         .collect(Collectors.toList());
+                                                         .toList();
 
     return new PageImpl<>(newReports, pageable, rewardPeriods.getTotalElements());
   }
@@ -177,7 +176,7 @@ public class HubReportService {
     if (refresh) {
       return retrieveReport(periodId);
     } else {
-      RewardReport rewardReport = getRewardReportService().getRewardReportByPeriodId(periodId);
+      RewardReport rewardReport = rewardReportService.getRewardReportByPeriodId(periodId);
       if (rewardReport == null) {
         throw new WomException("wom.unableToRetrieveReward");
       } else {
@@ -370,13 +369,6 @@ public class HubReportService {
       reportLocalStatus.setDeedId(-1);
     }
     return reportLocalStatus;
-  }
-
-  protected RewardReportService getRewardReportService() {
-    if (rewardReportService == null) {
-      rewardReportService = ExoContainerContext.getService(RewardReportService.class);
-    }
-    return rewardReportService;
   }
 
 }

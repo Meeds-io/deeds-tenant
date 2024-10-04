@@ -19,9 +19,7 @@ package io.meeds.tenant.hub.storage;
 
 import java.time.Instant;
 
-import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.container.ExoContainerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +27,9 @@ import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.api.settings.data.Context;
 import org.exoplatform.commons.api.settings.data.Scope;
-import io.meeds.wallet.wallet.model.reward.RewardPeriod;
+
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.reward.service.RewardReportService;
 
 @Component
 public class HubReportStorage {
@@ -54,6 +54,9 @@ public class HubReportStorage {
 
   @Autowired
   private SettingService       settingService;
+
+  @Autowired
+  private RewardReportService rewardReportService;
 
   public void saveStatus(RewardPeriod rewardPeriod, String status) {
     long periodId = getPeriodKey(rewardPeriod);
@@ -139,7 +142,6 @@ public class HubReportStorage {
     if (rewardPeriod.getId() > 0) {
       return rewardPeriod.getId();
     } else {
-      RewardReportService rewardReportService = ExoContainerContext.getService(RewardReportService.class);
       rewardPeriod = rewardReportService.getRewardPeriod(rewardPeriod.getRewardPeriodType(), rewardPeriod.getPeriodMedianDate());
       if (rewardPeriod == null || rewardPeriod.getId() == 0) {
         throw new IllegalStateException("Selected Reward period, doesn't have a matching id: " + rewardPeriod);
