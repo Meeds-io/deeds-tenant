@@ -28,27 +28,19 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.time.LocalDate;
 
-import io.meeds.wallet.reward.service.RewardReportService;
-import io.meeds.wallet.wallet.service.BlockchainTransactionService;
-import io.meeds.wallet.wallet.utils.WalletUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.container.PortalContainer;
-import org.exoplatform.social.core.manager.IdentityManager;
-import org.exoplatform.social.core.space.spi.SpaceService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,12 +48,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
-import io.meeds.wallet.wallet.model.reward.RewardPeriod;
-import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
-import org.web3j.tx.Contract;
+
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.model.RewardPeriodType;
+import io.meeds.wallet.reward.service.RewardReportService;
 
 @SpringBootTest(classes = {
-  HubReportStorage.class,
+                            HubReportStorage.class,
 })
 @ExtendWith(MockitoExtension.class)
 class HubReportStorageTest {
@@ -70,7 +63,7 @@ class HubReportStorageTest {
   private SettingService      settingService;
 
   @MockBean
-  private RewardReportService      rewardReportService;
+  private RewardReportService rewardReportService;
 
   @Autowired
   private HubReportStorage    hubReportStorage;
@@ -83,21 +76,6 @@ class HubReportStorageTest {
   private long                reportId = 356l;
 
   private Instant             sentDate = Instant.now().minusSeconds(500);
-
-  protected PortalContainer container;
-
-  @BeforeEach
-  void init() {
-    if (container == null) {
-      container = PortalContainer.getInstance();
-      RewardReportService walletRewardReportService =
-              container.getComponentInstanceOfType(RewardReportService.class);
-      if (walletRewardReportService != null) {
-        container.unregisterComponent(RewardReportService.class);
-      }
-      container.registerComponentInstance(RewardReportService.class, rewardReportService);
-    }
-  }
 
   @Test
   void saveStatus() {
@@ -170,7 +148,8 @@ class HubReportStorageTest {
     verify(settingService).set(eq(UEM_CONTEXT),
                                eq(REWARD_REPORT_SENT_DATE_APPLICATION),
                                eq(String.valueOf(periodId)),
-                               argThat(setting -> StringUtils.equals(String.valueOf(sentDate.toEpochMilli()), setting.getValue().toString())));
+                               argThat(setting -> StringUtils.equals(String.valueOf(sentDate.toEpochMilli()),
+                                                                     setting.getValue().toString())));
   }
 
   @Test
@@ -189,7 +168,7 @@ class HubReportStorageTest {
   void getReportId() {
     when(rewardPeriod.getId()).thenReturn(periodId);
     assertEquals(0, hubReportStorage.getReportId(rewardPeriod));
-    
+
     when(settingService.get(UEM_CONTEXT,
                             REWARD_REPORT_ID_APPLICATION,
                             String.valueOf(periodId))).thenAnswer(invocation -> SettingValue.create(String.valueOf(reportId)));
