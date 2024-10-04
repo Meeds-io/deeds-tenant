@@ -27,9 +27,10 @@ import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserEventListener;
 import org.exoplatform.social.core.identity.model.Identity;
 import org.exoplatform.social.core.manager.IdentityManager;
-import io.meeds.wallet.wallet.model.Wallet;
-import io.meeds.wallet.wallet.model.WalletProvider;
-import io.meeds.wallet.wallet.service.WalletAccountService;
+
+import io.meeds.wallet.model.Wallet;
+import io.meeds.wallet.model.WalletProvider;
+import io.meeds.wallet.service.WalletAccountService;
 
 import jakarta.annotation.PostConstruct;
 
