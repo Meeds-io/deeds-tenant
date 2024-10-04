@@ -22,8 +22,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
-import io.meeds.wallet.reward.service.RewardReportService;
-import org.exoplatform.container.ExoContainerContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,11 +31,12 @@ import org.exoplatform.services.listener.Listener;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.common.ContainerTransactional;
 import io.meeds.tenant.hub.service.HubReportService;
 import io.meeds.tenant.hub.service.HubService;
+import io.meeds.wallet.model.RewardReport;
+import io.meeds.wallet.reward.service.RewardReportService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 
@@ -54,6 +53,9 @@ public class HubConnectedAutoSendReportListener extends Listener<Hub, Object> {
   private static final Log    LOG = ExoLogger.getLogger(HubConnectedAutoSendReportListener.class);
 
   @Autowired
+  private RewardReportService rewardReportService;
+
+  @Autowired
   private HubReportService    hubReportService;
 
   @Autowired
@@ -63,8 +65,8 @@ public class HubConnectedAutoSendReportListener extends Listener<Hub, Object> {
   @ContainerTransactional
   public void onEvent(Event<Hub, Object> event) { // NOSONAR
     Hub hub = event.getSource();
-    if (hub.isConnected() && hub.getJoinDate() != null && Instant.now().minusSeconds(hub.getJoinDate().getEpochSecond()).getEpochSecond() < 3600l) {
-      RewardReportService rewardReportService = ExoContainerContext.getService(RewardReportService.class);
+    if (hub.isConnected() && hub.getJoinDate() != null
+        && Instant.now().minusSeconds(hub.getJoinDate().getEpochSecond()).getEpochSecond() < 3600l) {
       RewardReport rewardReport = rewardReportService.getRewardReport(LocalDate.ofInstant(hub.getJoinDate(), ZoneOffset.UTC)
                                                                                .minusWeeks(1));
       if (rewardReport != null && rewardReport.isCompletelyProceeded()) {

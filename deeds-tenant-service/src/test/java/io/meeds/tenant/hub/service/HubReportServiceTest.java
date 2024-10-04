@@ -45,9 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
-import io.meeds.wallet.reward.service.RewardReportService;
 import org.apache.commons.lang3.StringUtils;
-import org.exoplatform.container.PortalContainer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,12 +67,6 @@ import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserHandler;
 import org.exoplatform.services.organization.UserStatus;
-import io.meeds.wallet.wallet.model.reward.RewardPeriod;
-import io.meeds.wallet.wallet.model.reward.RewardPeriodType;
-import io.meeds.wallet.wallet.model.reward.RewardReport;
-import io.meeds.wallet.wallet.model.reward.WalletReward;
-import io.meeds.wallet.wallet.model.transaction.TransactionDetail;
-import io.meeds.wallet.wallet.utils.WalletUtils;
 
 import io.meeds.gamification.constant.IdentityType;
 import io.meeds.gamification.constant.RealizationStatus;
@@ -86,6 +78,13 @@ import io.meeds.tenant.hub.model.HubTenant;
 import io.meeds.tenant.hub.rest.client.WomClientService;
 import io.meeds.tenant.hub.storage.HubReportStorage;
 import io.meeds.tenant.hub.storage.HubWalletStorage;
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.model.RewardPeriodType;
+import io.meeds.wallet.model.RewardReport;
+import io.meeds.wallet.model.TransactionDetail;
+import io.meeds.wallet.model.WalletReward;
+import io.meeds.wallet.reward.service.RewardReportService;
+import io.meeds.wallet.utils.WalletUtils;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportPayload;
@@ -226,21 +225,11 @@ class HubReportServiceTest {
 
   private MockedStatic<WalletUtils> walletUtils;
 
-  private PortalContainer                  container;
-
   @BeforeEach
   void init() {
     walletUtils = mockStatic(WalletUtils.class);
     walletUtils.when(WalletUtils::getNetworkId).thenReturn(tokenNetworkId);
     walletUtils.when(WalletUtils::getContractAddress).thenReturn(tokenAddress);
-    if (container == null) {
-      container = PortalContainer.getInstance();
-      RewardReportService walletRewardReportService = container.getComponentInstanceOfType(RewardReportService.class);
-      if (walletRewardReportService != null) {
-        container.unregisterComponent(RewardReportService.class);
-      }
-      container.registerComponentInstance(RewardReportService.class, rewardReportService);
-    }
   }
 
   @AfterEach

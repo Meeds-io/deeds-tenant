@@ -17,8 +17,8 @@
  */
 package io.meeds.tenant.hub.utils;
 
-import static io.meeds.wallet.wallet.utils.WalletUtils.getContractAddress;
-import static io.meeds.wallet.wallet.utils.WalletUtils.getNetworkId;
+import static io.meeds.wallet.utils.WalletUtils.getContractAddress;
+import static io.meeds.wallet.utils.WalletUtils.getNetworkId;
 
 import java.time.Instant;
 import java.util.Objects;
@@ -29,13 +29,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import io.meeds.wallet.wallet.model.reward.RewardPeriod;
-import io.meeds.wallet.wallet.model.reward.RewardReport;
-import io.meeds.wallet.wallet.model.reward.WalletReward;
-import io.meeds.wallet.wallet.model.transaction.TransactionDetail;
-
 import io.meeds.tenant.hub.constant.HubReportStatusType;
 import io.meeds.tenant.hub.model.HubReportLocalStatus;
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.model.RewardReport;
+import io.meeds.wallet.model.TransactionDetail;
+import io.meeds.wallet.model.WalletReward;
 import io.meeds.wom.api.model.HubReport;
 import io.meeds.wom.api.model.HubReportPayload;
 
