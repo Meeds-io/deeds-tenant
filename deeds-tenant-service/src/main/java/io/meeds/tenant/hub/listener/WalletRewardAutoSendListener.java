@@ -24,10 +24,10 @@ import org.exoplatform.services.listener.Asynchronous;
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.Listener;
 import org.exoplatform.services.listener.ListenerService;
-import io.meeds.wallet.wallet.model.reward.RewardReport;
 
 import io.meeds.common.ContainerTransactional;
 import io.meeds.tenant.hub.service.HubReportService;
+import io.meeds.wallet.model.RewardReport;
 
 import jakarta.annotation.PostConstruct;
 
