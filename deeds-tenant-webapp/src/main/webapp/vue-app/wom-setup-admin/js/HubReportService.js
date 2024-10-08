@@ -46,14 +46,21 @@ export function getReport(id, refreshFromWoM) {
   });
 }
 
-export function getLocalRewardDetails(date) {
-  return fetch(`/portal/rest/wallet/api/reward/compute?date=${date}`, {
-    method: 'GET',
+export function getLocalRewardDetails(period) {
+  return fetch('/wallet/rest/reward/period/compute', {
+    method: 'POST',
     credentials: 'include',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      id: period?.id,
+      rewardPeriodType: period?.rewardPeriodType,
+      timeZone: period?.timeZone,
+      startDateInSeconds: period?.startDateInSeconds,
+      endDateInSeconds: period?.endDateInSeconds
+    })
   }).then((resp) => {
     if (resp) {
       try {
