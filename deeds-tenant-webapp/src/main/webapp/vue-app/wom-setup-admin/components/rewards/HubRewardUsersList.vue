@@ -69,11 +69,7 @@
 <script>
 export default {
   props: {
-    fromDate: {
-      type: Object,
-      default: null,
-    },
-    toDate: {
+    report: {
       type: Object,
       default: null,
     },
@@ -83,8 +79,20 @@ export default {
     loading: false,
   }),
   computed: {
-    periodMedian() {
-      return new Date((new Date(this.toDate).getTime() + new Date(this.fromDate).getTime()) / 2).toISOString().substring(0, 10);
+    fromDateInSeconds() {
+      const date = new Date(this.report?.fromDate);
+      return Math.floor(date.getTime() / 1000);
+    },
+    toDateInSeconds() {
+      const date = new Date(this.report?.toDate);
+      return Math.floor(date.getTime() / 1000);
+    },
+    rewardPeriod() {
+      return {
+        rewardPeriodType: this.report?.periodType,
+        startDateInSeconds: this.fromDateInSeconds,
+        endDateInSeconds: this.toDateInSeconds,
+      };
     },
     networkId() {
       const reward = this.rewards.find(t => t?.transaction?.networkId);
@@ -131,11 +139,10 @@ export default {
   methods: {
     init() {
       this.loading = true;
-      this.$hubReportService.getLocalRewardDetails(this.periodMedian)
+      this.$hubReportService.getLocalRewardDetails(this.rewardPeriod)
         .then(data => {
           const rewards = (data?.rewards || []);
-          this.rewards = rewards.filter(r => r.tokensSent
-              || r.rewards?.find(plugin => plugin.points))
+          this.rewards = rewards.filter(r => r.tokensSent || r.points)
             .map(r => ({
               name: r?.wallet?.name,
               points: this.formatNumber(r?.rewards?.map(x => x?.points || 0).reduce((x, y) => x + y, 0), 0),
