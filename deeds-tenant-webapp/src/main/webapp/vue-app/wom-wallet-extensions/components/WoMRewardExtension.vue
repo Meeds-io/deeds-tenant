@@ -20,32 +20,40 @@
 
 -->
 <template>
-  <div v-if="!connected">
-    {{ $t('wom.rewardSent') }} {{ rewardSentDate }}
-  </div>
-  <div v-else-if="reportId">
-    {{ $t('wom.reportSent') }} <a
-      :href="fullReportUrl"
-      target="_blank"
-      class="text-decoration-underline">{{ reportSentDate }}</a>
-  </div>
-  <div v-else-if="!loading && (reportTransactionError || reportTransactionNotSent)" class="d-flex">
-    <div v-if="sending" class="text-subtitle pe-2 align-self-center">{{ $t('wom.SendingReport') }}... </div>
-    <div v-else class="text-subtitle pe-2 align-self-center">
-      <v-icon
-        color="orange darken-2"
-        class="pe-2"
-        size="16">
-        fas fa-exclamation-triangle
-      </v-icon>
-      {{ $t('wom.reportNotSent') }}
+  <div v-if="!loading">
+    <div v-if="reportId">
+      {{ $t('wom.reportSent') }} <a
+        :href="fullReportUrl"
+        target="_blank"
+        class="text-decoration-underline">{{ reportSentDate }}</a>
     </div>
-    <v-btn
-      :disabled="sending"
-      class="btn btn-primary"
-      @click="resendReport">
-      {{ $t('wom.send') }}
-    </v-btn>
+    <div v-else-if="!connected">
+      <div>{{ $t('wom.rewardSent') }} {{ rewardSentDate }}</div>
+    </div>
+    <div v-else-if="connected">
+      <div class="text-subtitle text-color d-flex justify-end">{{ $t('wom.rewardSent') }} {{ rewardSentDate }}</div>
+      <div v-if="!periodNonEligible" class="text-subtitle d-flex justify-end">
+        {{ $t('uem.periodNonEligible') }}
+      </div>
+    </div>
+    <div v-else-if="reportTransactionError || reportTransactionNotSent" class="d-flex">
+      <div v-if="sending" class="text-subtitle pe-2 align-self-center">{{ $t('wom.SendingReport') }}... </div>
+      <div v-else class="text-subtitle pe-2 align-self-center">
+        <v-icon
+          color="orange darken-2"
+          class="pe-2"
+          size="16">
+          fas fa-exclamation-triangle
+        </v-icon>
+        <div v-sanitized-html="reportErrorMessage" class="error--text mb-4"></div>
+      </div>
+      <v-btn
+        :disabled="sending"
+        class="btn btn-primary"
+        @click="resendReport">
+        {{ $t('wom.send') }}
+      </v-btn>
+    </div>
   </div>
 </template>
 <script>
@@ -126,10 +134,42 @@ export default {
           && !this.reportId
           && !this.reportTransactionSending;
     },
+    periodEndDate() {
+      return this.rewardReport?.period?.endDateInSeconds && this.rewardReport?.period?.endDateInSeconds * 1000;
+    },
+    periodEndDatePlusWeek() {
+      return this.periodEndDate + 604800000;
+    },
+    hubJoinDate() {
+      return this.hub?.createdDate && new Date(this.hub?.createdDate);
+    },
+    periodNonEligible() {
+      return this.periodEndDatePlusWeek < this.hubJoinDate;
+    },
+    reportErrorObj() {
+      return this.report?.error?.length
+          && (this.report.error.indexOf('{') === 0)
+          && JSON.parse(this.report.error);
+    },
+    reportErrorMessageKey() {
+      return this.reportErrorObj?.messageKey;
+    },
+    reportErrorMessage() {
+      return this.reportErrorMessageKey
+          && this.$te(this.reportErrorMessageKey)
+          && this.$t(this.reportErrorMessageKey, {
+            0: '<strong>',
+            1: '</strong>',
+          })
+          || this.$t('uem.unknownErrorSendingReport');
+    },
   },
   created() {
-    this.getHub();
-    this.getReport();
+    this.getHub().then(() => {
+      this.$nextTick().then(() => {
+        this.getReport();
+      });
+    });
     document.addEventListener('deed.tenant.report.sent', this.refreshReportFromTriggeredEvent);
     document.addEventListener('deed.tenant.report.sending', this.refreshReportFromTriggeredEvent);
     document.addEventListener('deed.tenant.report.error', this.refreshReportFromTriggeredEvent);
@@ -144,7 +184,6 @@ export default {
       this.sending = true;
       return this.$hubReportService.sendReport(this.periodId)
         .then(() => {
-          // refresh report async
           this.getReport();
         })
         .finally(() => this.sending = false);

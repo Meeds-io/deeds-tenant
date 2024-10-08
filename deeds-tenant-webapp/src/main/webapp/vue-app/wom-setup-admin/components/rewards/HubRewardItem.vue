@@ -92,8 +92,7 @@
         </v-list>
         <wom-setup-hub-reward-users-list
           v-if="expand"
-          :from-date="fromDate"
-          :to-date="toDate"
+          :report="report"
           class="px-6 mt-8" />
       </v-card>
     </v-scale-transition>
