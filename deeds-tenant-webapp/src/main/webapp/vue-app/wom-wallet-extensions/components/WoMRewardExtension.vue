@@ -87,7 +87,7 @@ export default {
       return this.hub?.womServerUrl;
     },
     meedsServerUrl() {
-      return !this.womServerUrl || this.womServerUrl?.includes?.('wom.meeds.io') ? 'https://www.meeds.io/hubs' : this.womServerUrl.replace('/api', '');
+      return !this.womServerUrl || this.womServerUrl?.includes?.('wom.meeds.io') ? 'https://www.meeds.io/hubs' : `${this.womServerUrl.replace('/api', '')}/hubs`;
     },
     fullReportUrl() {
       if (!this.meedsServerUrl || !this.reportId) {
