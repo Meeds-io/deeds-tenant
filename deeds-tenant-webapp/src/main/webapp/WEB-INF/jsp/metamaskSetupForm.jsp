@@ -102,7 +102,7 @@
        theme: { disable: true },
      };
      eXo.developing = <%=org.exoplatform.commons.utils.PropertyManager.isDevelopping()%>;
-     require(['PORTLET/social-portlet/Login', 'PORTLET/social-portlet/GeneralSettings', 'SHARED/metamaskLoginExtension'], () => {
+     require(['PORTLET/social/Login', 'PORTLET/social/GeneralSettings', 'SHARED/metamaskLoginExtension'], () => {
        <%=inlineScripts%>;
      });
    });

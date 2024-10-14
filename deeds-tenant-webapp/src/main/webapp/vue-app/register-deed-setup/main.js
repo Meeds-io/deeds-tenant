@@ -34,11 +34,11 @@ const lang = window.eXo && eXo.env.portal.language || 'en';
 const appId = 'metamaskTenantSetupApplication';
 
 const urls = [
-  `/social-portlet/i18n/locale.portlet.Login?lang=${lang}`,
-  `/social-portlet/i18n/locale.portal.login?lang=${lang}`,
-  `/social-portlet/i18n/locale.portlet.Portlets?lang=${lang}`,
-  `/social-portlet/i18n/locale.portlet.Branding?lang=${lang}`,
-  `/social-portlet/i18n/locale.portlet.GeneralSettings?lang=${lang}`,
+  `/social/i18n/locale.portlet.Login?lang=${lang}`,
+  `/social/i18n/locale.portal.login?lang=${lang}`,
+  `/social/i18n/locale.portlet.Portlets?lang=${lang}`,
+  `/social/i18n/locale.portlet.Branding?lang=${lang}`,
+  `/social/i18n/locale.portlet.GeneralSettings?lang=${lang}`,
 ];
 
 export function init(params) {
