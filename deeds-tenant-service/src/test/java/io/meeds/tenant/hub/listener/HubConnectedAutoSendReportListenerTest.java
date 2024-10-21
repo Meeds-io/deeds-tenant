@@ -81,7 +81,7 @@ public class HubConnectedAutoSendReportListenerTest {
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now());
     when(rewardReportService.getRewardReport(any())).thenReturn(rewardReport);
-    when(rewardReport.isCompletelyProceeded()).thenReturn(true);
+    when(rewardReport.isCompletelyProcessed()).thenReturn(true);
     when(rewardReport.getPeriod()).thenReturn(period);
     when(period.getId()).thenReturn(periodId);
     when(hubReportService.getReportId(periodId)).thenReturn(0l);
@@ -119,7 +119,7 @@ public class HubConnectedAutoSendReportListenerTest {
     when(hub.isConnected()).thenReturn(true);
     when(hub.getJoinDate()).thenReturn(Instant.now());
     when(rewardReportService.getRewardReport(any())).thenReturn(rewardReport);
-    when(rewardReport.isCompletelyProceeded()).thenReturn(true);
+    when(rewardReport.isCompletelyProcessed()).thenReturn(true);
     when(rewardReport.getPeriod()).thenReturn(period);
     when(period.getId()).thenReturn(periodId);
     when(hubReportService.getReportId(periodId)).thenReturn(2l);
