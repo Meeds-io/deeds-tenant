@@ -69,7 +69,7 @@ public class HubConnectedAutoSendReportListener extends Listener<Hub, Object> {
         && Instant.now().minusSeconds(hub.getJoinDate().getEpochSecond()).getEpochSecond() < 3600l) {
       RewardReport rewardReport = rewardReportService.getRewardReport(LocalDate.ofInstant(hub.getJoinDate(), ZoneOffset.UTC)
                                                                                .minusWeeks(1));
-      if (rewardReport != null && rewardReport.isCompletelyProceeded()) {
+      if (rewardReport != null && rewardReport.isCompletelyProcessed()) {
         long periodId = rewardReport.getPeriod().getId();
         if (hubReportService.getReportId(periodId) == 0) {
           int retries = 3;
