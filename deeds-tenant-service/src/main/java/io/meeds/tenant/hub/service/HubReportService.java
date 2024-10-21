@@ -125,7 +125,7 @@ public class HubReportService {
     }
 
     RewardPeriod rewardPeriod = rewardReport.getPeriod();
-    if (!rewardReport.isCompletelyProceeded()) {
+    if (!rewardReport.isCompletelyProcessed()) {
       return null;
     } else {
       HubReportPayload reportData = toReport(rewardReport);
