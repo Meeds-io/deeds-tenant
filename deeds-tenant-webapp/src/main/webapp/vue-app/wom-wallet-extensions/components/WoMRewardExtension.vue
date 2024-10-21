@@ -83,10 +83,11 @@ export default {
     connected() {
       return this.hub?.connected && this.hub?.address && this.hubDeedId > 0;
     },
+    sentDate() {
+      return this.rewardReport?.sentDate;
+    },
     rewardSentDate() {
-      const reward = this.rewardReport?.rewards?.find(reward => reward?.transaction?.succeeded);
-      const sentDate = new Date(reward?.transaction?.timestamp);
-      return sentDate?.toLocaleString(this.lang, this.dateFormat);
+      return new window.Intl.DateTimeFormat(this.lang, this.dateFormat).format(new Date(this.sentDate));
     },
     periodId() {
       return this.rewardReport?.period?.id;
