@@ -265,7 +265,7 @@ class HubReportServiceTest {
     report = hubReportService.sendReport(periodId);
     assertNull(report, "Shouldn't send report when not completely processed yet");
 
-    when(rewardReport.isCompletelyProceeded()).thenReturn(true);
+    when(rewardReport.isCompletelyProcessed()).thenReturn(true);
     when(rewardReport.getValidRewardCount()).thenReturn(recipientsCount);
     when(rewardReport.getTokensSent()).thenReturn(tokensSent);
     when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null, transaction, 0, 0, 0, null)));
