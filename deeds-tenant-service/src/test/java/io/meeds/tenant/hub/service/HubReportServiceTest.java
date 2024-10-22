@@ -268,7 +268,7 @@ class HubReportServiceTest {
     when(rewardReport.isCompletelyProcessed()).thenReturn(true);
     when(rewardReport.getValidRewardCount()).thenReturn(recipientsCount);
     when(rewardReport.getTokensSent()).thenReturn(tokensSent);
-    when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null, transaction, 0, 0, 0, null)));
+    when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null, transaction, 0, 0, 0, null, 0)));
 
     when(rewardPeriod.getId()).thenReturn(periodId);
     when(rewardPeriod.getStartDateInSeconds()).thenReturn(periodStartTime);
@@ -379,8 +379,11 @@ class HubReportServiceTest {
     when(rewardReport.getTokensSent()).thenReturn(tokensSent);
     when(rewardReport.getValidRewards()).thenReturn(Collections.singleton(new WalletReward(null,
                                                                                            transaction,
-                                                                                           0,0,0,
-                                                                                           null)));
+                                                                                           0,
+                                                                                           0,
+                                                                                           0,
+                                                                                           null,
+                                                                                           0)));
 
     lenient().when(rewardPeriod.getId()).thenReturn(periodId);
     when(rewardPeriod.getStartDateInSeconds()).thenReturn(periodStartTime);
