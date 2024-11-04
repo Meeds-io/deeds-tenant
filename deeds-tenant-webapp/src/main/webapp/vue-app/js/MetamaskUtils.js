@@ -26,11 +26,10 @@ export async function signInWithMetamask(rawMessage, isMobile) {
     const onboarding = new MetaMaskOnboarding();
     return onboarding.startOnboarding();
   } else {
-    const address = await chooseAccount(isMobile);
-    const signedMessage = await window.ethereum.request({
-      method: 'personal_sign',
-      params: [rawMessage, address],
-    });
+    await chooseAccount(isMobile);
+    const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const signedMessage = await signer.signMessage(rawMessage);
     return `SIGNED_MESSAGE@${signedMessage}`;
   }
 }

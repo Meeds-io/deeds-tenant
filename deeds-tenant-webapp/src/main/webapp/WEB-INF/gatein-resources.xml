@@ -88,6 +88,9 @@
       <module>commonVueComponents</module>
     </depends>
     <depends>
+      <module>ethers</module>
+    </depends>
+    <depends>
       <module>metamaskOnboarding</module>
       <as>MetaMaskOnboarding</as>
     </depends>
@@ -118,6 +121,9 @@
       <module>metamaskOnboarding</module>
       <as>MetaMaskOnboarding</as>
     </depends>
+    <depends>
+      <module>ethers</module>
+    </depends>
   </module>
 
   <module>
@@ -142,6 +148,9 @@
     </depends>
     <depends>
       <module>commonVueComponents</module>
+    </depends>
+    <depends>
+      <module>ethers</module>
     </depends>
     <depends>
       <module>jquery</module>
@@ -234,7 +243,12 @@
     <name>ethers</name>
     <script>
       <minify>false</minify>
-      <path>/js/ethers.umd.min.js</path>
+      <adapter>
+        (function() {
+          <include>/js/ethers.umd.min.js</include>
+          return ethers;
+        })();
+      </adapter>
     </script>
   </module>
 
