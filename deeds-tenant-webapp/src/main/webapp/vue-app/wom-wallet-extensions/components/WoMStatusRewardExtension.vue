@@ -39,7 +39,22 @@
           </v-btn>
         </v-list-item-action>
       </v-list-item>
-      <v-list-item>
+      <v-list-item v-if="claimableAmount">
+        <v-list-item-content>
+          <v-list-item-title class="text-wrap">
+            {{ $t('wom.claimableAmount', {0: claimableAmount}) }}
+          </v-list-item-title>
+        </v-list-item-content>
+        <v-list-item-action class="d-inline-block ma-auto pe-1">
+          <a class="text-decoration-underline" @click="openClaimDrawer"> Claim </a>
+        </v-list-item-action>
+      </v-list-item>
+      <v-list-item v-else-if="connected">
+        <v-list-item-title class="text-wrap">
+          {{ $t('wom.findYourRewards') }}
+        </v-list-item-title>
+      </v-list-item>
+      <v-list-item v-else>
         <v-list-item-content>
           <v-list-item-title class="text-wrap">
             <help-label
@@ -61,13 +76,64 @@
         </v-list-item-content>
       </v-list-item>
       <wom-setup-drawer ref="drawer" />
+      <uem-claim-drawer
+        ref="claimDrawer"
+        :hub="hub"
+        :loading="loading"
+        @refresh="refresh" />
     </div>
   </v-card>
 </template>
 <script>
 export default {
+  data: () => ({
+    hub: null,
+    loading: false
+  }),
   mounted() {
     this.$root.$applicationLoaded();
   },
+  computed: {
+    hubDeedId() {
+      return this.hub?.deedId;
+    },
+    connected() {
+      return this.hub?.connected && this.hub?.address && this.hubDeedId > 0;
+    },
+    claimableAmount() {
+      if (!this.connected) {
+        return 0;
+      } else if (this.deedOwnerAddress === this.deedManagerAddress) {
+        return this.hub?.ownerClaimableAmount || 0;
+      } else {
+        return this.hub?.managerClaimableAmount || 0;
+      }
+    },
+  },
+  created() {
+    this.getHub();
+  },
+  methods: {
+    getHub() {
+      this.loading = true;
+      return this.$hubService.getHub()
+        .then(hub => this.hub = hub)
+        .finally(() => this.loading = false);
+    },
+    refresh(forceRefresh) {
+      this.loading = true;
+      return this.$hubService.getHub(forceRefresh)
+        .then(hub => this.hub = hub)
+        .finally(() => {
+          this.loading = false;
+          if (forceRefresh) {
+            localStorage.setItem('uem-claimable-refresh-time', String(Date.now()));
+          }
+        });
+    },
+    openClaimDrawer() {
+      this.$refs.claimDrawer.open();
+    },
+  }
 };
 </script>
