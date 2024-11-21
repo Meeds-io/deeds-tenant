@@ -42,7 +42,7 @@
       <v-list-item v-if="claimableAmount">
         <v-list-item-content>
           <v-list-item-title class="text-wrap">
-            {{ $t('wom.claimableAmount', {0: claimableAmount}) }}
+            {{ $t('wom.claimableAmount', {0: formattedClaimableAmount}) }}
           </v-list-item-title>
         </v-list-item-content>
         <v-list-item-action class="d-inline-block ma-auto pe-1">
@@ -108,6 +108,9 @@ export default {
       } else {
         return this.hub?.managerClaimableAmount || 0;
       }
+    },
+    formattedClaimableAmount() {
+      return this.claimableAmount % 1 === 0 ? this.claimableAmount : this.claimableAmount.toFixed(2);
     },
   },
   created() {
