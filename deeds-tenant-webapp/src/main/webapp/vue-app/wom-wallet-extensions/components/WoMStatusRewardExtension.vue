@@ -21,7 +21,7 @@
 <template>
   <v-card
     id="WoMStatusReward"
-    class="border-radius border-color ma-5 mt-2"
+    class="border-radius border-color ma-5 mt-lg-2"
     flat>
     <div class="d-flex flex-column flex-grow-1">
       <v-list-item>
@@ -88,7 +88,8 @@
 export default {
   data: () => ({
     hub: null,
-    loading: false
+    loading: false,
+    lang: eXo.env.portal.language,
   }),
   mounted() {
     this.$root.$applicationLoaded();
@@ -110,7 +111,11 @@ export default {
       }
     },
     formattedClaimableAmount() {
-      return this.claimableAmount % 1 === 0 ? this.claimableAmount : this.claimableAmount.toFixed(2);
+      return this.claimableAmount && new Intl.NumberFormat(this.lang, {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(this.claimableAmount) || 0;
     },
   },
   created() {
