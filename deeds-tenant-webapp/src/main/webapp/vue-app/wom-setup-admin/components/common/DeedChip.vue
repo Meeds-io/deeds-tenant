@@ -37,7 +37,7 @@ export default {
       return this.deed?.cardType;
     },
     cardImage() {
-      return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city.toLowerCase()}-${this.cardType.toLowerCase()}.png`;
+      return this.city && this.cardType && `https://wom.meeds.io/static/images/nft/${this.city?.toLowerCase()}-${this.cardType?.toLowerCase()}.png`;
     },
   },
 };

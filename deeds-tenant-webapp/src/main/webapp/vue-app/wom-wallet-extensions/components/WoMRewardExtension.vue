@@ -20,72 +20,41 @@
 
 -->
 <template>
-  <v-alert
-    v-if="periodEndDate
-      && !periodUpcoming
-      && (!loading || !hub)"
-    :type="alertType"
-    border="left"
-    elevation="2"
-    class="ma-0"
-    outlined
-    colored-border>
-    <div class="text-color text-start">
-      <template v-if="!connected">
-        <div v-sanitized-html="notConnectedLabel1" class="mb-2"></div>
-        <div v-sanitized-html="notConnectedLabel2"></div>
-      </template>
-      <template v-else-if="!loading && periodNonEligible">
-        {{ $t('uem.periodNonEligible') }}
-        <strong class="text-center d-inline-flex">
-          <date-format :value="hubJoinDate" />
-        </strong>
-      </template>
-      <template v-else-if="!loading && periodNotEnded">
-        {{ $t('uem.periodNotEnded') }}
-      </template>
-      <template v-else-if="!loading && periodWithoutRewards">
-        {{ $t('uem.periodWithoutRewards') }}
-      </template>
-      <template v-else-if="!loading && reportTransactionSent">
-        <span v-sanitized-html="reportSentLabel"></span>
-      </template>
-      <template v-else-if="!loading && reportTransactionSending">
-        {{ $t('uem.reportTransactionSending') }}
-      </template>
-      <template v-else-if="!loading && reportTransactionError">
-        <div class="mb-4">{{ $t('uem.reportTransactionError') }}</div>
-        <div v-sanitized-html="reportErrorMessage" class="error--text mb-4"></div>
-        <v-btn
-          :loading="sending"
-          class="primary-border-color"
-          color="primary"
-          elevation="0"
-          outlined
-          @click="resendReport">
-          {{ $t('uem.retry') }}
-        </v-btn>
-      </template>
-      <template v-else-if="!loading && sendingWalletReward">
-        {{ $t('uem.sendingWalletRewards') }}
-      </template>
-      <template v-else-if="!loading && rewardNotSentYet">
-        {{ $t('uem.rewardNotSentYet') }}
-      </template>
-      <template v-else-if="!loading && reportTransactionNotSent">
-        <div class="mb-4">{{ $t('uem.reportTransactionNotSent') }}</div>
-        <v-btn
-          :loading="sending"
-          class="primary-border-color"
-          color="primary"
-          elevation="0"
-          outlined
-          @click="resendReport">
-          {{ $t('uem.retry') }}
-        </v-btn>
-      </template>
+  <div v-if="!loading">
+    <div v-if="reportId">
+      {{ $t('wom.reportSent') }} <a
+        :href="fullReportUrl"
+        target="_blank"
+        class="text-decoration-underline">{{ reportSentDate }}</a>
     </div>
-  </v-alert>
+    <div v-else-if="!connected">
+      <div>{{ $t('wom.rewardSent') }} {{ rewardSentDate }}</div>
+    </div>
+    <div v-else-if="connected">
+      <div class="text-subtitle text-color d-flex justify-end">{{ $t('wom.rewardSent') }} {{ rewardSentDate }}</div>
+      <div v-if="!periodNonEligible" class="text-subtitle d-flex justify-end">
+        {{ $t('uem.periodNonEligible') }}
+      </div>
+    </div>
+    <div v-else-if="reportTransactionError || reportTransactionNotSent" class="d-flex">
+      <div v-if="sending" class="text-subtitle pe-2 align-self-center">{{ $t('wom.SendingReport') }}... </div>
+      <div v-else class="text-subtitle pe-2 align-self-center">
+        <v-icon
+          color="orange darken-2"
+          class="pe-2"
+          size="16">
+          fas fa-exclamation-triangle
+        </v-icon>
+        <div v-sanitized-html="reportErrorMessage" class="error--text mb-4"></div>
+      </div>
+      <v-btn
+        :disabled="sending"
+        class="btn btn-primary"
+        @click="resendReport">
+        {{ $t('wom.send') }}
+      </v-btn>
+    </div>
+  </div>
 </template>
 <script>
 export default {
@@ -96,43 +65,38 @@ export default {
     },
   },
   data: () => ({
-    womConnectionUri: '/portal/administration/home/recognition/setup#wom',
-    rewardingUri: '/portal/administration/home/recognition/reward',
     hub: null,
     report: null,
     loading: true,
     sending: false,
+    lang: eXo.env.portal.language,
+    dateFormat: {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    },
   }),
   computed: {
-    periodId() {
-      return this.rewardReport?.period?.id;
-    },
     hubDeedId() {
       return this.hub?.deedId;
-    },
-    notConnectedLabel1() {
-      return this.$t('uem.connectToWoMToGetRewards.part1');
-    },
-    notConnectedLabel2() {
-      return this.$t('uem.connectToWoMToGetRewards.part2', {
-        0: `<a href="${this.womConnectionUri}" target="_blank">`,
-        1: '<a href="https://www.meeds.io/whitepaper" target="_blank">',
-        2: '</a>',
-        3: '<strong>',
-        4: '</strong>',
-      });
     },
     connected() {
       return this.hub?.connected && this.hub?.address && this.hubDeedId > 0;
     },
-    completelyProceeded() {
-      return this.rewardReport?.completelyProceeded;
+    sentDate() {
+      return this.rewardReport?.sentDate;
+    },
+    rewardSentDate() {
+      return new window.Intl.DateTimeFormat(this.lang, this.dateFormat).format(new Date(this.sentDate));
+    },
+    periodId() {
+      return this.rewardReport?.period?.id;
     },
     womServerUrl() {
       return this.hub?.womServerUrl;
     },
     meedsServerUrl() {
-      return !this.womServerUrl || this.womServerUrl?.includes?.('wom.meeds.io') ? 'https://www.meeds.io/hubs' : this.womServerUrl.replace('/api', '');
+      return !this.womServerUrl || this.womServerUrl?.includes?.('wom.meeds.io') ? 'https://www.meeds.io/hubs' : `${this.womServerUrl.replace('/api', '')}/hubs`;
     },
     fullReportUrl() {
       if (!this.meedsServerUrl || !this.reportId) {
@@ -140,35 +104,15 @@ export default {
       }
       return `${this.meedsServerUrl}?report=${this.reportId}`;
     },
-    reportSentLabel() {
-      return this.reportSentThisWeek && this.$t('uem.reportTransactionSentThisWeek', {
-        0: `<a href="${this.fullReportUrl}" target="_blank">`,
-        2: '</a>',
-      }) ||  this.$t('uem.reportTransactionSent', {
-        0: `<a href="${this.fullReportUrl}" target="_blank">`,
-        2: '</a>',
-      });
+    reportId() {
+      return this.report?.reportId;
     },
-    hubJoinDate() {
-      return this.hub?.joinDate && new Date(this.hub.joinDate).getTime();
+    reportSentDate() {
+      const sentDate = this.report?.sentDate && new Date(this.report?.sentDate) || null;
+      return sentDate?.toLocaleString(this.lang, this.dateFormat);
     },
-    periodStartDate() {
-      return this.rewardReport?.period?.startDateInSeconds && this.rewardReport?.period?.startDateInSeconds * 1000;
-    },
-    periodEndDate() {
-      return this.rewardReport?.period?.endDateInSeconds && this.rewardReport?.period?.endDateInSeconds * 1000;
-    },
-    periodEndDatePlusWeek() {
-      return this.periodEndDate + 604800000;
-    },
-    periodNonEligible() {
-      return this.periodEndDatePlusWeek < this.hubJoinDate;
-    },
-    periodNotEnded() {
-      return this.periodStartDate <= Date.now() && this.periodEndDate > Date.now();
-    },
-    periodUpcoming() {
-      return this.periodStartDate > Date.now();
+    reportTransactionError() {
+      return this.report?.error;
     },
     periodWithoutRewards() {
       return !this.rewardReport?.validRewardCount;
@@ -176,93 +120,57 @@ export default {
     sendingWalletReward() {
       return this.rewardReport?.pendingTransactionCount;
     },
+    reportTransactionSending() {
+      return this.report?.status === 'SENDING';
+    },
     rewardNotSentYet() {
       return !this.periodWithoutRewards
-        && !this.sendingWalletReward
-        && !this.rewardReport?.successTransactionCount
-        && this.rewardReport?.tokensToSend;
+          && !this.sendingWalletReward
+          && !this.rewardReport?.successTransactionCount
+          && this.rewardReport?.tokensToSend;
+    },
+    reportTransactionNotSent() {
+      return !this.periodWithoutRewards
+          && !this.rewardNotSentYet
+          && !this.reportId
+          && !this.reportTransactionSending;
+    },
+    periodEndDate() {
+      return this.rewardReport?.period?.endDateInSeconds && this.rewardReport?.period?.endDateInSeconds * 1000;
+    },
+    periodEndDatePlusWeek() {
+      return this.periodEndDate + 604800000;
+    },
+    hubJoinDate() {
+      return this.hub?.createdDate && new Date(this.hub?.createdDate);
+    },
+    periodNonEligible() {
+      return this.periodEndDatePlusWeek < this.hubJoinDate;
     },
     reportErrorObj() {
       return this.report?.error?.length
-        && (this.report.error.indexOf('{') === 0)
-        && JSON.parse(this.report.error);
-    },
-    shouldRetry() {
-      return this.reportErrorObj?.shouldRetry;
+          && (this.report.error.indexOf('{') === 0)
+          && JSON.parse(this.report.error);
     },
     reportErrorMessageKey() {
       return this.reportErrorObj?.messageKey;
     },
     reportErrorMessage() {
       return this.reportErrorMessageKey
-        && this.$te(this.reportErrorMessageKey)
-        && this.$t(this.reportErrorMessageKey, {
-          0: '<strong>',
-          1: '</strong>',
-        })
-        || this.$t('uem.unknownErrorSendingReport');
-    },
-    reportId() {
-      return this.report?.reportId;
-    },
-    reportTransactionSent() {
-      return this.reportId;
-    },
-    reportTransactionError() {
-      return this.report?.error;
-    },
-    reportTransactionSending() {
-      return this.report?.status === 'SENDING';
-    },
-    reportTransactionNotSent() {
-      return !this.periodWithoutRewards
-        && !this.rewardNotSentYet
-        && !this.reportTransactionSent
-        && !this.reportTransactionSending;
-    },
-    reportSentDate() {
-      return this.report?.sentDate && new Date(this.report?.sentDate).getTime() || null;
-    },
-    uemCurrentWeekStartPeriod() {
-      const date = new Date();
-      const day = date.getDay();
-      const diffDays = date.getDate() - day + (day && 1 || -6);
-      date.setDate(diffDays);
-      date.setUTCMilliseconds(0);
-      date.setUTCSeconds(0);
-      date.setUTCMinutes(0);
-      date.setUTCHours(0);
-      return date.getTime();
-    },
-    reportSentThisWeek() {
-      return this.reportSentDate && this.reportSentDate > this.uemCurrentWeekStartPeriod;
-    },
-    alertType() {
-      if (this.reportTransactionSent) {
-        return 'success';
-      } else if (this.reportTransactionError) {
-        return 'warning';
-      } else {
-        return 'info';
-      }
-    },
-  },
-  watch: {
-    connected() {
-      if (this.periodId && this.connected) {
-        this.getReport();
-      }
-    },
-    rewardReport(newVal, oldVal) {
-      if (this.periodId && this.connected) {
-        this.getReport();
-      } else if (newVal && oldVal) {
-        this.report = null;
-      }
+          && this.$te(this.reportErrorMessageKey)
+          && this.$t(this.reportErrorMessageKey, {
+            0: '<strong>',
+            1: '</strong>',
+          })
+          || this.$t('uem.unknownErrorSendingReport');
     },
   },
   created() {
-    this.getHub();
+    this.getHub().then(() => {
+      this.$nextTick().then(() => {
+        this.getReport();
+      });
+    });
     document.addEventListener('deed.tenant.report.sent', this.refreshReportFromTriggeredEvent);
     document.addEventListener('deed.tenant.report.sending', this.refreshReportFromTriggeredEvent);
     document.addEventListener('deed.tenant.report.error', this.refreshReportFromTriggeredEvent);
@@ -277,7 +185,6 @@ export default {
       this.sending = true;
       return this.$hubReportService.sendReport(this.periodId)
         .then(() => {
-          // refresh report async
           this.getReport();
         })
         .finally(() => this.sending = false);

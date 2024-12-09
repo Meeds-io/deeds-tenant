@@ -31,12 +31,12 @@ import org.exoplatform.services.listener.Listener;
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.wallet.model.reward.RewardReport;
-import org.exoplatform.wallet.reward.service.RewardReportService;
 
 import io.meeds.common.ContainerTransactional;
 import io.meeds.tenant.hub.service.HubReportService;
 import io.meeds.tenant.hub.service.HubService;
+import io.meeds.wallet.model.RewardReport;
+import io.meeds.wallet.reward.service.RewardReportService;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.Hub;
 
@@ -63,12 +63,13 @@ public class HubConnectedAutoSendReportListener extends Listener<Hub, Object> {
 
   @Override
   @ContainerTransactional
-  public void onEvent(Event<Hub, Object> event) throws Exception { // NOSONAR
+  public void onEvent(Event<Hub, Object> event) { // NOSONAR
     Hub hub = event.getSource();
-    if (hub.isConnected() && hub.getJoinDate() != null && Instant.now().minusSeconds(hub.getJoinDate().getEpochSecond()).getEpochSecond() < 3600l) {
+    if (hub.isConnected() && hub.getJoinDate() != null
+        && Instant.now().minusSeconds(hub.getJoinDate().getEpochSecond()).getEpochSecond() < 3600l) {
       RewardReport rewardReport = rewardReportService.getRewardReport(LocalDate.ofInstant(hub.getJoinDate(), ZoneOffset.UTC)
                                                                                .minusWeeks(1));
-      if (rewardReport != null && rewardReport.isCompletelyProceeded()) {
+      if (rewardReport != null && rewardReport.isCompletelyProcessed()) {
         long periodId = rewardReport.getPeriod().getId();
         if (hubReportService.getReportId(periodId) == 0) {
           int retries = 3;

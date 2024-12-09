@@ -27,8 +27,9 @@ import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
 import org.exoplatform.commons.api.settings.data.Context;
 import org.exoplatform.commons.api.settings.data.Scope;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.reward.service.RewardReportService;
 
 @Component
 public class HubReportStorage {
@@ -52,10 +53,10 @@ public class HubReportStorage {
   public static final Scope   REWARD_PERIOD_ID_APPLICATION        = Scope.APPLICATION.id(REWARD_PERIOD_ID);
 
   @Autowired
-  private RewardReportService  rewardReportService;
+  private SettingService       settingService;
 
   @Autowired
-  private SettingService       settingService;
+  private RewardReportService rewardReportService;
 
   public void saveStatus(RewardPeriod rewardPeriod, String status) {
     long periodId = getPeriodKey(rewardPeriod);
@@ -143,7 +144,7 @@ public class HubReportStorage {
     } else {
       rewardPeriod = rewardReportService.getRewardPeriod(rewardPeriod.getRewardPeriodType(), rewardPeriod.getPeriodMedianDate());
       if (rewardPeriod == null || rewardPeriod.getId() == 0) {
-        throw new IllegalStateException("Selected Rewrd period, doesn't have a matching id: " + rewardPeriod);
+        throw new IllegalStateException("Selected Reward period, doesn't have a matching id: " + rewardPeriod);
       } else {
         return rewardPeriod.getId();
       }

@@ -16,8 +16,8 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-export function getReports(offset, limit) {
-  return fetch(`/deeds-tenant/rest/reports?offset=${offset || 0}&limit=${limit || 10}`, {
+export function getReports(page, size) {
+  return fetch(`/deeds-tenant/rest/reports?page=${page || 0}&size=${size || 10}`, {
     method: 'GET',
     credentials: 'include',
   }).then((resp) => {
@@ -46,14 +46,21 @@ export function getReport(id, refreshFromWoM) {
   });
 }
 
-export function getLocalRewardDetails(date) {
-  return fetch(`/portal/rest/wallet/api/reward/compute?date=${date}`, {
-    method: 'GET',
+export function getLocalRewardDetails(period) {
+  return fetch('/wallet/rest/reward/period/compute', {
+    method: 'POST',
     credentials: 'include',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      id: period?.id,
+      rewardPeriodType: period?.rewardPeriodType,
+      timeZone: period?.timeZone,
+      startDateInSeconds: period?.startDateInSeconds,
+      endDateInSeconds: period?.endDateInSeconds
+    })
   }).then((resp) => {
     if (resp) {
       try {

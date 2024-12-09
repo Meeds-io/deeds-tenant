@@ -48,21 +48,22 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.commons.api.settings.SettingService;
 import org.exoplatform.commons.api.settings.SettingValue;
-import org.exoplatform.wallet.model.reward.RewardPeriod;
-import org.exoplatform.wallet.model.reward.RewardPeriodType;
-import org.exoplatform.wallet.reward.service.RewardReportService;
+
+import io.meeds.wallet.model.RewardPeriod;
+import io.meeds.wallet.model.RewardPeriodType;
+import io.meeds.wallet.reward.service.RewardReportService;
 
 @SpringBootTest(classes = {
-  HubReportStorage.class,
+                            HubReportStorage.class,
 })
 @ExtendWith(MockitoExtension.class)
 class HubReportStorageTest {
 
   @MockBean
-  private RewardReportService rewardReportService;
+  private SettingService      settingService;
 
   @MockBean
-  private SettingService      settingService;
+  private RewardReportService rewardReportService;
 
   @Autowired
   private HubReportStorage    hubReportStorage;
@@ -147,7 +148,8 @@ class HubReportStorageTest {
     verify(settingService).set(eq(UEM_CONTEXT),
                                eq(REWARD_REPORT_SENT_DATE_APPLICATION),
                                eq(String.valueOf(periodId)),
-                               argThat(setting -> StringUtils.equals(String.valueOf(sentDate.toEpochMilli()), setting.getValue().toString())));
+                               argThat(setting -> StringUtils.equals(String.valueOf(sentDate.toEpochMilli()),
+                                                                     setting.getValue().toString())));
   }
 
   @Test
@@ -166,7 +168,7 @@ class HubReportStorageTest {
   void getReportId() {
     when(rewardPeriod.getId()).thenReturn(periodId);
     assertEquals(0, hubReportStorage.getReportId(rewardPeriod));
-    
+
     when(settingService.get(UEM_CONTEXT,
                             REWARD_REPORT_ID_APPLICATION,
                             String.valueOf(periodId))).thenAnswer(invocation -> SettingValue.create(String.valueOf(reportId)));
