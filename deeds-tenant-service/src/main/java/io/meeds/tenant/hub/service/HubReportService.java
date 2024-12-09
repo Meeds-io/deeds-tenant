@@ -332,7 +332,7 @@ public class HubReportService {
     realizationFilter.setFromDate(fromDate);
     realizationFilter.setToDate(toDate);
     realizationFilter.setEarnerType(IdentityType.USER);
-    realizationFilter.setStatus(RealizationStatus.ACCEPTED);
+    realizationFilter.setStatuses(Collections.singletonList(RealizationStatus.ACCEPTED));
     return realizationService.countRealizationsByFilter(realizationFilter);
   }
 
