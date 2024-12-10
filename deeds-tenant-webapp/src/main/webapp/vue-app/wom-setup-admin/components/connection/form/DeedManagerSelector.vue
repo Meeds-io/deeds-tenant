@@ -49,7 +49,7 @@ export default {
   computed: {
     signMessageTitle() {
       return this.$t('wom.signMessageTitle', {
-        0: '<a href="https://www.meeds.io/marketplace" target="_blank">',
+        0: '<a href="https://www.meeds.io" target="_blank">',
         1: '</a>',
       });
     },
