@@ -280,7 +280,7 @@ class HubReportServiceTest {
     when(transaction.isSucceeded()).thenReturn(true);
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
-        && filter.getEarnerType() == IdentityType.USER && filter.getStatus() == RealizationStatus.ACCEPTED && filter.getFromDate()
+        && filter.getEarnerType() == IdentityType.USER && filter.getStatuses().contains(RealizationStatus.ACCEPTED) && filter.getFromDate()
                                                                                                                     .getTime()
             / 1000 == periodStartTime
         && filter.getToDate().getTime() / 1000 == periodEndTime))).thenReturn(achievementsCount);
@@ -341,7 +341,7 @@ class HubReportServiceTest {
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
                                                                         && filter.getEarnerType() == IdentityType.USER
-                                                                        && filter.getStatus() == RealizationStatus.ACCEPTED
+                                                                        && filter.getStatuses().contains(RealizationStatus.ACCEPTED)
                                                                         && filter.getFromDate().getTime() / 1000
                                                                             == periodStartTime
                                                                         && filter.getToDate().getTime() / 1000 == periodEndTime)))
@@ -397,7 +397,7 @@ class HubReportServiceTest {
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
                                                                         && filter.getEarnerType() == IdentityType.USER
-                                                                        && filter.getStatus() == RealizationStatus.ACCEPTED
+                                                                        && filter.getStatuses().contains(RealizationStatus.ACCEPTED)
                                                                         && filter.getFromDate().getTime() / 1000
                                                                             == periodStartTime
                                                                         && filter.getToDate().getTime() / 1000 == periodEndTime)))
@@ -462,7 +462,7 @@ class HubReportServiceTest {
     when(realizationService.countParticipantsBetweenDates(any(), any())).thenReturn(participantsCount);
     when(realizationService.countRealizationsByFilter(argThat(filter -> filter != null
                                                                         && filter.getEarnerType() == IdentityType.USER
-                                                                        && filter.getStatus() == RealizationStatus.ACCEPTED
+                                                                        && filter.getStatuses().contains(RealizationStatus.ACCEPTED)
                                                                         && filter.getFromDate().getTime() / 1000
                                                                             == periodStartTime
                                                                         && filter.getToDate().getTime() / 1000 == periodEndTime)))
