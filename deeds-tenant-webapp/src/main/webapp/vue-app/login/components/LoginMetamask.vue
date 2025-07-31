@@ -27,7 +27,9 @@
       :display-text="displayText"
       :is="isMenu && 'portal-login-provider-menu-link' || 'portal-login-provider-link'"
       :class="isMenu && 'portal-login-provider-menu-link' || 'portal-login-provider-link'"
-      @submit="signInWithMetamask()" />
+      @submit="signInWithMetamask()"
+      :translation-identifier="translationIdentifier"
+      :display-providers-icons="displayProvidersIcons"/>
     <form
       ref="metamaskLoginForm"
       action="/portal/login"
@@ -74,6 +76,14 @@ export default {
     isMenu: {
       type: Boolean,
       default: false,
+    },
+    translationIdentifier: {
+      type: String,
+      default: '',
+    },
+    displayProvidersIcons: {
+      type: Boolean,
+      default: true,
     },
   },
   data: () => ({
