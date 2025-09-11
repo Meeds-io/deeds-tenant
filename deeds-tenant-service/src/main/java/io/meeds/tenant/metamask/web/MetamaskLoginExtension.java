@@ -50,6 +50,9 @@ public class MetamaskLoginExtension extends BaseMetamaskExtension {
   public Map<String, Object> extendParameters(ControllerContext controllerContext, String extensionName) {
     Map<String, Object> params = new HashMap<>();
     params.put("metamaskEnabled", exoFeatureService.isActiveFeature(METAMASK_LOGIN));
+    if (exoFeatureService.isActiveFeature(METAMASK_LOGIN)) {
+      params.put("extendedAuthProviderType", "metamask");
+    }
 
     HttpSession httpSession = controllerContext.getRequest().getSession(true);
     params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
