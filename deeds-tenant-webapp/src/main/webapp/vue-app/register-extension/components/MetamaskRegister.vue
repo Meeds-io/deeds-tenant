@@ -29,7 +29,7 @@
       :class="!isDeedTenant && 'rounded-lg'"
       target="_blank"
       rel="noreferrer"
-      class="mx-auto white-background d-block max-width-fit"
+      class="mx-auto white-background d-block max-width-fit btn"
       outlined>
       <v-img
         src="/deeds-tenant/images/metamask.svg"
@@ -43,7 +43,7 @@
       :color="isDeedTenant && 'primary'"
       :large="isDeedTenant"
       :class="!isDeedTenant && 'rounded-lg'"
-      class="mx-auto white-background d-block max-width-fit"
+      class="mx-auto white-background d-block max-width-fit btn"
       outlined
       @click="signInWithMetamask()">
       <v-img
