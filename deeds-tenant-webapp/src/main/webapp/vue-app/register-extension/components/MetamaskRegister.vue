@@ -29,8 +29,9 @@
       :class="!isDeedTenant && 'rounded-lg'"
       target="_blank"
       rel="noreferrer"
-      class="mx-auto white-background d-block max-width-fit btn"
-      outlined>
+      class="mx-auto white-background d-block max-width-fit"
+      outlined
+      style="background-color:white;">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
@@ -43,9 +44,10 @@
       :color="isDeedTenant && 'primary'"
       :large="isDeedTenant"
       :class="!isDeedTenant && 'rounded-lg'"
-      class="mx-auto white-background d-block max-width-fit btn"
+      class="mx-auto white-background d-block max-width-fit"
       outlined
-      @click="signInWithMetamask()">
+      @click="signInWithMetamask()"
+      style="background-color:white;">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.exoplatform.commons.api.settings.ExoFeatureService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +50,10 @@ class MetamaskRegisterExtensionTest {
   private MetamaskLoginService      metamaskLoginService;
 
   @MockBean
-  private HubService                hubService;
+  private ExoFeatureService exoFeatureService;
+
+  @MockBean
+  private HubService        hubService;
 
   @Autowired
   private MetamaskRegisterExtension metamaskRegisterExtension;
@@ -64,6 +68,8 @@ class MetamaskRegisterExtensionTest {
   @Test
   void testExtendParametersForLogin() {
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(true);
+    when(exoFeatureService.isActiveFeature("metamaskLogin")).thenReturn(true);
+
     Map<String, Object> extendParameters = metamaskRegisterExtension.extendParameters(null, LoginHandler.LOGIN_EXTENSION_NAME);
     assertNotNull(extendParameters);
     assertEquals(true, extendParameters.get(RegisterHandler.REGISTER_ENABLED));
@@ -79,7 +85,10 @@ class MetamaskRegisterExtensionTest {
   void testExtendParametersForRegister() {
     String rawMessage = "rawMessage";
 
+
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(true);
+    when(exoFeatureService.isActiveFeature("metamaskLogin")).thenReturn(true);
+
     ControllerContext controllerContext = mock(ControllerContext.class);
     HttpServletRequest request = mock(HttpServletRequest.class);
     HttpSession session = mock(HttpSession.class);
