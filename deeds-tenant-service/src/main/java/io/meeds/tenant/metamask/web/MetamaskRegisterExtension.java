@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.exoplatform.commons.api.settings.ExoFeatureService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.exoplatform.web.ControllerContext;
@@ -38,6 +40,9 @@ public class MetamaskRegisterExtension extends BaseMetamaskExtension {
 
   public static final String METAMASK_REGISTRATION_ENABLED = "metamaskRegistrationEnabled";
 
+  @Autowired
+  protected            ExoFeatureService exoFeatureService;
+
   @Override
   public List<String> getExtensionNames() {
     return Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME, LoginHandler.LOGIN_EXTENSION_NAME);
@@ -46,7 +51,7 @@ public class MetamaskRegisterExtension extends BaseMetamaskExtension {
   @Override
   public Map<String, Object> extendParameters(ControllerContext controllerContext, String extensionName) {
     Map<String, Object> params = new HashMap<>();
-    if (metamaskLoginService.isAllowUserRegistration()) {
+    if (exoFeatureService.isActiveFeature("metamaskLogin") && metamaskLoginService.isAllowUserRegistration()) {
       if (StringUtils.equals(LoginHandler.LOGIN_EXTENSION_NAME, extensionName)) {
         params.put(RegisterHandler.REGISTER_ENABLED, true);
       } else if (StringUtils.equals(RegisterHandler.REGISTER_EXTENSION_NAME, extensionName)) {
