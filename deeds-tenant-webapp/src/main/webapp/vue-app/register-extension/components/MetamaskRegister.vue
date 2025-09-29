@@ -30,8 +30,7 @@
       target="_blank"
       rel="noreferrer"
       class="mx-auto white-background d-block max-width-fit"
-      outlined
-      style="background-color:white;">
+      outlined>
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
@@ -46,8 +45,7 @@
       :class="!isDeedTenant && 'rounded-lg'"
       class="mx-auto white-background d-block max-width-fit"
       outlined
-      @click="signInWithMetamask()"
-      style="background-color:white;">
+      @click="signInWithMetamask()">
       <v-img
         src="/deeds-tenant/images/metamask.svg"
         max-height="25px"
