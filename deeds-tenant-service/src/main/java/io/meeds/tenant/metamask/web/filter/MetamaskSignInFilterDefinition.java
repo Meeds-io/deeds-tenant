@@ -28,7 +28,6 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.services.resources.LocaleConfigService;
-import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.ExtensibleFilter;
 import org.exoplatform.web.filter.Filter;
@@ -61,7 +60,6 @@ public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
 
   public MetamaskSignInFilterDefinition(PortalContainer container, // NOSONAR
                                         RemindPasswordTokenService remindPasswordTokenService,
-                                        WebAppController webAppController,
                                         LocaleConfigService localeConfigService,
                                         BrandingService brandingService,
                                         JavascriptConfigService javascriptConfigService,
@@ -70,7 +68,6 @@ public class MetamaskSignInFilterDefinition extends FilterDefinitionPlugin {
     super(null);
     this.filter = new MetamaskSignInFilter(container,
                                            remindPasswordTokenService,
-                                           webAppController,
                                            localeConfigService,
                                            brandingService,
                                            javascriptConfigService,

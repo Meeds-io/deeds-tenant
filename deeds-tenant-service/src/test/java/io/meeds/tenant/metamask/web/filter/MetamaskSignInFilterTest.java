@@ -17,7 +17,6 @@
 package io.meeds.tenant.metamask.web.filter;
 
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_SIGNED_MESSAGE_PREFIX;
-import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.METAMASK_TENANT_SETUP_FORM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.PASSWORD_REQUEST_PARAM;
 import static io.meeds.tenant.metamask.web.filter.MetamaskSignInFilter.USERNAME_REQUEST_PARAM;
 import static org.junit.Assert.assertEquals;
@@ -37,7 +36,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +47,6 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.portal.branding.BrandingService;
 import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.services.resources.LocaleConfigService;
-import org.exoplatform.services.resources.impl.LocaleConfigImpl;
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
@@ -134,7 +131,6 @@ class MetamaskSignInFilterTest {
     when(container.getPortalContext()).thenReturn(servletContext);
     filter = spy(new MetamaskSignInFilter(container,
                                           remindPasswordTokenService,
-                                          webAppController,
                                           localeConfigService,
                                           brandingService,
                                           javascriptConfigService,
@@ -146,7 +142,6 @@ class MetamaskSignInFilterTest {
   void testFilterDefinition() {
     MetamaskSignInFilterDefinition filterDefinition = new MetamaskSignInFilterDefinition(container,
                                                                                          remindPasswordTokenService,
-                                                                                         webAppController,
                                                                                          localeConfigService,
                                                                                          brandingService,
                                                                                          javascriptConfigService,
@@ -166,30 +161,10 @@ class MetamaskSignInFilterTest {
   @Test
   void testNotForwardToSetupWhenNotDeedOwner() throws IOException, ServletException {
     lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-    when(request.getContextPath()).thenReturn(CONTEXT_PATH);
-    when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
     when(request.getRemoteUser()).thenReturn(USERNAME);
-    when(metamaskLoginService.isDeedHub()).thenReturn(true);
     filter.doFilter(request, response, chain);
 
     verify(servletContext, never()).getRequestDispatcher(any());
-  }
-
-  @Test
-  void testForwardToSetupWhenDeedOwner() throws Exception { // NOSONAR
-    lenient().when(metamaskLoginService.isAllowUserRegistration(any())).thenReturn(true);
-    when(request.getContextPath()).thenReturn(CONTEXT_PATH);
-    when(request.getRequestURI()).thenReturn("/portal/tenantSetup");
-    when(request.getRemoteUser()).thenReturn(USERNAME);
-    when(metamaskLoginService.isDeedManager(USERNAME)).thenReturn(true);
-    when(metamaskLoginService.isDeedHub()).thenReturn(true);
-    when(servletContext.getRequestDispatcher(any())).thenReturn(requestDispatcher);
-    when(request.getContextPath()).thenReturn(CONTEXT_PATH);
-    when(localeConfigService.getDefaultLocaleConfig()).thenReturn(new LocaleConfigImpl());
-    when(javascriptConfigService.getJSConfig()).thenReturn(new JSONObject());
-
-    filter.doFilter(request, response, chain);
-    verify(servletContext, times(1)).getRequestDispatcher(METAMASK_TENANT_SETUP_FORM);
   }
 
   @Test
