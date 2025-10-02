@@ -19,7 +19,6 @@ package io.meeds.tenant.metamask.web.filter;
 import static org.exoplatform.web.security.security.CookieTokenService.EXTERNAL_REGISTRATION_TOKEN;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,7 +28,6 @@ import org.exoplatform.portal.resource.SkinService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.resources.LocaleConfigService;
-import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.WebAppController;
 import org.exoplatform.web.application.JspBasedWebHandler;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
@@ -55,8 +53,6 @@ import jakarta.servlet.http.HttpServletResponse;
 public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
 
   public static final Log            LOG                            = ExoLogger.getLogger(MetamaskSignInFilter.class);
-
-  public static final String         METAMASK_TENANT_SETUP_FORM     = "/WEB-INF/jsp/metamaskSetupForm.jsp";
 
   public static final String         METAMASK_AUTHENTICATED         = "metamask.authenticated";
 
@@ -99,15 +95,6 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     try {
       HttpServletRequest request = (HttpServletRequest) servletRequest;
       HttpServletResponse response = (HttpServletResponse) servletResponse;
-
-      if (isDeedTenantStep(request)) {
-        forwardDeedTenantSetupForm(new ControllerContext(webAppController,
-                                                         webAppController.getRouter(),
-                                                         request,
-                                                         response,
-                                                         null));
-        return;
-      }
 
       String walletAddress = request.getParameter(USERNAME_REQUEST_PARAM);
       String password = request.getParameter(PASSWORD_REQUEST_PARAM);
@@ -155,16 +142,6 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     chain.doFilter(servletRequest, servletResponse);
   }
 
-  protected void forwardDeedTenantSetupForm(ControllerContext controllerContext) throws Exception {
-    super.prepareDispatch(controllerContext,
-                          "SHARED/metamaskSetupForm",
-                          null,
-                          Collections.singletonList("portal/login"),
-                          null);
-    servletContext.getRequestDispatcher(METAMASK_TENANT_SETUP_FORM)
-                  .include(controllerContext.getRequest(), controllerContext.getResponse());
-  }
-
   private HttpServletRequestWrapper wrapRequestForLogin(HttpServletRequest request,
                                                         String username,
                                                         String password,
@@ -197,14 +174,6 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
     String rawMessage = metamaskLoginService.getLoginMessage(request.getSession());
     String signedMessage = password.replace(METAMASK_SIGNED_MESSAGE_PREFIX, "");
     return walletAddress + SEPARATOR + rawMessage + SEPARATOR + signedMessage;
-  }
-
-  private boolean isDeedTenantStep(HttpServletRequest request) {
-    String walletAddress = request.getRemoteUser();
-    return StringUtils.isNotBlank(walletAddress)
-        && StringUtils.equals(request.getRequestURI(), request.getContextPath() + "/tenantSetup")
-        && metamaskLoginService.isDeedHub()
-        && metamaskLoginService.isDeedManager(walletAddress);
   }
 
 }
