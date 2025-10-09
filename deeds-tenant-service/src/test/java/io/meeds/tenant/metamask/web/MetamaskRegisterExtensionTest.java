@@ -33,7 +33,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
-import org.exoplatform.web.register.RegisterHandler;
 
 import io.meeds.tenant.hub.service.HubService;
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
@@ -60,7 +59,7 @@ class MetamaskRegisterExtensionTest {
 
   @Test
   void testGetExtensionName() {
-    assertEquals(Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME,
+    assertEquals(Arrays.asList(LoginHandler.REGISTER_EXTENSION_NAME,
                                LoginHandler.LOGIN_EXTENSION_NAME),
                  metamaskRegisterExtension.getExtensionNames());
   }
@@ -72,7 +71,7 @@ class MetamaskRegisterExtensionTest {
 
     Map<String, Object> extendParameters = metamaskRegisterExtension.extendParameters(null, LoginHandler.LOGIN_EXTENSION_NAME);
     assertNotNull(extendParameters);
-    assertEquals(true, extendParameters.get(RegisterHandler.REGISTER_ENABLED));
+    assertEquals(true, extendParameters.get("registerEnabled"));
     assertEquals(1, extendParameters.size());
 
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(false);
@@ -97,7 +96,7 @@ class MetamaskRegisterExtensionTest {
     when(metamaskLoginService.generateLoginMessage(session)).thenReturn(rawMessage);
 
     Map<String, Object> extendParameters = metamaskRegisterExtension.extendParameters(controllerContext,
-                                                                                      RegisterHandler.REGISTER_EXTENSION_NAME);
+                                                                                      LoginHandler.REGISTER_EXTENSION_NAME);
     assertNotNull(extendParameters);
     assertEquals(2, extendParameters.size());
     assertEquals(true, extendParameters.get(MetamaskRegisterExtension.METAMASK_REGISTRATION_ENABLED));
@@ -105,7 +104,7 @@ class MetamaskRegisterExtensionTest {
 
     when(metamaskLoginService.isAllowUserRegistration()).thenReturn(false);
     extendParameters = metamaskRegisterExtension.extendParameters(controllerContext,
-                                                                  RegisterHandler.REGISTER_EXTENSION_NAME);
+                                                                  LoginHandler.REGISTER_EXTENSION_NAME);
     assertNotNull(extendParameters);
     assertEquals(0, extendParameters.size());
   }
