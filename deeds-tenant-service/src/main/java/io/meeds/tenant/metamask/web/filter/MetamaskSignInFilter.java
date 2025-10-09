@@ -31,7 +31,6 @@ import org.exoplatform.services.resources.LocaleConfigService;
 import org.exoplatform.web.application.JspBasedWebHandler;
 import org.exoplatform.web.application.javascript.JavascriptConfigService;
 import org.exoplatform.web.filter.Filter;
-import org.exoplatform.web.register.ExternalRegisterHandler;
 import org.exoplatform.web.security.security.RemindPasswordTokenService;
 
 import io.meeds.tenant.metamask.service.MetamaskLoginService;
@@ -113,7 +112,6 @@ public class MetamaskSignInFilter extends JspBasedWebHandler implements Filter {
             // order to login user after registration
             request.getSession().setAttribute(USERNAME_REQUEST_PARAM, walletAddress);
             request.getSession().setAttribute(PASSWORD_REQUEST_PARAM, getCompoundPassword(request));
-            request.getSession().setAttribute(ExternalRegisterHandler.REQUIRE_EMAIL_VALIDATION, "true");
 
             String tokenId = remindPasswordTokenService.createToken(walletAddress,
                                                                     EXTERNAL_REGISTRATION_TOKEN);
