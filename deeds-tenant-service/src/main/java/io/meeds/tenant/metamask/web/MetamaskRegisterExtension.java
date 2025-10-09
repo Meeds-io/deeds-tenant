@@ -28,8 +28,6 @@ import org.springframework.stereotype.Service;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
-import org.exoplatform.web.register.RegisterHandler;
-
 import jakarta.servlet.http.HttpSession;
 
 /**
@@ -45,7 +43,7 @@ public class MetamaskRegisterExtension extends BaseMetamaskExtension {
 
   @Override
   public List<String> getExtensionNames() {
-    return Arrays.asList(RegisterHandler.REGISTER_EXTENSION_NAME, LoginHandler.LOGIN_EXTENSION_NAME);
+    return Arrays.asList(LoginHandler.REGISTER_EXTENSION_NAME, LoginHandler.LOGIN_EXTENSION_NAME);
   }
 
   @Override
@@ -53,8 +51,8 @@ public class MetamaskRegisterExtension extends BaseMetamaskExtension {
     Map<String, Object> params = new HashMap<>();
     if (exoFeatureService.isActiveFeature("metamaskLogin") && metamaskLoginService.isAllowUserRegistration()) {
       if (StringUtils.equals(LoginHandler.LOGIN_EXTENSION_NAME, extensionName)) {
-        params.put(RegisterHandler.REGISTER_ENABLED, true);
-      } else if (StringUtils.equals(RegisterHandler.REGISTER_EXTENSION_NAME, extensionName)) {
+        params.put("registerEnabled", true);
+      } else if (StringUtils.equals(LoginHandler.REGISTER_EXTENSION_NAME, extensionName)) {
         params.put(METAMASK_REGISTRATION_ENABLED, true);
         HttpSession httpSession = controllerContext.getRequest().getSession(true);
         params.put("rawMessage", metamaskLoginService.generateLoginMessage(httpSession));
