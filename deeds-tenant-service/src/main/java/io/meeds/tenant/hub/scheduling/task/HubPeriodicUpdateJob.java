@@ -35,10 +35,12 @@ import io.meeds.tenant.hub.service.HubService;
 @Component
 public class HubPeriodicUpdateJob {
 
-  private static final Log LOG = ExoLogger.getLogger(HubPeriodicUpdateJob.class);
+  private static final Log LOG         = ExoLogger.getLogger(HubPeriodicUpdateJob.class);
 
   @Autowired
   private HubService       hubService;
+
+  private int              errorsCount = 0;
 
   @Scheduled(cron = "${meeds.deed.tenant.cron:0 0/2 * * * *}")
   @ContainerTransactional
@@ -46,7 +48,16 @@ public class HubPeriodicUpdateJob {
     try {
       hubService.updateHubCard();
     } catch (Exception e) {
-      LOG.warn("Error while updating Hub Card", e);
+      if (errorsCount == 0) {
+        LOG.warn("Error while updating Hub Card", e);
+      } else if (errorsCount < 10) {
+        LOG.warn("Error while updating Hub Card: {}", e.getMessage());
+      } else if (errorsCount == 10) {
+        LOG.warn("Error while updating Hub Card (Log level will be switched to debug): {}", e.getMessage());
+      } else {
+        LOG.debug("Error while updating Hub Card: {}", e.getMessage());
+      }
+      errorsCount++;
     }
   }
 
