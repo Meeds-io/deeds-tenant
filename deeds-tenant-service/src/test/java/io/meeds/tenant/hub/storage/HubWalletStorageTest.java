@@ -57,7 +57,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.web3j.abi.EventValues;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.generated.Uint256;
@@ -99,16 +99,16 @@ import lombok.SneakyThrows;
 @ExtendWith(MockitoExtension.class)
 class HubWalletStorageTest {
 
-  @MockBean
+  @MockitoBean
   private WalletAccountService        walletAccountService;
 
-  @MockBean
+  @MockitoBean
   private HubIdentityStorage          hubIdentityStorage;
 
-  @MockBean
+  @MockitoBean
   private CodecInitializer            codecInitializer;
 
-  @MockBean
+  @MockitoBean
   private PolygonContractGasProvider  polygonContractGasProvider;
 
   @Autowired
@@ -302,7 +302,7 @@ class HubWalletStorageTest {
     });
 
     BigInteger gasPrice = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
+    when(polygonContractGasProvider.getGasPrice()).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
     EthSendTransaction ethSendTransaction = mock(EthSendTransaction.class);
@@ -363,7 +363,7 @@ class HubWalletStorageTest {
     });
 
     BigInteger gasPrice = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
+    when(polygonContractGasProvider.getGasPrice()).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
     EthSendTransaction ethSendTransaction = mock(EthSendTransaction.class);
@@ -446,7 +446,7 @@ class HubWalletStorageTest {
     });
 
     BigInteger gasPrice = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
+    when(polygonContractGasProvider.getGasPrice()).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
     WomException exception = assertThrows(WomException.class,
@@ -485,7 +485,7 @@ class HubWalletStorageTest {
       return request;
     });
     BigInteger gasPrice = BigInteger.valueOf(35l);
-    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
+    when(polygonContractGasProvider.getGasPrice()).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
 
@@ -527,7 +527,7 @@ class HubWalletStorageTest {
       return request;
     });
     BigInteger gasPrice = BigInteger.valueOf(31l);
-    when(polygonContractGasProvider.getGasPrice(any())).thenReturn(gasPrice);
+    when(polygonContractGasProvider.getGasPrice()).thenReturn(gasPrice);
 
     when(transactionManager.getFromAddress()).thenReturn(hubAddress);
 
