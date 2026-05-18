@@ -29,7 +29,7 @@ import org.exoplatform.commons.api.settings.ExoFeatureService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.exoplatform.web.ControllerContext;
 import org.exoplatform.web.login.LoginHandler;
@@ -45,13 +45,13 @@ import jakarta.servlet.http.HttpSession;
 })
 class MetamaskLoginExtensionTest {
 
-  @MockBean
+  @MockitoBean
   private MetamaskLoginService   metamaskLoginService;
 
-  @MockBean
+  @MockitoBean
   private ExoFeatureService exoFeatureService;
 
-  @MockBean
+  @MockitoBean
   private HubService             hubService;
 
   @Autowired

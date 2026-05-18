@@ -46,7 +46,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.web3j.utils.EnsUtils;
 
 import org.exoplatform.portal.branding.BrandingService;
@@ -78,31 +78,31 @@ class HubServiceTest {
 
   private static final String PUBLIC_DESCRIPTION_CMS_SETTING_NAME = "publicDescription";
 
-  @MockBean
+  @MockitoBean
   private HubIdentityStorage  hubIdentityStorage;
 
-  @MockBean
+  @MockitoBean
   private HubWalletStorage    hubWalletStorage;
 
-  @MockBean
+  @MockitoBean
   private BrandingService     brandingService;
 
-  @MockBean
+  @MockitoBean
   private WomClientService    womServiceClient;
 
-  @MockBean
+  @MockitoBean
   private CMSService          cmsService;
 
-  @MockBean
+  @MockitoBean
   private LocaleConfigService localeConfigService;
 
-  @MockBean
+  @MockitoBean
   private LayoutService       layoutService;
 
-  @MockBean
+  @MockitoBean
   private NotePageViewService notePageViewService;
 
-  @MockBean
+  @MockitoBean
   private ListenerService     listenerService;
 
   @Mock

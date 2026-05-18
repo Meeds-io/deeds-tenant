@@ -43,7 +43,7 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.picketlink.idm.api.SecureRandomProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.exoplatform.account.setup.web.AccountSetupService;
 import org.exoplatform.portal.config.UserACL;
@@ -65,25 +65,25 @@ class MetamaskLoginServiceTest {
 
   static final String            SUPER_USER = "superUser";
 
-  @MockBean
+  @MockitoBean
   private SecuritySettingService securitySettingService;
 
-  @MockBean
+  @MockitoBean
   private OrganizationService    organizationService;
 
-  @MockBean
+  @MockitoBean
   private UserACL                userAcl;
 
-  @MockBean
+  @MockitoBean
   private SecureRandomProvider   secureRandomProvider;
 
-  @MockBean
+  @MockitoBean
   private AccountSetupService    accountSetupService;
 
-  @MockBean
+  @MockitoBean
   private HubService             hubService;
 
-  @MockBean
+  @MockitoBean
   private UserHandler            userHandler;
 
   @Autowired

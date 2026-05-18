@@ -55,7 +55,7 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -96,31 +96,31 @@ class HubReportServiceTest {
 
   private static final Pageable     PAGEABLE                  = Pageable.ofSize(10);
 
-  @MockBean
+  @MockitoBean
   private OrganizationService       organizationService;
 
-  @MockBean
+  @MockitoBean
   private RewardReportService       rewardReportService;
 
-  @MockBean
+  @MockitoBean
   private RealizationService        realizationService;
 
-  @MockBean
+  @MockitoBean
   private RuleService               ruleService;
 
-  @MockBean
+  @MockitoBean
   private HubService                hubService;
 
-  @MockBean
+  @MockitoBean
   private WomClientService          womServiceClient;
 
-  @MockBean
+  @MockitoBean
   private HubWalletStorage          hubWalletStorage;
 
-  @MockBean
+  @MockitoBean
   private HubReportStorage          hubReportStorage;
 
-  @MockBean
+  @MockitoBean
   private ListenerService           listenerService;
 
   @Mock
