@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
@@ -44,13 +44,13 @@ import io.meeds.wallet.service.WalletAccountService;
 })
 class NewMetamaskCreatedUserListenerTest {
 
-  @MockBean
+  @MockitoBean
   OrganizationService            organizationService;
 
-  @MockBean
+  @MockitoBean
   WalletAccountService           walletAccountService;
 
-  @MockBean
+  @MockitoBean
   IdentityManager                identityManager;
 
   @Autowired

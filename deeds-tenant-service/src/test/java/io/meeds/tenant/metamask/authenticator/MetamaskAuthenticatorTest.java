@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.exoplatform.services.security.Authenticator;
 import org.exoplatform.services.security.Credential;
@@ -41,10 +41,10 @@ class MetamaskAuthenticatorTest {
 
   private static final String   USERNAME = "username";
 
-  @MockBean
+  @MockitoBean
   private MetamaskLoginService  metamaskLoginService;
 
-  @MockBean
+  @MockitoBean
   private Authenticator         authenticator;
 
   @Autowired

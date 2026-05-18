@@ -67,7 +67,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.exoplatform.services.listener.ListenerService;
 import org.exoplatform.social.core.identity.model.Identity;
@@ -87,16 +87,16 @@ import io.meeds.wom.api.model.WomConnectionResponse;
 @ExtendWith(MockitoExtension.class)
 class HubIdentityStorageTest {
 
-  @MockBean
+  @MockitoBean
   private IdentityManager         identityManager;
 
-  @MockBean
+  @MockitoBean
   private WomClientService        womServiceClient;
 
-  @MockBean
+  @MockitoBean
   private WalletTokenAdminService walletTokenAdminService;
 
-  @MockBean
+  @MockitoBean
   private ListenerService         listenerService;
 
   @Autowired
