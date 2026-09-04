@@ -95,8 +95,8 @@ public class ContractUtils {
       BigInteger estimatedGas;
 
       String fromAddress = transactionManager.getFromAddress();
-      BigInteger gasPrice = polygonContractGasProvider.getGasPrice(funcName);
-      BigInteger gasLimit = polygonContractGasProvider.getGasLimit(funcName);
+      BigInteger gasPrice = polygonContractGasProvider.getGasPrice();
+      BigInteger gasLimit = polygonContractGasProvider.getGasLimit();
       BigInteger nonce = getNonce(polygonContractGasProvider.getWeb3j(), fromAddress);
       Transaction tx = Transaction.createFunctionCallTransaction(fromAddress,
                                                                  nonce,

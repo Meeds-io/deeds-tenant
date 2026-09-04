@@ -37,11 +37,11 @@ import org.springframework.stereotype.Component;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
-import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Sign;
 import org.web3j.crypto.WalletFile;
+import org.web3j.crypto.exception.CipherException;
 import org.web3j.protocol.ObjectMapperFactory;
 import org.web3j.protocol.core.RemoteFunctionCall;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -53,16 +53,15 @@ import org.web3j.utils.Numeric;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.meeds.wallet.model.WalletType;
-import io.meeds.wallet.service.WalletAccountService;
-import io.meeds.wallet.utils.WalletUtils;
-
 import org.exoplatform.web.security.codec.CodecInitializer;
 import org.exoplatform.web.security.security.TokenServiceInitializationException;
 
 import io.meeds.tenant.hub.model.BlockchainHubReport;
 import io.meeds.tenant.hub.service.PolygonContractGasProvider;
 import io.meeds.tenant.hub.utils.ContractUtils.ReportSentEventResponse;
+import io.meeds.wallet.model.WalletType;
+import io.meeds.wallet.service.WalletAccountService;
+import io.meeds.wallet.utils.WalletUtils;
 import io.meeds.wom.api.constant.WomException;
 import io.meeds.wom.api.model.HubReportPayload;
 

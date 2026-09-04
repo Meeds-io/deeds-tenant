@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.methods.request.Transaction;
 import org.web3j.tx.gas.ContractGasProvider;
 
 import io.meeds.wallet.blockchain.service.EthereumClientConnector;
@@ -58,12 +59,7 @@ public class PolygonContractGasProvider implements ContractGasProvider {
   }
 
   @Override
-  public BigInteger getGasPrice(String contractFunc) {
-    return getGasPrice();
-  }
-
-  @Override
-  public BigInteger getGasLimit(String contractFunc) {
+  public BigInteger getGasLimit(Transaction transaction) {
     return getGasLimit();
   }
 

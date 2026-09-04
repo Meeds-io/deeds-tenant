@@ -33,7 +33,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import org.exoplatform.services.listener.Event;
 import org.exoplatform.services.listener.ListenerService;
@@ -49,13 +49,13 @@ import io.meeds.wom.api.model.Hub;
 @ExtendWith(MockitoExtension.class)
 public class HubConnectedAutoSendReportListenerTest {
 
-  @MockBean
+  @MockitoBean
   private RewardReportService                rewardReportService;
 
-  @MockBean
+  @MockitoBean
   private HubReportService                   hubReportService;
 
-  @MockBean
+  @MockitoBean
   private ListenerService                    listenerService;
 
   @Mock
