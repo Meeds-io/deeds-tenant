@@ -87,6 +87,18 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!--
+      Test-only: gamification RealizationEntity named queries reference the
+      social entity SocIdentityEntity (Meeds-io/gamification#2003). Tests that
+      boot the Kernel container (@ContainerTransactional) build the meeds-jpa
+      persistence unit from every jpa-entities.idx on the classpath, so
+      social-component-core must be present for Hibernate to validate them.
+    -->
+    <dependency>
+      <groupId>io.meeds.social</groupId>
+      <artifactId>social-component-core</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
