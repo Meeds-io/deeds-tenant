@@ -23,7 +23,7 @@
     <v-btn
       v-if="!isMetamaskInstalled"
       :href="metamaskInstallLinlk"
-      :class="primary && 'primary' || 'white-background primary-border-color'"
+      :class="primary && 'primary' || 'application-background primary-border-color'"
       target="_blank"
       rel="nofollow noreferrer noopener"
       class="mx-auto d-block"
@@ -37,7 +37,7 @@
     <v-btn
       v-else
       :disabled="disabled"
-      :class="primary && 'primary' || 'white-background primary-border-color'"
+      :class="primary && 'primary' || 'application-background primary-border-color'"
       class="mx-auto d-block"
       elevation="0"
       @click="signInWithMetamask()">

@@ -22,7 +22,7 @@
     color="primary"
     outlined
     elevation="0"
-    class="white-background primary-border-color"
+    class="application-background primary-border-color"
     @click="switchMetamaskNetwork">
     <v-img
       src="/deeds-tenant/images/metamask.svg"
